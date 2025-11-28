@@ -2,25 +2,42 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #555555;
+  --primary: #EF6E2E;
+  --secondary: #46A8DB;
+  --accent: #FFFBF7;
+  --accent-dark: #F2E6D9;
+  --muted: #B3B3B3;
+  --text-dark: #555555;
+  --radius: 1rem;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+  --color-accent-dark: var(--accent-dark);
+  --color-muted: var(--muted);
+  --color-text-dark: var(--text-dark);
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+  --font-sans: var(--font-nunito);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+
 
 body {
-  background: var(--background);
+  background-color: var(--accent);
+  background-image: radial-gradient(var(--accent-dark) 1px, transparent 1px);
+  background-size: 20px 20px;
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-nunito), Arial, Helvetica, sans-serif;
+}
+
+.bg-dot-pattern {
+  background-image: radial-gradient(var(--accent-dark) 1px, transparent 1px);
+  background-size: 20px 20px;
 }
