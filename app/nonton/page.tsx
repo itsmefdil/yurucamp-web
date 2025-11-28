@@ -8,9 +8,9 @@ import Link from "next/link"
 
 export default function WatchPage() {
     const featuredContent = {
-        id: "season-2",
-        title: "Yuru Camp Season 2",
-        description: "The Outdoor Activities Club is back! Join Nadeshiko, Rin, and the gang as they explore new campsites, cook delicious food, and enjoy the great outdoors in winter.",
+        id: "season-3",
+        title: "Yuru Camp Season 3",
+        description: "Nadeshiko, Rin, and the others return for more camping adventures! As they progress through the school year, new camping spots and delicious food await them.",
         image: "/bg-nonton.png"
     }
 
@@ -22,7 +22,7 @@ export default function WatchPage() {
                 {
                     id: "season-1",
                     title: "Yuru Camp Season 1",
-                    image: "https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?auto=format&fit=crop&q=80&w=600",
+                    image: "https://img.youtube.com/vi/toRv2b-iCs8/maxresdefault.jpg",
                     year: "2018",
                     episodes: "12 Eps",
                     rating: "4.9"
@@ -30,54 +30,18 @@ export default function WatchPage() {
                 {
                     id: "season-2",
                     title: "Yuru Camp Season 2",
-                    image: "https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?auto=format&fit=crop&q=80&w=600",
+                    image: "https://img.youtube.com/vi/dSfXILVW7yk/maxresdefault.jpg",
                     year: "2021",
                     episodes: "13 Eps",
                     rating: "5.0"
                 },
                 {
-                    id: "heya-camp",
-                    title: "Heya Camp",
-                    image: "https://images.unsplash.com/photo-1517824806704-9040b037703b?auto=format&fit=crop&q=80&w=600",
-                    year: "2020",
+                    id: "season-3",
+                    title: "Yuru Camp Season 3",
+                    image: "https://img.youtube.com/vi/SGs03IvU7SQ/maxresdefault.jpg",
+                    year: "2024",
                     episodes: "12 Eps",
-                    rating: "4.7"
-                }
-            ]
-        },
-        {
-            title: "Live Action Drama",
-            icon: Film,
-            items: [
-                {
-                    id: "drama-s1",
-                    title: "Yuru Camp Drama S1",
-                    image: "https://images.unsplash.com/photo-1496545672479-df51f3887ba6?auto=format&fit=crop&q=80&w=600",
-                    year: "2020",
-                    episodes: "12 Eps",
-                    rating: "4.8"
-                },
-                {
-                    id: "drama-s2",
-                    title: "Yuru Camp Drama S2",
-                    image: "https://images.unsplash.com/photo-1533240332313-0db49b459ad6?auto=format&fit=crop&q=80&w=600",
-                    year: "2021",
-                    episodes: "12 Eps",
-                    rating: "4.7"
-                }
-            ]
-        },
-        {
-            title: "Movies & Specials",
-            icon: Film,
-            items: [
-                {
-                    id: "movie",
-                    title: "Yuru Camp Movie",
-                    image: "https://images.unsplash.com/photo-1537905569824-f89f14cceb68?auto=format&fit=crop&q=80&w=600",
-                    year: "2022",
-                    episodes: "Movie",
-                    rating: "4.8"
+                    rating: "4.9"
                 }
             ]
         }

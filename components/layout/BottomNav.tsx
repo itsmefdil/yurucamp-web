@@ -34,7 +34,7 @@ export function BottomNav() {
                             <item.icon
                                 className={cn(
                                     "h-7 w-7 transition-transform duration-200",
-                                    isActive ? "fill-current scale-105" : "stroke-[1.5]"
+                                    isActive ? "stroke-[2.5] scale-110" : "stroke-[1.5]"
                                 )}
                             />
                             <span className="sr-only">{item.label}</span>

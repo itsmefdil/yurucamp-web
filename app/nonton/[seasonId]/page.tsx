@@ -15,24 +15,91 @@ const seasonData: Record<string, { title: string, description: string, episodes:
     "season-1": {
         title: "Yuru Camp Season 1",
         description: "Nadeshiko, a high school student who had moved from Shizuoka to Yamanashi, decides to see the famous, 1000 yen-bill-featured Mount Fuji.",
-        episodes: Array.from({ length: 12 }).map((_, i) => ({
-            id: i + 1,
-            title: `Episode ${i + 1}: Mount Fuji and Curry Noodles`,
-            duration: "24:00",
-            thumbnail: `https://images.unsplash.com/photo-1510312305653-8ed496efae75?auto=format&fit=crop&q=80&w=400&text=Ep${i + 1}`,
-            videoId: "toRv2b-iCs8"
-        }))
+        episodes: Array.from({ length: 12 }).map((_, i) => {
+            const id = i + 1
+            const videoIds: Record<number, string> = {
+                1: "toRv2b-iCs8",
+                2: "XzE3LL7cbz4",
+                3: "XUyFZeQ1mA0",
+                5: "ZwFVNv1uGD0",
+                6: "6Nzofu0TqKs",
+                7: "H8kC21M1Sxk",
+                8: "Dh8Xp2ReAYg",
+                9: "mqprmP-l7GI",
+                12: "aB_FSUGeQQw"
+            }
+            const videoId = videoIds[id] || "toRv2b-iCs8"
+            return {
+                id,
+                title: `Episode ${id}`,
+                duration: "24:00",
+                thumbnail: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+                videoId: videoId
+            }
+        })
+    },
+    "season-3": {
+        title: "Yuru Camp Season 3",
+        description: "Nadeshiko, Rin, and the others return for more camping adventures! As they progress through the school year, new camping spots and delicious food await them.",
+        episodes: Array.from({ length: 15 }).map((_, i) => {
+            const id = i + 1
+            const videoIds: Record<number, string> = {
+                1: "SGs03IvU7SQ",
+                2: "7LuhosSqSwA",
+                3: "oDN1ph1F5uA",
+                4: "3VnyX9fCHQ8",
+                5: "Z3Ab0-4C5og",
+                6: "96MgAZblVtE",
+                7: "New86X5qoyo",
+                8: "cSjTrH1B4LA",
+                9: "ScAD90TBtQk",
+                10: "GR8iFH43vVI",
+                11: "JsGCvzgLQSQ",
+                12: "52lGGBLFokU",
+                13: "yrI9orwLXIo",
+                14: "AHnXBtTbMic",
+                15: "ih_Io3cYLgU"
+            }
+            const videoId = videoIds[id] || "SGs03IvU7SQ"
+            const isOVA = id > 12
+            return {
+                id,
+                title: isOVA ? `OVA ${id - 12}` : `Episode ${id}`,
+                duration: "24:00",
+                thumbnail: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+                videoId: videoId
+            }
+        })
     },
     "season-2": {
         title: "Yuru Camp Season 2",
-        description: "The girls are back for more camping adventures!",
-        episodes: Array.from({ length: 13 }).map((_, i) => ({
-            id: i + 1,
-            title: `Episode ${i + 1}: New Year's Solo Camp`,
-            duration: "24:00",
-            thumbnail: `https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?auto=format&fit=crop&q=80&w=400&text=Ep${i + 1}`,
-            videoId: "toRv2b-iCs8"
-        }))
+        description: "The girls are back for more camping adventures! Join Nadeshiko, Rin, and the gang as they explore new campsites, cook delicious food, and enjoy the great outdoors in winter.",
+        episodes: Array.from({ length: 13 }).map((_, i) => {
+            const id = i + 1
+            const videoIds: Record<number, string> = {
+                1: "jycSbANT_qw",
+                2: "dSfXILVW7yk",
+                3: "hgOsGfjF0Ys",
+                4: "zdyTu-LS4tY",
+                5: "E4ZNjUcvlEM",
+                6: "vYH9nYc81_U",
+                7: "QHrfjTR88Ok",
+                8: "B7Hv8unabNw",
+                9: "-8dJqdzT_XU",
+                10: "MAPbaAK7XRs",
+                11: "I0U7RhL4CiE",
+                12: "93S5Hsa8-gc",
+                13: "H2Pp8oAfXJY"
+            }
+            const videoId = videoIds[id] || "jycSbANT_qw"
+            return {
+                id,
+                title: `Episode ${id}`,
+                duration: "24:00",
+                thumbnail: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+                videoId: videoId
+            }
+        })
     },
     "movie": {
         title: "Yuru Camp Movie",
@@ -80,15 +147,15 @@ export default function WatchSessionPage() {
         <div className="min-h-screen flex flex-col bg-[#1a1a1a] text-white">
             <Navbar />
 
-            <main className="flex-1 pt-20 md:pt-32 pb-24">
+            <main className="flex-1 pt-16 lg:pt-32 pb-24">
                 <div className="container mx-auto px-0 md:px-4">
-                    <div className="flex flex-col lg:flex-row gap-0 md:gap-6">
+                    <div className="flex flex-col lg:flex-row gap-0 lg:gap-8">
                         {/* Left Column: Player & Info */}
                         <div className="flex-1 min-w-0">
                             {/* Video Player */}
-                            <div className="w-full aspect-video bg-black shadow-2xl md:rounded-2xl overflow-hidden border-b border-gray-800 md:border-none relative group sticky top-20 z-40 md:static">
+                            <div className="w-full aspect-video bg-black shadow-2xl rounded-xl md:rounded-2xl overflow-hidden ring-1 ring-white/10 relative group z-40">
                                 <iframe
-                                    src={`https://www.youtube.com/embed/${currentEpisode.videoId}?autoplay=1`}
+                                    src={`https://www.youtube.com/embed/${currentEpisode.videoId}?autoplay=1&rel=0&modestbranding=1&showinfo=0&playsinline=1&cc_load_policy=1&cc_lang_pref=id`}
                                     title="YouTube video player"
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                     allowFullScreen
@@ -97,7 +164,7 @@ export default function WatchSessionPage() {
                             </div>
 
                             {/* Episode Info */}
-                            <div className="p-4 md:p-0 mt-2 md:mt-6 space-y-4 md:space-y-6 bg-[#1a1a1a] relative z-30">
+                            <div className="p-4 md:p-0 mt-2 lg:mt-6 space-y-4 md:space-y-6 bg-[#1a1a1a] relative z-30">
                                 <div>
                                     <div className="flex items-center gap-2 text-primary font-bold text-xs md:text-sm mb-1 md:mb-2 uppercase tracking-wider">
                                         {season.title} • Episode {currentEpisode.id}
@@ -126,7 +193,7 @@ export default function WatchSessionPage() {
 
                         {/* Right Column: Episode List */}
                         <div className="w-full lg:w-[400px] shrink-0 px-4 lg:px-0 mt-4 lg:mt-0">
-                            <div className="bg-[#252525] rounded-xl md:rounded-2xl overflow-hidden border border-white/5 h-[400px] lg:h-[calc(100vh-120px)] flex flex-col lg:sticky lg:top-24">
+                            <div className="bg-[#252525] rounded-xl md:rounded-2xl overflow-hidden border border-white/5 h-[400px] lg:h-[calc(100vh-140px)] flex flex-col lg:sticky lg:top-28">
                                 <div className="p-3 md:p-4 border-b border-white/5 bg-[#2a2a2a] flex justify-between items-center">
                                     <h3 className="font-bold text-base md:text-lg flex items-center gap-2">
                                         <List className="h-4 w-4 md:h-5 md:w-5 text-primary" />

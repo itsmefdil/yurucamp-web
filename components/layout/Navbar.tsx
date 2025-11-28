@@ -9,12 +9,12 @@ import { cn } from "@/lib/utils"
 
 export function Navbar() {
     return (
-        <header className="sticky top-4 z-50 w-full px-4">
-            <div className="container mx-auto bg-white/90 backdrop-blur-md rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] border-2 border-white/50 relative">
-                <div className="flex h-20 items-center justify-between px-4 md:px-8">
+        <header className="sticky top-0 md:sticky md:top-4 z-50 w-full md:px-4 bg-white md:bg-transparent">
+            <div className="container mx-auto bg-white md:bg-white/90 md:backdrop-blur-md rounded-none md:rounded-full md:shadow-[0_8px_30px_rgb(0,0,0,0.12)] border-b border-gray-100 md:border-2 md:border-white/50 relative">
+                <div className="flex h-14 md:h-20 items-center justify-between px-4 md:px-8">
                     <div className="flex items-center gap-2">
                         <Link href="/">
-                            <Image src="/logo.png" alt="YuruCamp Logo" width={120} height={40} className="h-10 w-auto object-contain hover:scale-105 transition-transform" />
+                            <Image src="/logo.png" alt="YuruCamp Logo" width={120} height={40} className="h-8 md:h-10 w-auto object-contain hover:scale-105 transition-transform" />
                         </Link>
                     </div>
 
@@ -37,7 +37,7 @@ export function Navbar() {
                     </nav>
 
                     <div className="flex items-center gap-4">
-                        <Button className="rounded-full px-6 shadow-md" asChild>
+                        <Button className="rounded-full px-4 md:px-6 h-8 md:h-10 text-xs md:text-sm shadow-none md:shadow-md" asChild>
                             <Link href="/login">Masuk</Link>
                         </Button>
                     </div>
