@@ -80,13 +80,13 @@ export default function WatchSessionPage() {
         <div className="min-h-screen flex flex-col bg-[#1a1a1a] text-white">
             <Navbar />
 
-            <main className="flex-1 pt-24 md:pt-32 pb-24">
+            <main className="flex-1 pt-20 md:pt-32 pb-24">
                 <div className="container mx-auto px-0 md:px-4">
-                    <div className="flex flex-col lg:flex-row gap-6">
+                    <div className="flex flex-col lg:flex-row gap-0 md:gap-6">
                         {/* Left Column: Player & Info */}
                         <div className="flex-1 min-w-0">
                             {/* Video Player */}
-                            <div className="w-full aspect-video bg-black shadow-2xl md:rounded-2xl overflow-hidden border-b border-gray-800 md:border-none relative group">
+                            <div className="w-full aspect-video bg-black shadow-2xl md:rounded-2xl overflow-hidden border-b border-gray-800 md:border-none relative group sticky top-20 z-40 md:static">
                                 <iframe
                                     src={`https://www.youtube.com/embed/${currentEpisode.videoId}?autoplay=1`}
                                     title="YouTube video player"
@@ -97,42 +97,42 @@ export default function WatchSessionPage() {
                             </div>
 
                             {/* Episode Info */}
-                            <div className="p-4 md:p-0 mt-6 space-y-6">
+                            <div className="p-4 md:p-0 mt-2 md:mt-6 space-y-4 md:space-y-6 bg-[#1a1a1a] relative z-30">
                                 <div>
-                                    <div className="flex items-center gap-2 text-primary font-bold text-sm mb-2 uppercase tracking-wider">
+                                    <div className="flex items-center gap-2 text-primary font-bold text-xs md:text-sm mb-1 md:mb-2 uppercase tracking-wider">
                                         {season.title} • Episode {currentEpisode.id}
                                     </div>
-                                    <h1 className="text-2xl md:text-3xl font-black text-white mb-4 leading-tight">
+                                    <h1 className="text-xl md:text-3xl font-black text-white mb-2 md:mb-4 leading-tight">
                                         {currentEpisode.title}
                                     </h1>
-                                    <p className="text-gray-400 leading-relaxed text-lg">
+                                    <p className="text-gray-400 leading-relaxed text-sm md:text-lg line-clamp-3 md:line-clamp-none">
                                         {season.description}
                                     </p>
                                 </div>
 
-                                <div className="flex items-center gap-4">
-                                    <Button variant="secondary" className="rounded-full gap-2 bg-white/10 text-white hover:bg-white/20 border-none">
-                                        <Heart className="h-5 w-5" /> 1.2k
+                                <div className="flex items-center gap-3 md:gap-4 overflow-x-auto pb-2 md:pb-0 no-scrollbar">
+                                    <Button variant="secondary" className="rounded-full gap-2 bg-white/10 text-white hover:bg-white/20 border-none h-9 md:h-10 text-xs md:text-sm shrink-0">
+                                        <Heart className="h-4 w-4" /> 1.2k
                                     </Button>
-                                    <Button variant="secondary" className="rounded-full gap-2 bg-white/10 text-white hover:bg-white/20 border-none">
-                                        <Share2 className="h-5 w-5" /> Share
+                                    <Button variant="secondary" className="rounded-full gap-2 bg-white/10 text-white hover:bg-white/20 border-none h-9 md:h-10 text-xs md:text-sm shrink-0">
+                                        <Share2 className="h-4 w-4" /> Share
                                     </Button>
-                                    <Button variant="secondary" className="rounded-full gap-2 bg-white/10 text-white hover:bg-white/20 border-none">
-                                        <MessageCircle className="h-5 w-5" /> Comment
+                                    <Button variant="secondary" className="rounded-full gap-2 bg-white/10 text-white hover:bg-white/20 border-none h-9 md:h-10 text-xs md:text-sm shrink-0">
+                                        <MessageCircle className="h-4 w-4" /> Comment
                                     </Button>
                                 </div>
                             </div>
                         </div>
 
                         {/* Right Column: Episode List */}
-                        <div className="w-full lg:w-[400px] shrink-0 px-4 lg:px-0">
-                            <div className="bg-[#252525] rounded-2xl overflow-hidden border border-white/5 h-[calc(100vh-120px)] flex flex-col sticky top-24">
-                                <div className="p-4 border-b border-white/5 bg-[#2a2a2a] flex justify-between items-center">
-                                    <h3 className="font-bold text-lg flex items-center gap-2">
-                                        <List className="h-5 w-5 text-primary" />
+                        <div className="w-full lg:w-[400px] shrink-0 px-4 lg:px-0 mt-4 lg:mt-0">
+                            <div className="bg-[#252525] rounded-xl md:rounded-2xl overflow-hidden border border-white/5 h-[400px] lg:h-[calc(100vh-120px)] flex flex-col lg:sticky lg:top-24">
+                                <div className="p-3 md:p-4 border-b border-white/5 bg-[#2a2a2a] flex justify-between items-center">
+                                    <h3 className="font-bold text-base md:text-lg flex items-center gap-2">
+                                        <List className="h-4 w-4 md:h-5 md:w-5 text-primary" />
                                         Daftar Episode
                                     </h3>
-                                    <span className="text-xs font-medium bg-white/10 px-2 py-1 rounded text-gray-400">
+                                    <span className="text-[10px] md:text-xs font-medium bg-white/10 px-2 py-1 rounded text-gray-400">
                                         {season.episodes.length} Episode
                                     </span>
                                 </div>
@@ -145,11 +145,11 @@ export default function WatchSessionPage() {
                                                 key={episode.id}
                                                 onClick={() => handleEpisodeChange(episode.id)}
                                                 className={cn(
-                                                    "flex gap-3 p-2 rounded-xl cursor-pointer transition-all duration-200 group",
+                                                    "flex gap-3 p-2 rounded-lg md:rounded-xl cursor-pointer transition-all duration-200 group",
                                                     isActive ? "bg-primary/20 border border-primary/30" : "hover:bg-white/5 border border-transparent"
                                                 )}
                                             >
-                                                <div className="relative w-32 aspect-video bg-gray-800 rounded-lg overflow-hidden shrink-0">
+                                                <div className="relative w-24 md:w-32 aspect-video bg-gray-800 rounded-md md:rounded-lg overflow-hidden shrink-0">
                                                     <img
                                                         src={episode.thumbnail}
                                                         alt={episode.title}
@@ -160,23 +160,23 @@ export default function WatchSessionPage() {
                                                     />
                                                     {isActive && (
                                                         <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                                                            <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center animate-pulse">
-                                                                <Play className="h-4 w-4 fill-current ml-0.5" />
+                                                            <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-primary text-white flex items-center justify-center animate-pulse">
+                                                                <Play className="h-3 w-3 md:h-4 md:w-4 fill-current ml-0.5" />
                                                             </div>
                                                         </div>
                                                     )}
-                                                    <div className="absolute bottom-1 right-1 bg-black/80 text-white text-[10px] px-1.5 py-0.5 rounded font-mono">
+                                                    <div className="absolute bottom-1 right-1 bg-black/80 text-white text-[8px] md:text-[10px] px-1 md:px-1.5 py-0.5 rounded font-mono">
                                                         {episode.duration}
                                                     </div>
                                                 </div>
                                                 <div className="flex-1 min-w-0 flex flex-col justify-center">
                                                     <h4 className={cn(
-                                                        "font-bold text-sm line-clamp-2 mb-1 transition-colors",
+                                                        "font-bold text-xs md:text-sm line-clamp-2 mb-1 transition-colors",
                                                         isActive ? "text-primary" : "text-gray-300 group-hover:text-white"
                                                     )}>
                                                         {episode.id}. {episode.title.split(': ')[1] || episode.title}
                                                     </h4>
-                                                    <p className="text-gray-500 text-xs">
+                                                    <p className="text-gray-500 text-[10px] md:text-xs">
                                                         20 Nov 2024
                                                     </p>
                                                 </div>

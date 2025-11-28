@@ -91,7 +91,7 @@ export default function WatchPage() {
 
             <main className="flex-1 pb-24">
                 {/* Hero Section */}
-                <div className="relative h-[85vh] w-full overflow-hidden">
+                <div className="relative h-[65vh] md:h-[85vh] w-full overflow-hidden">
                     <div className="absolute inset-0">
                         <img
                             src={featuredContent.image}
@@ -103,27 +103,27 @@ export default function WatchPage() {
                         <div className="absolute inset-0 bg-gradient-to-t from-[#fdfdfd] via-transparent to-transparent" />
                     </div>
 
-                    <div className="relative container mx-auto px-4 h-full flex flex-col justify-center pt-20">
-                        <div className="max-w-2xl space-y-6 animate-in fade-in slide-in-from-bottom-10 duration-1000">
-                            <div className="flex items-center gap-2 text-primary font-black tracking-widest uppercase text-sm bg-orange-100 w-fit px-3 py-1 rounded-full shadow-sm">
-                                <Star className="h-4 w-4 fill-current" />
+                    <div className="relative container mx-auto px-4 h-full flex flex-col justify-center pt-16 md:pt-20">
+                        <div className="max-w-2xl space-y-4 md:space-y-6 animate-in fade-in slide-in-from-bottom-10 duration-1000">
+                            <div className="flex items-center gap-2 text-primary font-black tracking-widest uppercase text-[10px] md:text-sm bg-orange-100 w-fit px-2 md:px-3 py-1 rounded-full shadow-sm">
+                                <Star className="h-3 w-3 md:h-4 md:w-4 fill-current" />
                                 #1 Camping Anime
                             </div>
-                            <h1 className="text-5xl md:text-7xl font-black leading-tight text-gray-800 drop-shadow-sm">
+                            <h1 className="text-3xl md:text-7xl font-black leading-tight text-gray-800 drop-shadow-sm">
                                 {featuredContent.title}
                             </h1>
-                            <p className="text-lg md:text-xl text-gray-700 line-clamp-3 leading-relaxed max-w-xl font-medium">
+                            <p className="text-sm md:text-xl text-gray-700 line-clamp-3 leading-relaxed max-w-xl font-medium">
                                 {featuredContent.description}
                             </p>
-                            <div className="flex items-center gap-4 pt-4">
-                                <Button size="lg" className="rounded-full px-8 py-6 text-lg font-bold shadow-lg hover:scale-105 transition-transform gap-2" asChild>
+                            <div className="flex items-center gap-3 md:gap-4 pt-2 md:pt-4">
+                                <Button size="lg" className="rounded-full px-6 md:px-8 py-4 md:py-6 text-sm md:text-lg font-bold shadow-lg hover:scale-105 transition-transform gap-2" asChild>
                                     <Link href={`/nonton/${featuredContent.id}`}>
-                                        <Play className="h-6 w-6 fill-white" />
+                                        <Play className="h-4 w-4 md:h-6 md:w-6 fill-white" />
                                         Mulai Nonton
                                     </Link>
                                 </Button>
-                                <Button size="lg" variant="outline" className="rounded-full px-8 py-6 text-lg font-bold border-2 bg-white/80 backdrop-blur-sm hover:bg-white shadow-md hover:scale-105 transition-transform gap-2 text-gray-700">
-                                    <Info className="h-6 w-6" />
+                                <Button size="lg" variant="outline" className="rounded-full px-6 md:px-8 py-4 md:py-6 text-sm md:text-lg font-bold border-2 bg-white/80 backdrop-blur-sm hover:bg-white shadow-md hover:scale-105 transition-transform gap-2 text-gray-700">
+                                    <Info className="h-4 w-4 md:h-6 md:w-6" />
                                     Selengkapnya
                                 </Button>
                             </div>
@@ -132,43 +132,40 @@ export default function WatchPage() {
                 </div>
 
                 {/* Content Rows */}
-                <div className="container mx-auto px-4 -mt-32 relative z-10 space-y-16">
+                <div className="container mx-auto px-4 -mt-20 md:-mt-32 relative z-10 space-y-12 md:space-y-16">
                     {categories.map((category, idx) => (
-                        <div key={idx} className="space-y-6">
+                        <div key={idx} className="space-y-4 md:space-y-6">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                                    <category.icon className="h-6 w-6" />
+                                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                    <category.icon className="h-4 w-4 md:h-6 md:w-6" />
                                 </div>
-                                <h2 className="text-2xl md:text-3xl font-black text-gray-800 flex items-center gap-2 group cursor-pointer">
+                                <h2 className="text-xl md:text-3xl font-black text-gray-800 flex items-center gap-2 group cursor-pointer">
                                     {category.title}
-                                    <ChevronRight className="h-6 w-6 opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all text-primary" />
+                                    <ChevronRight className="h-5 w-5 md:h-6 md:w-6 opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all text-primary" />
                                 </h2>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
                                 {category.items.map((item) => (
-                                    <Link href={`/nonton/${item.id}`} key={item.id} className="group relative aspect-[4/3] rounded-2xl overflow-hidden bg-white shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-4 border-white ring-1 ring-gray-100">
+                                    <Link href={`/nonton/${item.id}`} key={item.id} className="group relative aspect-[4/5] md:aspect-[4/3] rounded-xl md:rounded-2xl overflow-hidden bg-white shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-2 md:border-4 border-white ring-1 ring-gray-100">
                                         <img
                                             src={item.image}
                                             alt={item.title}
                                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                         />
 
-                                        {/* Overlay on Hover */}
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-5">
-                                            <h3 className="font-bold text-white text-lg leading-tight mb-2">{item.title}</h3>
-                                            <div className="flex items-center gap-3 text-xs text-white/90 font-medium">
-                                                <span className="flex items-center gap-1 bg-yellow-400 text-black px-1.5 py-0.5 rounded-md">
-                                                    <Star className="h-3 w-3 fill-current" /> {item.rating}
+                                        {/* Overlay on Hover (Desktop) & Always visible gradient (Mobile) */}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3 md:p-5">
+                                            <h3 className="font-bold text-white text-sm md:text-lg leading-tight mb-1 md:mb-2 line-clamp-2">{item.title}</h3>
+                                            <div className="flex items-center gap-2 md:gap-3 text-[10px] md:text-xs text-white/90 font-medium">
+                                                <span className="flex items-center gap-1 bg-yellow-400 text-black px-1 md:px-1.5 py-0.5 rounded-md">
+                                                    <Star className="h-2 w-2 md:h-3 md:w-3 fill-current" /> {item.rating}
                                                 </span>
-                                                <span className="flex items-center gap-1">
-                                                    <Calendar className="h-3 w-3" /> {item.year}
-                                                </span>
-                                                <span className="bg-white/20 px-1.5 py-0.5 rounded-md backdrop-blur-sm">
+                                                <span className="bg-white/20 px-1 md:px-1.5 py-0.5 rounded-md backdrop-blur-sm">
                                                     {item.episodes}
                                                 </span>
                                             </div>
-                                            <div className="mt-4 flex items-center gap-2">
+                                            <div className="mt-4 hidden md:flex items-center gap-2">
                                                 <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center shadow-lg transform scale-0 group-hover:scale-100 transition-transform duration-300 delay-100">
                                                     <Play className="h-5 w-5 fill-current ml-1" />
                                                 </div>
