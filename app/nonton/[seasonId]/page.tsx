@@ -144,7 +144,7 @@ export default function WatchSessionPage() {
     }
 
     return (
-        <div className="min-h-screen flex flex-col bg-[#1a1a1a] text-white">
+        <div className="min-h-screen flex flex-col bg-[#fdfdfd] text-gray-800">
             <Navbar />
 
             <main className="flex-1 pt-16 lg:pt-32 pb-24">
@@ -164,27 +164,27 @@ export default function WatchSessionPage() {
                             </div>
 
                             {/* Episode Info */}
-                            <div className="p-4 md:p-0 mt-2 lg:mt-6 space-y-4 md:space-y-6 bg-[#1a1a1a] relative z-30">
+                            <div className="p-4 md:p-0 mt-2 lg:mt-6 space-y-4 md:space-y-6 bg-transparent relative z-30">
                                 <div>
                                     <div className="flex items-center gap-2 text-primary font-bold text-xs md:text-sm mb-1 md:mb-2 uppercase tracking-wider">
                                         {season.title} • Episode {currentEpisode.id}
                                     </div>
-                                    <h1 className="text-xl md:text-3xl font-black text-white mb-2 md:mb-4 leading-tight">
+                                    <h1 className="text-xl md:text-3xl font-black text-gray-800 mb-2 md:mb-4 leading-tight">
                                         {currentEpisode.title}
                                     </h1>
-                                    <p className="text-gray-400 leading-relaxed text-sm md:text-lg line-clamp-3 md:line-clamp-none">
+                                    <p className="text-gray-600 leading-relaxed text-sm md:text-lg line-clamp-3 md:line-clamp-none">
                                         {season.description}
                                     </p>
                                 </div>
 
                                 <div className="flex items-center gap-3 md:gap-4 overflow-x-auto pb-2 md:pb-0 no-scrollbar">
-                                    <Button variant="secondary" className="rounded-full gap-2 bg-white/10 text-white hover:bg-white/20 border-none h-9 md:h-10 text-xs md:text-sm shrink-0">
+                                    <Button variant="secondary" className="rounded-full gap-2 bg-gray-100 text-gray-700 hover:bg-gray-200 border-none h-9 md:h-10 text-xs md:text-sm shrink-0 shadow-sm">
                                         <Heart className="h-4 w-4" /> 1.2k
                                     </Button>
-                                    <Button variant="secondary" className="rounded-full gap-2 bg-white/10 text-white hover:bg-white/20 border-none h-9 md:h-10 text-xs md:text-sm shrink-0">
+                                    <Button variant="secondary" className="rounded-full gap-2 bg-gray-100 text-gray-700 hover:bg-gray-200 border-none h-9 md:h-10 text-xs md:text-sm shrink-0 shadow-sm">
                                         <Share2 className="h-4 w-4" /> Share
                                     </Button>
-                                    <Button variant="secondary" className="rounded-full gap-2 bg-white/10 text-white hover:bg-white/20 border-none h-9 md:h-10 text-xs md:text-sm shrink-0">
+                                    <Button variant="secondary" className="rounded-full gap-2 bg-gray-100 text-gray-700 hover:bg-gray-200 border-none h-9 md:h-10 text-xs md:text-sm shrink-0 shadow-sm">
                                         <MessageCircle className="h-4 w-4" /> Comment
                                     </Button>
                                 </div>
@@ -193,13 +193,13 @@ export default function WatchSessionPage() {
 
                         {/* Right Column: Episode List */}
                         <div className="w-full lg:w-[400px] shrink-0 px-4 lg:px-0 mt-4 lg:mt-0">
-                            <div className="bg-[#252525] rounded-xl md:rounded-2xl overflow-hidden border border-white/5 h-[400px] lg:h-[calc(100vh-140px)] flex flex-col lg:sticky lg:top-28">
-                                <div className="p-3 md:p-4 border-b border-white/5 bg-[#2a2a2a] flex justify-between items-center">
-                                    <h3 className="font-bold text-base md:text-lg flex items-center gap-2">
+                            <div className="bg-white rounded-xl md:rounded-2xl overflow-hidden border border-gray-100 shadow-lg h-[400px] lg:h-[calc(100vh-140px)] flex flex-col lg:sticky lg:top-28">
+                                <div className="p-3 md:p-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+                                    <h3 className="font-bold text-base md:text-lg flex items-center gap-2 text-gray-800">
                                         <List className="h-4 w-4 md:h-5 md:w-5 text-primary" />
                                         Daftar Episode
                                     </h3>
-                                    <span className="text-[10px] md:text-xs font-medium bg-white/10 px-2 py-1 rounded text-gray-400">
+                                    <span className="text-[10px] md:text-xs font-medium bg-gray-100 px-2 py-1 rounded text-gray-500">
                                         {season.episodes.length} Episode
                                     </span>
                                 </div>
@@ -213,37 +213,37 @@ export default function WatchSessionPage() {
                                                 onClick={() => handleEpisodeChange(episode.id)}
                                                 className={cn(
                                                     "flex gap-3 p-2 rounded-lg md:rounded-xl cursor-pointer transition-all duration-200 group",
-                                                    isActive ? "bg-primary/20 border border-primary/30" : "hover:bg-white/5 border border-transparent"
+                                                    isActive ? "bg-primary/10 border border-primary/20" : "hover:bg-gray-50 border border-transparent"
                                                 )}
                                             >
-                                                <div className="relative w-24 md:w-32 aspect-video bg-gray-800 rounded-md md:rounded-lg overflow-hidden shrink-0">
+                                                <div className="relative w-24 md:w-32 aspect-video bg-gray-100 rounded-md md:rounded-lg overflow-hidden shrink-0 shadow-sm">
                                                     <img
                                                         src={episode.thumbnail}
                                                         alt={episode.title}
                                                         className={cn(
                                                             "w-full h-full object-cover transition-opacity",
-                                                            isActive ? "opacity-100" : "opacity-70 group-hover:opacity-100"
+                                                            isActive ? "opacity-100" : "opacity-90 group-hover:opacity-100"
                                                         )}
                                                     />
                                                     {isActive && (
-                                                        <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                                                        <div className="absolute inset-0 flex items-center justify-center bg-black/20">
                                                             <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-primary text-white flex items-center justify-center animate-pulse">
                                                                 <Play className="h-3 w-3 md:h-4 md:w-4 fill-current ml-0.5" />
                                                             </div>
                                                         </div>
                                                     )}
-                                                    <div className="absolute bottom-1 right-1 bg-black/80 text-white text-[8px] md:text-[10px] px-1 md:px-1.5 py-0.5 rounded font-mono">
+                                                    <div className="absolute bottom-1 right-1 bg-black/70 text-white text-[8px] md:text-[10px] px-1 md:px-1.5 py-0.5 rounded font-mono backdrop-blur-sm">
                                                         {episode.duration}
                                                     </div>
                                                 </div>
                                                 <div className="flex-1 min-w-0 flex flex-col justify-center">
                                                     <h4 className={cn(
                                                         "font-bold text-xs md:text-sm line-clamp-2 mb-1 transition-colors",
-                                                        isActive ? "text-primary" : "text-gray-300 group-hover:text-white"
+                                                        isActive ? "text-primary" : "text-gray-700 group-hover:text-primary"
                                                     )}>
                                                         {episode.id}. {episode.title.split(': ')[1] || episode.title}
                                                     </h4>
-                                                    <p className="text-gray-500 text-[10px] md:text-xs">
+                                                    <p className="text-gray-400 text-[10px] md:text-xs">
                                                         20 Nov 2024
                                                     </p>
                                                 </div>

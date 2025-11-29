@@ -1,4 +1,5 @@
 import { Navbar } from "@/components/layout/Navbar"
+import NextImage from "next/image"
 import { Footer } from "@/components/layout/Footer"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -17,7 +18,14 @@ export default function ActivitiesPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-8">
                     {Array.from({ length: 9 }).map((_, i) => (
                         <Card key={i} className="overflow-hidden bg-white hover:-translate-y-1 transition-transform duration-300">
-                            <div className="aspect-video bg-orange-100 animate-pulse" />
+                            <div className="relative aspect-video border-4 border-white shadow-lg ring-1 ring-gray-200 m-4 rounded-lg overflow-hidden transform rotate-1 hover:rotate-0 transition-all duration-300">
+                                <NextImage
+                                    src="/aktifitas.jpg"
+                                    alt={`Foto Aktifitas ${i + 1}`}
+                                    fill
+                                    className="object-cover transition-transform duration-500 hover:scale-110"
+                                />
+                            </div>
                             <CardHeader>
                                 <CardTitle className="text-xl">Aktifitas Seru {i + 1}</CardTitle>
                                 <CardDescription>Diposting oleh User {i + 1}</CardDescription>

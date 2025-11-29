@@ -25,10 +25,10 @@ export default function EventsPage() {
                                 <CardHeader>
                                     <div className="flex flex-col md:flex-row justify-between items-start gap-4">
                                         <div>
-                                            <CardTitle className="text-xl mb-2">Gathering Nasional {i + 1}</CardTitle>
+                                            <CardTitle className="text-xl mb-2">Yuru Campe Episode  {i + 1}</CardTitle>
                                             <CardDescription className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
                                                 <span className="flex items-center gap-1"><Calendar className="h-4 w-4" /> 2{i} Nov 2024</span>
-                                                <span className="flex items-center gap-1"><MapPin className="h-4 w-4" /> Jakarta</span>
+                                                <span className="flex items-center gap-1"><MapPin className="h-4 w-4" /> Yogyakarta</span>
                                             </CardDescription>
                                         </div>
                                         <Button variant="outline" size="sm" className="rounded-full">Share</Button>
@@ -36,7 +36,7 @@ export default function EventsPage() {
                                 </CardHeader>
                                 <CardContent>
                                     <p className="text-muted-foreground text-sm md:text-base">
-                                        Bergabunglah dengan ratusan pecinta alam lainnya dalam acara gathering terbesar tahun ini. Berbagai kegiatan seru menanti anda.
+                                        Mari hadir dan berbagi pengalaman dengan Yuru Camp Episode {i + 1}.
                                     </p>
                                 </CardContent>
                                 <CardFooter className="flex flex-col sm:flex-row justify-between items-center gap-4">

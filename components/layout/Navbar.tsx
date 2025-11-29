@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils"
 
 export function Navbar() {
     return (
-        <header className="sticky top-0 md:sticky md:top-4 z-50 w-full md:px-4 bg-white md:bg-transparent">
+        <header className="sticky top-0 md:sticky md:top-4 md:mt-4 z-50 w-full md:px-4 bg-white md:bg-transparent">
             <div className="container mx-auto bg-white md:bg-white/90 md:backdrop-blur-md rounded-none md:rounded-full md:shadow-[0_8px_30px_rgb(0,0,0,0.12)] border-b border-gray-100 md:border-2 md:border-white/50 relative">
                 <div className="flex h-14 md:h-20 items-center justify-between px-4 md:px-8">
                     <div className="flex items-center gap-2">
