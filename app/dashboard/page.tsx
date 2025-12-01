@@ -7,11 +7,49 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Calendar, MapPin, Settings, LogOut, Edit, Heart, Tent, Ticket, MessageSquare, Image as ImageIcon, Plus } from "lucide-react"
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
+import { createClient } from "@/lib/supabase/client"
+import { logout } from "@/app/auth/actions"
 
 export default function ProfilePage() {
-    const [activeTab, setActiveTab] = useState("booking")
+    const [activeTab, setActiveTab] = useState("menu")
+    const [profile, setProfile] = useState<any>(null)
+    const [loading, setLoading] = useState(true)
+    const supabase = createClient()
+
+    useEffect(() => {
+        const getProfile = async () => {
+            const { data: { user } } = await supabase.auth.getUser()
+            if (user) {
+                const { data } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', user.id)
+                    .single()
+
+                setProfile(data)
+            }
+            setLoading(false)
+        }
+        getProfile()
+    }, [supabase])
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex flex-col bg-[#fdfdfd]">
+                <Navbar />
+                <main className="flex-1 container mx-auto px-4 pt-24 md:pt-32 pb-24 flex items-center justify-center">
+                    <div className="animate-pulse flex flex-col items-center gap-4">
+                        <div className="h-32 w-32 bg-gray-200 rounded-full" />
+                        <div className="h-8 w-48 bg-gray-200 rounded" />
+                        <div className="h-4 w-32 bg-gray-200 rounded" />
+                    </div>
+                </main>
+                <Footer />
+            </div>
+        )
+    }
 
     return (
         <div className="min-h-screen flex flex-col bg-[#fdfdfd]">
@@ -23,29 +61,35 @@ export default function ProfilePage() {
                     <div className="flex flex-col md:flex-row items-center gap-6 p-8 bg-white rounded-3xl shadow-lg border border-gray-100">
                         <div className="relative">
                             <Avatar className="h-32 w-32 border-4 border-white shadow-md">
-                                <AvatarImage src="https://github.com/shadcn.png" />
-                                <AvatarFallback>CN</AvatarFallback>
+                                <AvatarImage src={profile?.avatar_url} />
+                                <AvatarFallback>{profile?.full_name?.[0]?.toUpperCase() ?? 'U'}</AvatarFallback>
                             </Avatar>
-                            <Button size="icon" className="absolute bottom-0 right-0 rounded-full shadow-md h-10 w-10 border-2 border-white">
-                                <Edit className="h-4 w-4" />
+                            <Button size="icon" className="absolute bottom-0 right-0 rounded-full shadow-md h-10 w-10 border-2 border-white" asChild>
+                                <Link href="/dashboard/pengaturan/edit-profil">
+                                    <Edit className="h-4 w-4" />
+                                </Link>
                             </Button>
                         </div>
                         <div className="flex-1 text-center md:text-left space-y-2">
-                            <h1 className="text-3xl font-black text-gray-800">Nadeshiko Kagamihara</h1>
-                            <p className="text-gray-500 font-medium">nadeshiko@yurucamp.id</p>
+                            <h1 className="text-3xl font-black text-gray-800">{profile?.full_name ?? 'User'}</h1>
+                            <p className="text-gray-500 font-medium">{profile?.email}</p>
                             <div className="flex flex-wrap justify-center md:justify-start gap-2 pt-2">
                                 <span className="bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-xs font-bold">Camper Pemula</span>
-                                <span className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-xs font-bold">Member sejak 2024</span>
+                                <span className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-xs font-bold">Member sejak {new Date(profile?.created_at || Date.now()).getFullYear()}</span>
                             </div>
                         </div>
                         <div className="flex flex-col gap-2 w-full md:w-auto">
                             <Button variant="outline" className="rounded-full border-2 gap-2" asChild>
-                                <Link href="/pengaturan">
+                                <Link href="/dashboard/pengaturan">
                                     <Settings className="h-4 w-4" />
                                     Pengaturan
                                 </Link>
                             </Button>
-                            <Button variant="ghost" className="rounded-full gap-2 text-red-500 hover:text-red-600 hover:bg-red-50">
+                            <Button
+                                variant="ghost"
+                                className="rounded-full gap-2 text-red-500 hover:text-red-600 hover:bg-red-50"
+                                onClick={() => logout()}
+                            >
                                 <LogOut className="h-4 w-4" />
                                 Keluar
                             </Button>
@@ -75,6 +119,13 @@ export default function ProfilePage() {
                     {/* Tabs Section */}
                     <div className="space-y-6">
                         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                            <Button
+                                onClick={() => setActiveTab("menu")}
+                                variant={activeTab === "menu" ? "default" : "ghost"}
+                                className={cn("rounded-full px-6 shadow-sm", activeTab !== "menu" && "text-gray-500 hover:text-primary hover:bg-orange-50")}
+                            >
+                                Menu
+                            </Button>
                             <Button
                                 onClick={() => setActiveTab("booking")}
                                 variant={activeTab === "booking" ? "default" : "ghost"}
@@ -199,7 +250,12 @@ export default function ProfilePage() {
                                             </CardContent>
                                         </Card>
                                     ))}
-                                    <Link href="/tambah-aktifitas">
+                                </div>
+                            )}
+
+                            {activeTab === "menu" && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                    <Link href="/dashboard/add-activity">
                                         <Card className="border-2 border-dashed border-gray-200 shadow-none bg-transparent hover:bg-gray-50 transition-colors cursor-pointer flex flex-col items-center justify-center p-8 min-h-[200px] h-full">
                                             <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 mb-2">
                                                 <Plus className="h-6 w-6" />
@@ -207,7 +263,7 @@ export default function ProfilePage() {
                                             <p className="font-bold text-gray-500">Tambah Aktifitas Baru</p>
                                         </Card>
                                     </Link>
-                                    <Link href="/tambah-camp-area">
+                                    <Link href="/dashboard/add-camp-area">
                                         <Card className="border-2 border-dashed border-gray-200 shadow-none bg-transparent hover:bg-gray-50 transition-colors cursor-pointer flex flex-col items-center justify-center p-8 min-h-[200px] h-full">
                                             <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 mb-2">
                                                 <Tent className="h-6 w-6" />
@@ -215,12 +271,20 @@ export default function ProfilePage() {
                                             <p className="font-bold text-gray-500">Tambah Camp Area</p>
                                         </Card>
                                     </Link>
-                                    <Link href="/tambah-acara">
+                                    <Link href="/dashboard/add-event">
                                         <Card className="border-2 border-dashed border-gray-200 shadow-none bg-transparent hover:bg-gray-50 transition-colors cursor-pointer flex flex-col items-center justify-center p-8 min-h-[200px] h-full">
                                             <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 mb-2">
                                                 <Ticket className="h-6 w-6" />
                                             </div>
                                             <p className="font-bold text-gray-500">Buat Acara</p>
+                                        </Card>
+                                    </Link>
+                                    <Link href="/dashboard/pengaturan">
+                                        <Card className="border-2 border-dashed border-gray-200 shadow-none bg-transparent hover:bg-gray-50 transition-colors cursor-pointer flex flex-col items-center justify-center p-8 min-h-[200px] h-full">
+                                            <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 mb-2">
+                                                <Settings className="h-6 w-6" />
+                                            </div>
+                                            <p className="font-bold text-gray-500">Pengaturan Akun</p>
                                         </Card>
                                     </Link>
                                 </div>

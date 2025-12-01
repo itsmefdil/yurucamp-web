@@ -3,128 +3,191 @@ import { Footer } from "@/components/layout/Footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Heart, MessageCircle, Share2, MapPin, Calendar, User } from "lucide-react"
+import { Heart, MessageCircle, Share2, MapPin, Calendar, User, ArrowLeft } from "lucide-react"
 import Image from "next/image"
+import { createClient } from "@/lib/supabase/server"
+import { notFound } from "next/navigation"
+import { format } from "date-fns"
+import { id as idLocale } from "date-fns/locale"
+import Link from "next/link"
+import { ActivityGallery } from "@/components/activities/activity-gallery"
 
-export default function ActivityDetailPage({ params }: { params: { id: string } }) {
+export default async function ActivityDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params
+    const supabase = await createClient()
+
+    const { data: { user } } = await supabase.auth.getUser()
+
+    const { data: activity, error } = await supabase
+        .from("activities")
+        .select(`
+            *,
+            profiles:user_id (
+                full_name,
+                avatar_url
+            )
+        `)
+        .eq("id", id)
+        .single()
+
+    if (error) {
+        console.error("Error fetching activity:", error)
+    }
+    if (!activity) {
+        console.log("Activity not found for ID:", id)
+    }
+
+    if (error || !activity) {
+        notFound()
+    }
+
     return (
-        <div className="min-h-screen flex flex-col bg-[#fdfdfd]">
+        <div className="min-h-screen flex flex-col bg-[#f8f9fa]">
             <Navbar />
 
             <main className="flex-1 pb-24 md:pb-12">
                 {/* Hero Image */}
-                <div className="relative h-[30vh] md:h-[50vh] w-full bg-gray-200">
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10" />
-                    {/* Placeholder for actual image */}
-                    <div className="w-full h-full bg-orange-100 flex items-center justify-center text-orange-300">
-                        <span className="text-4xl font-bold opacity-50">Activity Image {params.id}</span>
+                <div className="relative h-[50vh] md:h-[60vh] w-full bg-gray-900 overflow-hidden">
+                    {activity.image_url ? (
+                        <Image
+                            src={activity.image_url}
+                            alt={activity.title}
+                            fill
+                            className="object-cover opacity-90"
+                            priority
+                        />
+                    ) : (
+                        <div className="w-full h-full bg-gray-800 flex items-center justify-center text-gray-500">
+                            <span className="text-4xl font-bold opacity-30">No Image</span>
+                        </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10" />
+
+                    <div className="absolute top-24 left-4 md:left-12 z-20">
+                        <Button variant="outline" size="icon" className="rounded-full bg-white/10 border-white/20 text-white hover:bg-white/20 backdrop-blur-md" asChild>
+                            <Link href="/aktifitas">
+                                <ArrowLeft className="h-5 w-5" />
+                            </Link>
+                        </Button>
                     </div>
 
-                    <div className="absolute bottom-0 left-0 right-0 p-6 pb-12 md:p-12 z-20 container mx-auto">
-                        <div className="flex items-center gap-2 text-white/90 mb-2 text-sm md:text-base font-medium">
-                            <span className="bg-primary px-3 py-1 rounded-full text-white text-xs md:text-sm">Hiking</span>
-                            <span className="flex items-center gap-1"><Calendar className="h-4 w-4" /> 20 Nov 2024</span>
-                            <span className="flex items-center gap-1"><MapPin className="h-4 w-4" /> Gunung Gede</span>
-                        </div>
-                        <h1 className="text-2xl md:text-5xl font-extrabold text-white mb-2 md:mb-4 drop-shadow-md leading-tight">
-                            Petualangan Seru di Akhir Pekan #{params.id}
-                        </h1>
-                        <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-2 text-white">
-                                <div className="h-10 w-10 rounded-full bg-white/20 border-2 border-white flex items-center justify-center">
-                                    <User className="h-6 w-6" />
+                    <div className="absolute bottom-0 left-0 right-0 p-6 pb-16 md:p-16 z-20 container mx-auto">
+                        <div className="max-w-4xl">
+                            <div className="flex flex-wrap items-center gap-3 text-white/90 mb-4 text-sm md:text-base font-medium animate-fade-in-up">
+                                {activity.category && (
+                                    <span className="bg-primary/90 backdrop-blur-sm px-4 py-1.5 rounded-full text-white text-xs md:text-sm font-bold uppercase tracking-wider shadow-lg">
+                                        {activity.category}
+                                    </span>
+                                )}
+                                {activity.date && (
+                                    <span className="flex items-center gap-1.5 bg-black/30 backdrop-blur-sm px-3 py-1 rounded-full border border-white/10">
+                                        <Calendar className="h-4 w-4 text-yellow-400" />
+                                        {format(new Date(activity.date), "dd MMMM yyyy", { locale: idLocale })}
+                                    </span>
+                                )}
+                                {activity.location && (
+                                    <span className="flex items-center gap-1.5 bg-black/30 backdrop-blur-sm px-3 py-1 rounded-full border border-white/10">
+                                        <MapPin className="h-4 w-4 text-red-400" />
+                                        {activity.location}
+                                    </span>
+                                )}
+                            </div>
+
+                            {user && user.id === activity.user_id && (
+                                <Button variant="secondary" size="sm" className="mb-4" asChild>
+                                    <Link href={`/dashboard/edit-activity/${activity.id}`}>
+                                        Edit Aktifitas
+                                    </Link>
+                                </Button>
+                            )}
+
+                            <h1 className="text-3xl md:text-5xl lg:text-6xl font-black text-white mb-6 drop-shadow-xl leading-tight tracking-tight">
+                                {activity.title}
+                            </h1>
+                            <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-3 text-white bg-black/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/10">
+                                    <Avatar className="h-10 w-10 border-2 border-white/50 ring-2 ring-black/20">
+                                        <AvatarImage src={activity.profiles?.avatar_url || undefined} />
+                                        <AvatarFallback className="bg-primary text-white font-bold">{activity.profiles?.full_name?.[0] || "U"}</AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex flex-col">
+                                        <span className="text-xs text-white/70 uppercase tracking-wider font-bold">Dibuat oleh</span>
+                                        <span className="font-bold text-sm md:text-base">{activity.profiles?.full_name || "Unknown User"}</span>
+                                    </div>
                                 </div>
-                                <span className="font-semibold">Rin Shima</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="container mx-auto px-4 -mt-6 md:-mt-8 relative z-30">
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="container mx-auto px-4 -mt-12 relative z-30">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                         {/* Main Content */}
-                        <div className="lg:col-span-2 space-y-8">
-                            <Card className="border-none shadow-lg rounded-3xl overflow-hidden">
-                                <CardContent className="p-5 md:p-10 space-y-4 md:space-y-6 text-base md:text-lg text-gray-700 leading-loose md:leading-relaxed">
-                                    <p>
-                                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                                    </p>
-                                    <p>
-                                        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-                                    </p>
-                                    <div className="grid grid-cols-2 gap-4 my-8">
-                                        <div className="aspect-square bg-gray-100 rounded-2xl" />
-                                        <div className="aspect-square bg-gray-100 rounded-2xl" />
+                        <div className="lg:col-span-8 space-y-8">
+                            <Card className="border-none shadow-xl rounded-3xl overflow-hidden bg-white ring-1 ring-black/5">
+                                <CardContent className="p-6 md:p-10 space-y-6">
+                                    <div className="prose prose-lg max-w-none text-gray-600 leading-loose">
+                                        <p className="whitespace-pre-wrap">{activity.description}</p>
                                     </div>
-                                    <p>
-                                        Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.
-                                    </p>
                                 </CardContent>
-                                <div className="px-5 md:px-10 py-4 md:py-6 bg-gray-50 border-t flex items-center justify-between">
+                                <div className="px-6 md:px-10 py-6 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between">
                                     <div className="flex items-center gap-4">
-                                        <Button variant="ghost" size="sm" className="hover:text-red-500 hover:bg-red-50 gap-2 rounded-full">
-                                            <Heart className="h-5 w-5" /> 245 Suka
+                                        <Button variant="outline" size="sm" className="hover:text-red-600 hover:bg-red-50 hover:border-red-200 gap-2 rounded-full transition-all duration-300 group">
+                                            <Heart className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                                            <span className="font-medium">Suka</span>
                                         </Button>
-                                        <Button variant="ghost" size="sm" className="hover:text-blue-500 hover:bg-blue-50 gap-2 rounded-full">
-                                            <MessageCircle className="h-5 w-5" /> 42 Komentar
+                                        <Button variant="outline" size="sm" className="hover:text-blue-600 hover:bg-blue-50 hover:border-blue-200 gap-2 rounded-full transition-all duration-300 group">
+                                            <MessageCircle className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                                            <span className="font-medium">Komentar</span>
                                         </Button>
                                     </div>
-                                    <Button variant="ghost" size="icon" className="rounded-full">
+                                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-gray-200 text-gray-500">
                                         <Share2 className="h-5 w-5" />
                                     </Button>
                                 </div>
                             </Card>
 
+                            {/* Photo Gallery */}
+                            {activity.additional_images && activity.additional_images.length > 0 && (
+                                <ActivityGallery images={activity.additional_images} />
+                            )}
+
                             {/* Comments Section */}
-                            <div className="space-y-6">
-                                <h3 className="text-2xl font-bold text-gray-800 px-2">Komentar (42)</h3>
-                                <div className="space-y-4">
-                                    {[1, 2, 3].map((i) => (
-                                        <Card key={i} className="border-none shadow-sm bg-white">
-                                            <CardContent className="p-4 flex gap-4">
-                                                <div className="h-10 w-10 rounded-full bg-gray-200 flex-shrink-0" />
-                                                <div className="flex-1">
-                                                    <div className="flex justify-between items-start mb-1">
-                                                        <span className="font-bold text-gray-800">User {i}</span>
-                                                        <span className="text-xs text-muted-foreground">2 jam yang lalu</span>
-                                                    </div>
-                                                    <p className="text-gray-600 text-sm">
-                                                        Wah keren banget fotonya! Jadi pengen ikut camping juga nih.
-                                                    </p>
-                                                </div>
-                                            </CardContent>
-                                        </Card>
-                                    ))}
+                            <div className="bg-white rounded-3xl shadow-lg p-6 md:p-8 ring-1 ring-black/5">
+                                <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                                    <MessageCircle className="h-6 w-6 text-primary" />
+                                    Komentar <span className="text-gray-400 text-lg font-normal">(0)</span>
+                                </h3>
+                                <div className="text-center py-12 text-muted-foreground bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                                    <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
+                                        <MessageCircle className="h-8 w-8 text-gray-300" />
+                                    </div>
+                                    <p className="font-medium text-gray-600">Belum ada komentar</p>
+                                    <p className="text-sm mt-1">Jadilah yang pertama membagikan pendapatmu!</p>
                                 </div>
-                                <Button variant="outline" className="w-full rounded-full py-6">Lihat Semua Komentar</Button>
                             </div>
                         </div>
 
                         {/* Sidebar */}
-                        <div className="space-y-6">
-                            <Card className="border-none shadow-md bg-white rounded-3xl p-6 sticky top-24">
-                                <CardHeader className="p-0 mb-4">
-                                    <CardTitle className="text-xl font-bold">Aktifitas Lainnya</CardTitle>
+                        <div className="lg:col-span-4 space-y-6">
+                            <Card className="border-none shadow-lg bg-white rounded-3xl p-6 sticky top-24 ring-1 ring-black/5">
+                                <CardHeader className="p-0 mb-6 border-b border-gray-100 pb-4">
+                                    <CardTitle className="text-xl font-bold flex items-center gap-2">
+                                        <MapPin className="h-5 w-5 text-primary" />
+                                        Aktifitas Lainnya
+                                    </CardTitle>
                                 </CardHeader>
                                 <CardContent className="p-0 space-y-4">
-                                    {[1, 2, 3].map((i) => (
-                                        <div key={i} className="flex gap-4 items-center group cursor-pointer">
-                                            <div className="h-16 w-16 bg-gray-100 rounded-xl flex-shrink-0 group-hover:scale-105 transition-transform" />
-                                            <div>
-                                                <h4 className="font-bold text-gray-800 line-clamp-2 group-hover:text-primary transition-colors">
-                                                    Camping Ceria di Danau Toba
-                                                </h4>
-                                                <span className="text-xs text-muted-foreground">12 Nov 2024</span>
-                                            </div>
-                                        </div>
-                                    ))}
+                                    <div className="text-center py-8">
+                                        <p className="text-sm text-muted-foreground italic">Belum ada aktifitas lain.</p>
+                                    </div>
                                 </CardContent>
                             </Card>
                         </div>
                     </div>
-                </div>
-            </main>
+                </div >
+            </main >
             <Footer />
-        </div>
+        </div >
     )
 }

@@ -12,6 +12,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
+import { UserNav } from "@/components/layout/user-nav"
 
 export function Navbar() {
     return (
@@ -67,12 +68,7 @@ export function Navbar() {
                     </nav>
 
                     <div className="flex items-center gap-4">
-                        <Link href="/profile" className="p-2 rounded-full hover:bg-gray-100 transition-colors">
-                            <User className="w-5 h-5 text-gray-600" />
-                        </Link>
-                        <Button className="rounded-full px-4 lg:px-6 h-8 lg:h-10 text-xs lg:text-sm shadow-none lg:shadow-md" asChild>
-                            <Link href="/login">Masuk</Link>
-                        </Button>
+                        <UserNav />
                     </div>
                 </div>
             </div>

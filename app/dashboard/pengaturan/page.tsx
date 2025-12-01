@@ -30,7 +30,7 @@ export default function SettingsPage() {
                             <Card className="border-none shadow-md bg-white overflow-hidden">
                                 <CardContent className="p-0">
                                     <div className="divide-y divide-gray-100">
-                                        <Link href="/profile" className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors">
+                                        <Link href="/dashboard" className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors">
                                             <Avatar className="h-12 w-12 border-2 border-white shadow-sm">
                                                 <AvatarImage src="https://github.com/shadcn.png" />
                                                 <AvatarFallback>CN</AvatarFallback>
@@ -41,7 +41,7 @@ export default function SettingsPage() {
                                             </div>
                                             <ChevronRight className="h-5 w-5 text-gray-400" />
                                         </Link>
-                                        <Link href="/pengaturan/edit-profil" className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors text-left">
+                                        <Link href="/dashboard/pengaturan/edit-profil" className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors text-left">
                                             <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-500">
                                                 <User className="h-5 w-5" />
                                             </div>
@@ -50,7 +50,7 @@ export default function SettingsPage() {
                                             </div>
                                             <ChevronRight className="h-5 w-5 text-gray-400" />
                                         </Link>
-                                        <Link href="/pengaturan/ubah-password" className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors text-left">
+                                        <Link href="/dashboard/pengaturan/ubah-password" className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors text-left">
                                             <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-500">
                                                 <Lock className="h-5 w-5" />
                                             </div>
@@ -70,7 +70,7 @@ export default function SettingsPage() {
                             <Card className="border-none shadow-md bg-white overflow-hidden">
                                 <CardContent className="p-0">
                                     <div className="divide-y divide-gray-100">
-                                        <Link href="/pengaturan/notifikasi" className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors text-left">
+                                        <Link href="/dashboard/pengaturan/notifikasi" className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors text-left">
                                             <div className="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center text-orange-500">
                                                 <Bell className="h-5 w-5" />
                                             </div>
@@ -80,7 +80,7 @@ export default function SettingsPage() {
                                             </div>
                                             <ChevronRight className="h-5 w-5 text-gray-400" />
                                         </Link>
-                                        <Link href="/pengaturan/bahasa" className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors text-left">
+                                        <Link href="/dashboard/pengaturan/bahasa" className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors text-left">
                                             <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-500">
                                                 <Globe className="h-5 w-5" />
                                             </div>
@@ -101,7 +101,7 @@ export default function SettingsPage() {
                             <Card className="border-none shadow-md bg-white overflow-hidden">
                                 <CardContent className="p-0">
                                     <div className="divide-y divide-gray-100">
-                                        <Link href="/pengaturan/bantuan" className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors text-left">
+                                        <Link href="/dashboard/pengaturan/bantuan" className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors text-left">
                                             <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
                                                 <HelpCircle className="h-5 w-5" />
                                             </div>
@@ -110,7 +110,7 @@ export default function SettingsPage() {
                                             </div>
                                             <ChevronRight className="h-5 w-5 text-gray-400" />
                                         </Link>
-                                        <Link href="/pengaturan/privasi" className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors text-left">
+                                        <Link href="/dashboard/pengaturan/privasi" className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors text-left">
                                             <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
                                                 <Shield className="h-5 w-5" />
                                             </div>
