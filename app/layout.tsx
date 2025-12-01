@@ -9,7 +9,7 @@ const nunito = Nunito({
 });
 
 export const metadata: Metadata = {
-  title: "YuruCamp",
+  title: "YuruCamp - Unofficial Fanbase Indonesia",
   description: "Jelajahi Alam Bebas Bersama YuruCamp",
 };
 

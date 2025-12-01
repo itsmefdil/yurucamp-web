@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Activity, MapPin, Calendar, User, PlayCircle } from "lucide-react"
+import { Home, Mountain, Tent, Calendar, PlayCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export function BottomNav() {
@@ -10,11 +10,10 @@ export function BottomNav() {
 
     const navItems = [
         { href: "/", label: "Beranda", icon: Home },
-        { href: "/aktifitas", label: "Aktifitas", icon: Activity },
-        { href: "/camp-area", label: "Camp Area", icon: MapPin },
+        { href: "/aktifitas", label: "Aktifitas", icon: Mountain },
+        { href: "/camp-area", label: "Camp Area", icon: Tent },
         { href: "/acara", label: "Acara", icon: Calendar },
         { href: "/nonton", label: "Nonton", icon: PlayCircle },
-        { href: "/profile", label: "Profil", icon: User },
     ]
 
     return (

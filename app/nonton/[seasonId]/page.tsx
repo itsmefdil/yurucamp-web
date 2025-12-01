@@ -38,6 +38,36 @@ const seasonData: Record<string, { title: string, description: string, episodes:
             }
         })
     },
+    "season-2": {
+        title: "Yuru Camp Season 2",
+        description: "The girls are back for more camping adventures! Join Nadeshiko, Rin, and the gang as they explore new campsites, cook delicious food, and enjoy the great outdoors in winter.",
+        episodes: Array.from({ length: 13 }).map((_, i) => {
+            const id = i + 1
+            const videoIds: Record<number, string> = {
+                1: "jycSbANT_qw",
+                2: "dSfXILVW7yk",
+                3: "hgOsGfjF0Ys",
+                4: "zdyTu-LS4tY",
+                5: "E4ZNjUcvlEM",
+                6: "vYH9nYc81_U",
+                7: "QHrfjTR88Ok",
+                8: "B7Hv8unabNw",
+                9: "-8dJqdzT_XU",
+                10: "MAPbaAK7XRs",
+                11: "I0U7RhL4CiE",
+                12: "93S5Hsa8-gc",
+                13: "H2Pp8oAfXJY"
+            }
+            const videoId = videoIds[id] || "jycSbANT_qw"
+            return {
+                id,
+                title: `Episode ${id}`,
+                duration: "24:00",
+                thumbnail: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+                videoId: videoId
+            }
+        })
+    },
     "season-3": {
         title: "Yuru Camp Season 3",
         description: "Nadeshiko, Rin, and the others return for more camping adventures! As they progress through the school year, new camping spots and delicious food await them.",
@@ -71,60 +101,6 @@ const seasonData: Record<string, { title: string, description: string, episodes:
             }
         })
     },
-    "season-2": {
-        title: "Yuru Camp Season 2",
-        description: "The girls are back for more camping adventures! Join Nadeshiko, Rin, and the gang as they explore new campsites, cook delicious food, and enjoy the great outdoors in winter.",
-        episodes: Array.from({ length: 13 }).map((_, i) => {
-            const id = i + 1
-            const videoIds: Record<number, string> = {
-                1: "jycSbANT_qw",
-                2: "dSfXILVW7yk",
-                3: "hgOsGfjF0Ys",
-                4: "zdyTu-LS4tY",
-                5: "E4ZNjUcvlEM",
-                6: "vYH9nYc81_U",
-                7: "QHrfjTR88Ok",
-                8: "B7Hv8unabNw",
-                9: "-8dJqdzT_XU",
-                10: "MAPbaAK7XRs",
-                11: "I0U7RhL4CiE",
-                12: "93S5Hsa8-gc",
-                13: "H2Pp8oAfXJY"
-            }
-            const videoId = videoIds[id] || "jycSbANT_qw"
-            return {
-                id,
-                title: `Episode ${id}`,
-                duration: "24:00",
-                thumbnail: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
-                videoId: videoId
-            }
-        })
-    },
-    "movie": {
-        title: "Yuru Camp Movie",
-        description: "The girls are all grown up and building a campsite together.",
-        episodes: [
-            {
-                id: 1,
-                title: "Yuru Camp Movie",
-                duration: "2:00:00",
-                thumbnail: "https://images.unsplash.com/photo-1537905569824-f89f14cceb68?auto=format&fit=crop&q=80&w=400",
-                videoId: "toRv2b-iCs8"
-            }
-        ]
-    },
-    "heya-camp": {
-        title: "Heya Camp",
-        description: "Short adventures around Yamanashi.",
-        episodes: Array.from({ length: 12 }).map((_, i) => ({
-            id: i + 1,
-            title: `Episode ${i + 1}: Stamp Rally`,
-            duration: "3:00",
-            thumbnail: `https://images.unsplash.com/photo-1517824806704-9040b037703b?auto=format&fit=crop&q=80&w=400&text=Ep${i + 1}`,
-            videoId: "toRv2b-iCs8"
-        }))
-    }
 }
 
 export default function WatchSessionPage() {

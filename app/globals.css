@@ -10,6 +10,8 @@
   --muted: #B3B3B3;
   --text-dark: #555555;
   --radius: 1rem;
+  --popover: #ffffff;
+  --popover-foreground: #555555;
 }
 
 @theme inline {
@@ -21,6 +23,8 @@
   --color-accent-dark: var(--accent-dark);
   --color-muted: var(--muted);
   --color-text-dark: var(--text-dark);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);

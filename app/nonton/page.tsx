@@ -30,7 +30,7 @@ export default function WatchPage() {
                 {
                     id: "season-2",
                     title: "Yuru Camp Season 2",
-                    image: "https://img.youtube.com/vi/dSfXILVW7yk/maxresdefault.jpg",
+                    image: "https://i.ytimg.com/vi/jycSbANT_qw/hqdefault.jpg",
                     year: "2021",
                     episodes: "13 Eps",
                     rating: "5.0"
@@ -109,33 +109,34 @@ export default function WatchPage() {
                                 </h2>
                             </div>
 
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
                                 {category.items.map((item) => (
-                                    <Link href={`/nonton/${item.id}`} key={item.id} className="group relative aspect-[4/5] md:aspect-[4/3] rounded-xl md:rounded-2xl overflow-hidden bg-white shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-2 md:border-4 border-white ring-1 ring-gray-100">
-                                        <img
-                                            src={item.image}
-                                            alt={item.title}
-                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                        />
+                                    <Link href={`/nonton/${item.id}`} key={item.id} className="group flex flex-col gap-3">
+                                        <div className="relative aspect-video rounded-xl md:rounded-2xl overflow-hidden bg-white shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-2 md:border-4 border-white ring-1 ring-gray-100">
+                                            <img
+                                                src={item.image}
+                                                alt={item.title}
+                                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                            />
 
-                                        {/* Overlay on Hover (Desktop) & Always visible gradient (Mobile) */}
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3 md:p-5">
-                                            <h3 className="font-bold text-white text-sm md:text-lg leading-tight mb-1 md:mb-2 line-clamp-2">{item.title}</h3>
-                                            <div className="flex items-center gap-2 md:gap-3 text-[10px] md:text-xs text-white/90 font-medium">
-                                                <span className="flex items-center gap-1 bg-yellow-400 text-black px-1 md:px-1.5 py-0.5 rounded-md">
-                                                    <Star className="h-2 w-2 md:h-3 md:w-3 fill-current" /> {item.rating}
-                                                </span>
-                                                <span className="bg-white/20 px-1 md:px-1.5 py-0.5 rounded-md backdrop-blur-sm">
-                                                    {item.episodes}
-                                                </span>
-                                            </div>
-                                            <div className="mt-4 hidden md:flex items-center gap-2">
-                                                <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center shadow-lg transform scale-0 group-hover:scale-100 transition-transform duration-300 delay-100">
-                                                    <Play className="h-5 w-5 fill-current ml-1" />
+                                            {/* Play Button Overlay */}
+                                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/20">
+                                                <div className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center shadow-lg transform scale-0 group-hover:scale-100 transition-transform duration-300">
+                                                    <Play className="h-6 w-6 fill-current ml-1" />
                                                 </div>
-                                                <span className="text-white font-bold text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-200">
-                                                    Tonton Sekarang
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <h3 className="font-bold text-gray-800 text-base md:text-lg leading-tight line-clamp-2 group-hover:text-primary transition-colors">{item.title}</h3>
+                                            <div className="flex items-center gap-2 md:gap-3 text-xs text-gray-500 font-medium">
+                                                <span className="flex items-center gap-1 text-yellow-500">
+                                                    <Star className="h-3 w-3 md:h-4 md:w-4 fill-current" /> {item.rating}
                                                 </span>
+                                                <span>•</span>
+                                                <span>{item.year}</span>
+                                                <span>•</span>
+                                                <span>{item.episodes}</span>
                                             </div>
                                         </div>
                                     </Link>
@@ -143,6 +144,15 @@ export default function WatchPage() {
                             </div>
                         </div>
                     ))}
+                </div>
+
+                {/* Content Source Disclaimer */}
+                <div className="container mx-auto px-4 mt-12 md:mt-16">
+                    <div className="bg-gray-50 border border-gray-100 rounded-xl p-6 text-center">
+                        <p className="text-sm text-gray-500">
+                            Konten anime ini tersedia secara legal dan gratis melalui channel YouTube <a href="https://www.youtube.com/@AniOneAsia" target="_blank" rel="noopener noreferrer" className="text-primary font-bold hover:underline">Ani-One Asia</a>.
+                        </p>
+                    </div>
                 </div>
             </main>
             <Footer />

@@ -4,7 +4,13 @@ import * as React from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Menu } from "lucide-react"
+import { Menu, Home, Mountain, Tent, Calendar, PlayCircle, User, ChevronDown, Info } from "lucide-react"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 
 export function Navbar() {
@@ -19,24 +25,51 @@ export function Navbar() {
                     </div>
 
                     <nav className="hidden md:flex items-center gap-8 text-base font-bold text-gray-600">
-                        <Link href="/" className="transition-colors hover:text-primary hover:scale-105 transform">
+                        <Link href="/" className="flex items-center gap-2 transition-colors hover:text-primary hover:scale-105 transform">
+                            <Home className="w-4 h-4" />
                             Beranda
                         </Link>
-                        <Link href="/aktifitas" className="transition-colors hover:text-primary hover:scale-105 transform">
-                            Aktifitas
-                        </Link>
-                        <Link href="/camp-area" className="transition-colors hover:text-primary hover:scale-105 transform">
-                            Camp Area
-                        </Link>
-                        <Link href="/acara" className="transition-colors hover:text-primary hover:scale-105 transform">
+
+                        <DropdownMenu>
+                            <DropdownMenuTrigger className="flex items-center gap-2 transition-colors hover:text-primary hover:scale-105 transform outline-none">
+                                Jelajahi <ChevronDown className="w-4 h-4" />
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="start" className="w-48">
+                                <DropdownMenuItem asChild>
+                                    <Link href="/aktifitas" className="flex items-center gap-2 cursor-pointer">
+                                        <Mountain className="w-4 h-4" />
+                                        Aktifitas
+                                    </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                    <Link href="/camp-area" className="flex items-center gap-2 cursor-pointer">
+                                        <Tent className="w-4 h-4" />
+                                        Camp Area
+                                    </Link>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+
+                        <Link href="/acara" className="flex items-center gap-2 transition-colors hover:text-primary hover:scale-105 transform">
+                            <Calendar className="w-4 h-4" />
                             Acara
                         </Link>
-                        <Link href="/nonton" className="transition-colors hover:text-primary hover:scale-105 transform">
+
+                        <Link href="/nonton" className="flex items-center gap-2 transition-colors hover:text-primary hover:scale-105 transform">
+                            <PlayCircle className="w-4 h-4" />
                             Nonton
+                        </Link>
+
+                        <Link href="/tentang" className="flex items-center gap-2 transition-colors hover:text-primary hover:scale-105 transform">
+                            <Info className="w-4 h-4" />
+                            Tentang
                         </Link>
                     </nav>
 
                     <div className="flex items-center gap-4">
+                        <Link href="/profile" className="p-2 rounded-full hover:bg-gray-100 transition-colors">
+                            <User className="w-5 h-5 text-gray-600" />
+                        </Link>
                         <Button className="rounded-full px-4 md:px-6 h-8 md:h-10 text-xs md:text-sm shadow-none md:shadow-md" asChild>
                             <Link href="/login">Masuk</Link>
                         </Button>
