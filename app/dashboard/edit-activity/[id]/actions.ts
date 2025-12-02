@@ -37,9 +37,11 @@ export async function updateActivity(id: string, formData: FormData) {
     const location = formData.get("location") as string
     const imageFile = formData.get("image") as File
     const additionalImageFiles = formData.getAll("additional_images") as File[]
+    const keptImages = formData.getAll("kept_images") as string[]
 
     let image_url = existingActivity.image_url
-    let additional_images: string[] = existingActivity.additional_images || []
+    // Start with the images the user chose to keep
+    let additional_images: string[] = keptImages
 
     // Handle cover image update
     if (imageFile && imageFile.size > 0) {
@@ -52,13 +54,6 @@ export async function updateActivity(id: string, formData: FormData) {
     }
 
     // Handle additional images update (append new ones)
-    // Note: A more complex implementation would allow deleting specific images.
-    // For now, we just append new ones if any are uploaded. 
-    // Ideally, the UI should allow managing the existing list.
-    // If the user wants to replace, they might need to delete and re-upload.
-    // But let's see how the form sends data. 
-    // The current form implementation appends new files.
-
     if (additionalImageFiles && additionalImageFiles.length > 0) {
         try {
             const uploadPromises = additionalImageFiles
@@ -67,10 +62,6 @@ export async function updateActivity(id: string, formData: FormData) {
 
             if (uploadPromises.length > 0) {
                 const newImages = await Promise.all(uploadPromises)
-                // For simplicity in this iteration, we'll just append.
-                // A better approach for a real app would be to receive the full list of desired images (urls)
-                // and new files, then reconcile.
-                // But the ActivityForm doesn't support deleting yet.
                 additional_images = [...additional_images, ...newImages]
             }
         } catch (error) {

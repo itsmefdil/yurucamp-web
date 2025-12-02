@@ -1,9 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import Link from "next/link"
-import { User, AuthChangeEvent, Session } from "@supabase/supabase-js"
-import { createClient } from "@/lib/supabase/client"
+import { User } from "@supabase/supabase-js"
 import { Button } from "@/components/ui/button"
 import {
     DropdownMenu,
@@ -17,58 +15,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { User as UserIcon, Settings, LogOut, ChevronDown } from "lucide-react"
 import { logout } from "@/app/auth/actions"
 
-export function UserNav() {
-    const [user, setUser] = useState<User | null>(null)
-    const [profile, setProfile] = useState<any>(null)
-    const [loading, setLoading] = useState(true)
-    const supabase = createClient()
+interface UserNavProps {
+    user: User | null
+    profile: any
+}
 
-    useEffect(() => {
-        const getUser = async () => {
-            const { data: { user } } = await supabase.auth.getUser()
-            setUser(user)
-
-            if (user) {
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', user.id)
-                    .single()
-                setProfile(profile)
-            }
-            setLoading(false)
-        }
-        getUser()
-
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event: AuthChangeEvent, session: Session | null) => {
-            setUser(session?.user ?? null)
-            if (session?.user) {
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', session.user.id)
-                    .single()
-                setProfile(profile)
-            } else {
-                setProfile(null)
-            }
-        })
-
-        return () => subscription.unsubscribe()
-    }, [supabase])
-
-    if (loading) {
-        return (
-            <div className="relative h-12 w-auto rounded-full p-1 pr-4 flex items-center gap-3 bg-white/50">
-                <div className="h-10 w-10 rounded-full bg-gray-200 animate-pulse" />
-                <div className="flex flex-col gap-1.5">
-                    <div className="h-3.5 w-24 bg-gray-200 rounded animate-pulse" />
-                    <div className="h-2.5 w-32 bg-gray-200 rounded animate-pulse" />
-                </div>
-            </div>
-        )
-    }
-
+export function UserNav({ user, profile }: UserNavProps) {
     if (!user) {
         return (
             <Button className="rounded-full px-4 lg:px-6 h-8 lg:h-10 text-xs lg:text-sm shadow-none lg:shadow-md" asChild>

@@ -1,5 +1,3 @@
-"use client"
-
 import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
 import { Button } from "@/components/ui/button"
@@ -81,7 +79,7 @@ export default function WatchPage() {
                             </p>
                             <div className="flex items-center gap-3 md:gap-4 pt-2 md:pt-4">
                                 <Button size="lg" className="rounded-full px-6 md:px-8 py-4 md:py-6 text-sm md:text-lg font-bold shadow-lg hover:scale-105 transition-transform gap-2" asChild>
-                                    <Link href={`/nonton/${featuredContent.id}`}>
+                                    <Link href={`/watch/${featuredContent.id}`}>
                                         <Play className="h-4 w-4 md:h-6 md:w-6 fill-white" />
                                         Mulai Nonton
                                     </Link>
@@ -111,7 +109,7 @@ export default function WatchPage() {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
                                 {category.items.map((item) => (
-                                    <Link href={`/nonton/${item.id}`} key={item.id} className="group flex flex-col gap-3">
+                                    <Link href={`/watch/${item.id}`} key={item.id} className="group flex flex-col gap-3">
                                         <div className="relative aspect-video rounded-xl md:rounded-2xl overflow-hidden bg-white shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-2 md:border-4 border-white ring-1 ring-gray-100">
                                             <img
                                                 src={item.image}

@@ -13,7 +13,7 @@ export function BottomNav() {
         { href: "/aktifitas", label: "Aktifitas", icon: Mountain },
         { href: "/camp-area", label: "Camp Area", icon: Tent },
         { href: "/acara", label: "Acara", icon: Calendar },
-        { href: "/nonton", label: "Nonton", icon: PlayCircle },
+        { href: "/watch", label: "Nonton", icon: PlayCircle },
     ]
 
     return (

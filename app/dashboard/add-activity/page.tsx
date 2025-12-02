@@ -1,11 +1,8 @@
-"use client"
-
 import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
-import { toast } from "sonner"
 import { addActivity } from "./actions"
 import { ActivityForm } from "@/components/activities/activity-form"
 

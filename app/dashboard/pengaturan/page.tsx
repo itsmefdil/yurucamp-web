@@ -1,15 +1,9 @@
-"use client"
-
 import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
+import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { User, Bell, Shield, HelpCircle, LogOut, ChevronRight, Moon, Globe, Lock } from "lucide-react"
+import { User, Bell, Shield, HelpCircle, LogOut, ChevronRight, Globe, Lock } from "lucide-react"
 import Link from "next/link"
-import { cn } from "@/lib/utils"
 
 export default function SettingsPage() {
     return (
