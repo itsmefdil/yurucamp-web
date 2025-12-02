@@ -12,7 +12,7 @@ export default function AddActivityPage() {
             <Navbar />
 
             <main className="flex-1 container mx-auto px-4 pt-24 md:pt-32 pb-24">
-                <div className="max-w-xl mx-auto space-y-8">
+                <div className="max-w-4xl mx-auto space-y-8">
                     <div className="flex items-center gap-4">
                         <Button variant="ghost" size="icon" className="rounded-full" asChild>
                             <Link href="/dashboard">

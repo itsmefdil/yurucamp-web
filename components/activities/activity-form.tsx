@@ -26,9 +26,7 @@ export function ActivityForm({ initialData, action, buttonText = "Tambah Aktifit
     const [description, setDescription] = useState(initialData?.description || "")
 
     // State for additional images
-    // For existing images (URLs)
     const [existingImages, setExistingImages] = useState<string[]>((initialData?.additional_images as string[]) || [])
-    // For new file uploads
     const [newFiles, setNewFiles] = useState<File[]>([])
     const [newFilePreviews, setNewFilePreviews] = useState<string[]>([])
 
@@ -61,7 +59,6 @@ export function ActivityForm({ initialData, action, buttonText = "Tambah Aktifit
 
             setNewFiles(prev => [...prev, ...files])
         }
-        // Reset input so the same file can be selected again if needed
         if (fileInputRef.current) {
             fileInputRef.current.value = ''
         }
@@ -73,10 +70,6 @@ export function ActivityForm({ initialData, action, buttonText = "Tambah Aktifit
     }
 
     const removeExistingImage = (index: number) => {
-        // Note: This only removes it from the UI view. 
-        // The backend action needs to handle actual deletion if that's a requirement.
-        // For "Add Activity", this array is empty anyway.
-        // For "Edit Activity", we might need to handle this differently, but for now let's allow hiding it.
         setExistingImages(prev => prev.filter((_, i) => i !== index))
     }
 
@@ -85,16 +78,12 @@ export function ActivityForm({ initialData, action, buttonText = "Tambah Aktifit
         setLoading(true)
 
         const formData = new FormData(e.currentTarget)
-
-        // Append description from editor
         formData.set('description', description)
 
-        // Append new additional images manually
         newFiles.forEach(file => {
             formData.append('additional_images', file)
         })
 
-        // Append kept existing images
         existingImages.forEach(url => {
             formData.append('kept_images', url)
         })
@@ -115,225 +104,215 @@ export function ActivityForm({ initialData, action, buttonText = "Tambah Aktifit
     }
 
     return (
-        <Card className="border-none shadow-xl bg-white overflow-hidden rounded-3xl">
-            <form onSubmit={handleSubmit}>
-                <CardContent className="p-6 md:p-8 space-y-8">
-                    {/* Cover Image Section */}
-                    <div className="space-y-4">
-                        <Label className="text-lg font-bold text-gray-800">Foto Sampul</Label>
-                        <div
-                            className="relative aspect-video rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 flex flex-col items-center justify-center overflow-hidden hover:bg-gray-100 transition-all cursor-pointer group"
-                            onClick={() => coverInputRef.current?.click()}
-                        >
-                            <input
-                                ref={coverInputRef}
-                                name="image"
-                                type="file"
-                                accept="image/*"
-                                className="hidden"
-                                onChange={handleCoverImageChange}
-                            />
-                            {coverImagePreview ? (
-                                <>
-                                    <Image
-                                        src={coverImagePreview}
-                                        alt="Preview"
-                                        fill
-                                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                                    />
-                                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                        <div className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full font-medium text-sm shadow-lg">
-                                            Ganti Foto
-                                        </div>
-                                    </div>
-                                    <Button
-                                        size="icon"
-                                        variant="destructive"
-                                        className="absolute top-4 right-4 rounded-full h-8 w-8 shadow-md z-10"
-                                        onClick={(e) => {
-                                            e.stopPropagation()
-                                            setCoverImagePreview(null)
-                                            if (coverInputRef.current) coverInputRef.current.value = ''
-                                        }}
-                                        type="button"
-                                    >
-                                        <X className="h-4 w-4" />
-                                    </Button>
-                                </>
-                            ) : (
-                                <div className="flex flex-col items-center justify-center text-gray-400 group-hover:text-primary transition-colors">
-                                    <div className="w-16 h-16 rounded-full bg-white shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                        <UploadCloud className="h-8 w-8" />
-                                    </div>
-                                    <p className="font-bold text-lg">Upload Foto Sampul</p>
-                                    <p className="text-sm font-medium opacity-70">Klik untuk memilih foto</p>
-                                </div>
-                            )}
+        <form onSubmit={handleSubmit} className="space-y-8">
+            {/* Cover Image Area */}
+            <div
+                className="group relative w-full h-[30vh] md:h-[40vh] bg-gray-100 rounded-3xl overflow-hidden cursor-pointer hover:bg-gray-200 transition-colors"
+                onClick={() => coverInputRef.current?.click()}
+            >
+                <input
+                    ref={coverInputRef}
+                    name="image"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleCoverImageChange}
+                />
+                {coverImagePreview ? (
+                    <>
+                        <Image
+                            src={coverImagePreview}
+                            alt="Cover"
+                            fill
+                            className="object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center">
+                            <Button
+                                type="button"
+                                variant="secondary"
+                                size="sm"
+                                className="opacity-0 group-hover:opacity-100 transition-opacity translate-y-2 group-hover:translate-y-0"
+                            >
+                                <ImageIcon className="mr-2 h-4 w-4" />
+                                Ganti Cover
+                            </Button>
                         </div>
+                    </>
+                ) : (
+                    <div className="flex flex-col items-center justify-center h-full text-gray-400 gap-4">
+                        <ImageIcon className="h-12 w-12 opacity-50" />
+                        <span className="font-medium text-lg">Tambahkan Cover</span>
+                    </div>
+                )}
+            </div>
+
+            <div className="px-4 md:px-8 space-y-8">
+                {/* Title Input */}
+                <Input
+                    id="title"
+                    name="title"
+                    placeholder="Judul Aktifitas..."
+                    className="text-4xl md:text-5xl font-black border-none shadow-none px-0 focus-visible:ring-0 placeholder:text-gray-300 h-auto py-2"
+                    required
+                    defaultValue={initialData?.title || ""}
+                    autoComplete="off"
+                />
+
+                {/* Properties Grid */}
+                <div className="grid gap-4 max-w-2xl">
+                    {/* Date */}
+                    <div className="flex items-center gap-4 text-gray-600">
+                        <div className="w-32 flex items-center gap-2 text-sm font-medium text-gray-500">
+                            <Calendar className="h-4 w-4" />
+                            Tanggal
+                        </div>
+                        <Input
+                            name="date"
+                            type="date"
+                            defaultValue={initialData?.date || ""}
+                            className="flex-1 border-none shadow-none bg-transparent hover:bg-gray-50 focus-visible:ring-0 px-2 h-9 w-auto"
+                        />
                     </div>
 
-                    {/* Additional Images Section */}
-                    <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                            <Label className="text-lg font-bold text-gray-800">Foto Tambahan</Label>
-                            <span className="text-xs font-medium bg-primary/10 text-primary px-3 py-1 rounded-full">
-                                {existingImages.length + newFiles.length} Foto
-                            </span>
+                    {/* Location */}
+                    <div className="flex items-center gap-4 text-gray-600">
+                        <div className="w-32 flex items-center gap-2 text-sm font-medium text-gray-500">
+                            <MapPin className="h-4 w-4" />
+                            Lokasi
                         </div>
+                        <Input
+                            name="location"
+                            placeholder="Dimana lokasinya?"
+                            className="flex-1 border-none shadow-none bg-transparent hover:bg-gray-50 focus-visible:ring-0 px-2 h-9"
+                            defaultValue={initialData?.location || ""}
+                        />
+                    </div>
 
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                            {/* Upload Button */}
+                    {/* Category */}
+                    <div className="flex items-center gap-4 text-gray-600">
+                        <div className="w-32 flex items-center gap-2 text-sm font-medium text-gray-500">
+                            <UploadCloud className="h-4 w-4" /> {/* Using UploadCloud as generic icon or maybe Tag if available */}
+                            Kategori
+                        </div>
+                        <Select name="category" defaultValue={initialData?.category || undefined}>
+                            <SelectTrigger className="w-[200px] border-none shadow-none bg-transparent hover:bg-gray-50 focus:ring-0 px-2 h-9 text-left font-normal">
+                                <SelectValue placeholder="Pilih..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="hiking">Hiking</SelectItem>
+                                <SelectItem value="camping">Camping</SelectItem>
+                                <SelectItem value="cooking">Memasak</SelectItem>
+                                <SelectItem value="fishing">Memancing</SelectItem>
+                                <SelectItem value="other">Lainnya</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+
+                <div className="h-px bg-gray-100 my-8" />
+
+                {/* Editor */}
+                <div className="min-h-[300px]">
+                    <Editor
+                        initialContent={initialData?.description || ""}
+                        onChange={setDescription}
+                    />
+                </div>
+
+                <div className="h-px bg-gray-100 my-8" />
+
+                {/* Additional Images Gallery */}
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-bold text-gray-800">Galeri Foto</h3>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => fileInputRef.current?.click()}
+                            className="rounded-full"
+                        >
+                            <Plus className="h-4 w-4 mr-2" />
+                            Tambah Foto
+                        </Button>
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            className="hidden"
+                            onChange={handleAdditionalImagesSelect}
+                        />
+                    </div>
+
+                    {/* Gallery Grid */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                        {existingImages.map((url, i) => (
+                            <div key={`existing-${i}`} className="relative aspect-square rounded-xl overflow-hidden group bg-gray-100">
+                                <Image
+                                    src={url}
+                                    alt={`Existing ${i}`}
+                                    fill
+                                    className="object-cover"
+                                />
+                                <Button
+                                    size="icon"
+                                    variant="destructive"
+                                    className="absolute top-2 right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                    onClick={() => removeExistingImage(i)}
+                                    type="button"
+                                >
+                                    <X className="h-3 w-3" />
+                                </Button>
+                            </div>
+                        ))}
+                        {newFilePreviews.map((preview, i) => (
+                            <div key={`new-${i}`} className="relative aspect-square rounded-xl overflow-hidden group bg-gray-100">
+                                <Image
+                                    src={preview}
+                                    alt={`New ${i}`}
+                                    fill
+                                    className="object-cover"
+                                />
+                                <Button
+                                    size="icon"
+                                    variant="destructive"
+                                    className="absolute top-2 right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                    onClick={() => removeNewFile(i)}
+                                    type="button"
+                                >
+                                    <X className="h-3 w-3" />
+                                </Button>
+                            </div>
+                        ))}
+                        {existingImages.length === 0 && newFiles.length === 0 && (
                             <div
-                                className="aspect-square rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 hover:border-primary/50 hover:text-primary transition-all group"
+                                className="col-span-full py-12 flex flex-col items-center justify-center text-gray-400 border-2 border-dashed border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 hover:border-gray-200 transition-all"
                                 onClick={() => fileInputRef.current?.click()}
                             >
-                                <input
-                                    ref={fileInputRef}
-                                    type="file"
-                                    accept="image/*"
-                                    multiple
-                                    className="hidden"
-                                    onChange={handleAdditionalImagesSelect}
-                                />
-                                <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                                    <Plus className="h-5 w-5" />
-                                </div>
-                                <span className="text-xs font-bold">Tambah Foto</span>
+                                <ImageIcon className="h-8 w-8 mb-2 opacity-50" />
+                                <span className="text-sm">Belum ada foto tambahan</span>
                             </div>
-
-                            {/* Existing Images */}
-                            {existingImages.map((url, i) => (
-                                <div key={`existing-${i}`} className="relative aspect-square rounded-2xl overflow-hidden group shadow-sm">
-                                    <Image
-                                        src={url}
-                                        alt={`Existing ${i}`}
-                                        fill
-                                        className="object-cover"
-                                    />
-                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
-                                    <Button
-                                        size="icon"
-                                        variant="destructive"
-                                        className="absolute top-2 right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity scale-90 hover:scale-100"
-                                        onClick={() => removeExistingImage(i)}
-                                        type="button"
-                                    >
-                                        <X className="h-3 w-3" />
-                                    </Button>
-                                    <div className="absolute bottom-2 left-2 bg-black/50 backdrop-blur-sm text-white text-[10px] px-2 py-0.5 rounded-full">
-                                        Tersimpan
-                                    </div>
-                                </div>
-                            ))}
-
-                            {/* New File Previews */}
-                            {newFilePreviews.map((preview, i) => (
-                                <div key={`new-${i}`} className="relative aspect-square rounded-2xl overflow-hidden group shadow-sm ring-2 ring-primary/20">
-                                    <Image
-                                        src={preview}
-                                        alt={`New ${i}`}
-                                        fill
-                                        className="object-cover"
-                                    />
-                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
-                                    <Button
-                                        size="icon"
-                                        variant="destructive"
-                                        className="absolute top-2 right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity scale-90 hover:scale-100"
-                                        onClick={() => removeNewFile(i)}
-                                        type="button"
-                                    >
-                                        <X className="h-3 w-3" />
-                                    </Button>
-                                    <div className="absolute bottom-2 left-2 bg-primary/90 backdrop-blur-sm text-white text-[10px] px-2 py-0.5 rounded-full">
-                                        Baru
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+                        )}
                     </div>
+                </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-3">
-                            <Label className="text-base font-semibold">Kategori</Label>
-                            <Select name="category" defaultValue={initialData?.category || undefined}>
-                                <SelectTrigger className="rounded-xl h-12 bg-gray-50 border-gray-200 focus:ring-primary/20">
-                                    <SelectValue placeholder="Pilih Kategori" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="hiking">Hiking</SelectItem>
-                                    <SelectItem value="camping">Camping</SelectItem>
-                                    <SelectItem value="cooking">Memasak</SelectItem>
-                                    <SelectItem value="fishing">Memancing</SelectItem>
-                                    <SelectItem value="other">Lainnya</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-3">
-                            <Label htmlFor="date" className="text-base font-semibold">Tanggal</Label>
-                            <div className="relative">
-                                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                                <Input
-                                    id="date"
-                                    name="date"
-                                    type="date"
-                                    defaultValue={initialData?.date || ""}
-                                    className="rounded-xl pl-12 h-12 bg-gray-50 border-gray-200 focus:ring-primary/20"
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="space-y-3">
-                        <Label htmlFor="title" className="text-base font-semibold">Judul Aktifitas</Label>
-                        <Input
-                            id="title"
-                            name="title"
-                            placeholder="Contoh: Camping Ceria di Danau Toba"
-                            className="rounded-xl h-12 bg-gray-50 border-gray-200 focus:ring-primary/20 text-lg"
-                            required
-                            defaultValue={initialData?.title || ""}
-                        />
-                    </div>
-
-                    <div className="space-y-3">
-                        <Label htmlFor="description" className="text-base font-semibold">Deskripsi</Label>
-                        <Editor
-                            initialContent={initialData?.description || ""}
-                            onChange={setDescription}
-                        />
-                    </div>
-
-                    <div className="space-y-3">
-                        <Label htmlFor="location" className="text-base font-semibold">Lokasi</Label>
-                        <div className="relative">
-                            <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                            <Input
-                                id="location"
-                                name="location"
-                                placeholder="Cari atau masukkan lokasi..."
-                                className="rounded-xl pl-12 h-12 bg-gray-50 border-gray-200 focus:ring-primary/20"
-                                defaultValue={initialData?.location || ""}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="pt-6">
-                        <Button
-                            type="submit"
-                            className="w-full rounded-full h-14 text-lg font-bold shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1"
-                            disabled={loading}
-                        >
-                            {loading ? (
-                                <Loader2 className="h-6 w-6 animate-spin mr-2" />
-                            ) : (
-                                <Plus className="h-6 w-6 mr-2" />
-                            )}
-                            {loading ? "Menyimpan..." : buttonText}
-                        </Button>
-                    </div>
-                </CardContent>
-            </form>
-        </Card>
+                {/* Submit Action */}
+                <div className="sticky bottom-6 flex justify-end pt-4">
+                    <Button
+                        type="submit"
+                        className="rounded-full h-12 px-8 text-base font-bold shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1"
+                        disabled={loading}
+                    >
+                        {loading ? (
+                            <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                        ) : (
+                            <Plus className="h-5 w-5 mr-2" />
+                        )}
+                        {loading ? "Menyimpan..." : buttonText}
+                    </Button>
+                </div>
+            </div>
+        </form>
     )
 }

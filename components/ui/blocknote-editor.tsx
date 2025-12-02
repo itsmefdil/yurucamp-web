@@ -33,7 +33,36 @@ export default function Editor({ onChange, initialContent, editable = true }: Ed
 
     // Renders the editor instance using a React component.
     return (
-        <div className="rounded-xl border border-gray-200 bg-gray-50 overflow-hidden min-h-[150px] focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+        <div className="min-h-[500px] -mx-4 blocknote-custom-wrapper">
+            <style jsx global>{`
+                .blocknote-custom-wrapper .bn-editor {
+                    background: transparent !important;
+                    font-family: var(--font-nunito), sans-serif !important;
+                }
+                .blocknote-custom-wrapper .bn-block-content {
+                    font-size: 1.125rem !important; /* text-lg */
+                    line-height: 1.75rem !important;
+                    color: #374151 !important; /* text-gray-700 */
+                }
+                .blocknote-custom-wrapper .bn-block-content[data-content-type="heading"][data-level="1"] {
+                    font-size: 2.25rem !important;
+                    font-weight: 800 !important;
+                    margin-top: 1.5rem !important;
+                    margin-bottom: 0.5rem !important;
+                }
+                .blocknote-custom-wrapper .bn-block-content[data-content-type="heading"][data-level="2"] {
+                    font-size: 1.875rem !important;
+                    font-weight: 700 !important;
+                    margin-top: 1.25rem !important;
+                    margin-bottom: 0.5rem !important;
+                }
+                .blocknote-custom-wrapper .bn-block-content[data-content-type="heading"][data-level="3"] {
+                    font-size: 1.5rem !important;
+                    font-weight: 600 !important;
+                    margin-top: 1rem !important;
+                    margin-bottom: 0.5rem !important;
+                }
+            `}</style>
             <BlockNoteView
                 editor={editor}
                 editable={editable}

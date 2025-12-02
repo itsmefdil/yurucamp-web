@@ -122,7 +122,7 @@ export function WatchSessionView() {
                 {/* Left Column: Player & Info */}
                 <div className="flex-1 min-w-0">
                     {/* Video Player */}
-                    <div className="w-full aspect-video bg-black shadow-2xl rounded-xl md:rounded-2xl overflow-hidden ring-1 ring-white/10 relative group z-40">
+                    <div className="w-full aspect-video bg-black shadow-2xl overflow-hidden ring-1 ring-white/10 relative group z-40">
                         <iframe
                             src={`https://www.youtube.com/embed/${currentEpisode.videoId}?autoplay=1&rel=0&modestbranding=1&showinfo=0&playsinline=1&cc_load_policy=1&cc_lang_pref=id`}
                             title="YouTube video player"
