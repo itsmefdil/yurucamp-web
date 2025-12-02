@@ -4,8 +4,26 @@ import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
 import Link from "next/link"
 import { ArrowRight, MapPin, Calendar, Activity, Tent, MessageSquare, Flame, Camera } from "lucide-react"
+import { createClient } from "@/lib/supabase/server"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import Image from "next/image"
 
-export default function Home() {
+export const dynamic = 'force-dynamic'
+
+export default async function Home() {
+  const supabase = await createClient()
+  const { data: activities } = await supabase
+    .from("activities")
+    .select(`
+        *,
+        profiles:user_id (
+            full_name,
+            avatar_url
+        )
+    `)
+    .order("created_at", { ascending: false })
+    .limit(4)
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -133,17 +151,46 @@ export default function Home() {
             </Button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[1, 2, 3, 4].map((i) => (
-              <Link key={i} href={`/aktifitas/${i}`} className="block group">
-                <Card className="overflow-hidden bg-white group-hover:-translate-y-1 transition-transform duration-300">
-                  <div className="aspect-video bg-orange-100 animate-pulse" />
-                  <CardHeader>
-                    <CardTitle className="line-clamp-1 text-xl group-hover:text-primary transition-colors">Hiking ke Gunung A</CardTitle>
-                    <CardDescription className="text-base">Oleh User {i}</CardDescription>
+            {activities?.map((activity: any) => (
+              <Link key={activity.id} href={`/aktifitas/${activity.id}`} className="block group">
+                <Card className="overflow-hidden bg-white group-hover:-translate-y-1 transition-transform duration-300 h-full flex flex-col border-none shadow-md hover:shadow-xl">
+                  <div className="relative aspect-video bg-gray-100 overflow-hidden">
+                    <Image
+                      src={activity.image_url || "/aktifitas.jpg"}
+                      alt={activity.title}
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-60" />
+                    <div className="absolute bottom-3 left-3 right-3 text-white">
+                      <div className="flex items-center gap-1 text-xs font-medium">
+                        <MapPin className="h-3 w-3" />
+                        <span className="truncate">{activity.location || "Lokasi tidak tersedia"}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <CardHeader className="p-4 pb-2">
+                    <CardTitle className="line-clamp-1 text-lg group-hover:text-primary transition-colors">{activity.title}</CardTitle>
                   </CardHeader>
+                  <CardFooter className="p-4 pt-0 mt-auto">
+                    <div className="flex items-center gap-2 w-full">
+                      <Avatar className="h-6 w-6">
+                        <AvatarImage src={activity.profiles?.avatar_url} />
+                        <AvatarFallback className="text-[10px]">{activity.profiles?.full_name?.[0] || "U"}</AvatarFallback>
+                      </Avatar>
+                      <span className="text-sm text-muted-foreground truncate flex-1">
+                        {activity.profiles?.full_name || "Pengguna"}
+                      </span>
+                    </div>
+                  </CardFooter>
                 </Card>
               </Link>
             ))}
+            {(!activities || activities.length === 0) && (
+              <div className="col-span-full text-center py-12 text-gray-500">
+                Belum ada aktifitas terbaru.
+              </div>
+            )}
           </div>
         </section>
 

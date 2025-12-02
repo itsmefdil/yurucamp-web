@@ -37,25 +37,15 @@ export function NavbarClient({ user, profile }: NavbarClientProps) {
                             Beranda
                         </Link>
 
-                        <DropdownMenu>
-                            <DropdownMenuTrigger className="flex items-center gap-2 transition-colors hover:text-primary hover:scale-105 transform outline-none">
-                                Jelajahi <ChevronDown className="w-4 h-4" />
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="start" className="w-48">
-                                <DropdownMenuItem asChild>
-                                    <Link href="/aktifitas" className="flex items-center gap-2 cursor-pointer">
-                                        <Mountain className="w-4 h-4" />
-                                        Aktifitas
-                                    </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem asChild>
-                                    <Link href="/camp-area" className="flex items-center gap-2 cursor-pointer">
-                                        <Tent className="w-4 h-4" />
-                                        Camp Area
-                                    </Link>
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                        <Link href="/aktifitas" className="flex items-center gap-2 transition-colors hover:text-primary hover:scale-105 transform">
+                            <Mountain className="w-4 h-4" />
+                            Aktifitas
+                        </Link>
+
+                        <Link href="/camp-area" className="flex items-center gap-2 transition-colors hover:text-primary hover:scale-105 transform">
+                            <Tent className="w-4 h-4" />
+                            Camp Area
+                        </Link>
 
                         <Link href="/acara" className="flex items-center gap-2 transition-colors hover:text-primary hover:scale-105 transform">
                             <Calendar className="w-4 h-4" />
