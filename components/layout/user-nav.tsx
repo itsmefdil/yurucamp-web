@@ -12,7 +12,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { User as UserIcon, Settings, LogOut, ChevronDown } from "lucide-react"
+import { User as UserIcon, Settings, LogOut, ChevronDown, Info } from "lucide-react"
 import { logout } from "@/app/auth/actions"
 
 interface UserNavProps {
@@ -82,6 +82,12 @@ export function UserNav({ user, profile }: UserNavProps) {
                     <Link href="/dashboard/pengaturan" className="flex items-center w-full">
                         <Settings className="mr-2 h-4 w-4" />
                         <span>Pengaturan</span>
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="cursor-pointer">
+                    <Link href="/tentang" className="flex items-center w-full">
+                        <Info className="mr-2 h-4 w-4" />
+                        <span>Tentang</span>
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />

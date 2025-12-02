@@ -67,10 +67,6 @@ export function NavbarClient({ user, profile }: NavbarClientProps) {
                             Nonton
                         </Link>
 
-                        <Link href="/tentang" className="flex items-center gap-2 transition-colors hover:text-primary hover:scale-105 transform">
-                            <Info className="w-4 h-4" />
-                            Tentang
-                        </Link>
                     </nav>
 
                     <div className="flex items-center gap-4">
