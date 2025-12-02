@@ -4,13 +4,15 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Image as ImageIcon, MapPin, X, Plus, Calendar, Loader2, Trash2, UploadCloud } from "lucide-react"
 import { useState, useRef } from "react"
 import { toast } from "sonner"
 import { Activity } from "@/types/activity"
 import Image from "next/image"
+import dynamic from "next/dynamic"
+
+const Editor = dynamic(() => import("@/components/ui/blocknote-editor"), { ssr: false })
 
 interface ActivityFormProps {
     initialData?: Activity | null
@@ -21,6 +23,7 @@ interface ActivityFormProps {
 export function ActivityForm({ initialData, action, buttonText = "Tambah Aktifitas" }: ActivityFormProps) {
     const [coverImagePreview, setCoverImagePreview] = useState<string | null>(initialData?.image_url || null)
     const [loading, setLoading] = useState(false)
+    const [description, setDescription] = useState(initialData?.description || "")
 
     // State for additional images
     // For existing images (URLs)
@@ -82,6 +85,9 @@ export function ActivityForm({ initialData, action, buttonText = "Tambah Aktifit
         setLoading(true)
 
         const formData = new FormData(e.currentTarget)
+
+        // Append description from editor
+        formData.set('description', description)
 
         // Append new additional images manually
         newFiles.forEach(file => {
@@ -292,12 +298,9 @@ export function ActivityForm({ initialData, action, buttonText = "Tambah Aktifit
 
                     <div className="space-y-3">
                         <Label htmlFor="description" className="text-base font-semibold">Deskripsi</Label>
-                        <Textarea
-                            id="description"
-                            name="description"
-                            placeholder="Ceritakan pengalaman serumu, tips, atau hal menarik lainnya..."
-                            className="rounded-xl bg-gray-50 border-gray-200 min-h-[150px] resize-none focus:ring-primary/20 leading-relaxed"
-                            defaultValue={initialData?.description || ""}
+                        <Editor
+                            initialContent={initialData?.description || ""}
+                            onChange={setDescription}
                         />
                     </div>
 

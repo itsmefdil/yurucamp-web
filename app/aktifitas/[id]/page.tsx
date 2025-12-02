@@ -126,9 +126,10 @@ export default async function ActivityDetailPage({ params }: { params: Promise<{
                         <div className="lg:col-span-8 space-y-8">
                             <Card className="border-none shadow-xl rounded-3xl overflow-hidden bg-white ring-1 ring-black/5">
                                 <CardContent className="p-6 md:p-10 space-y-6">
-                                    <div className="prose prose-lg max-w-none text-gray-600 leading-loose">
-                                        <p className="whitespace-pre-wrap">{activity.description}</p>
-                                    </div>
+                                    <div
+                                        className="prose prose-lg max-w-none text-gray-600 leading-loose"
+                                        dangerouslySetInnerHTML={{ __html: activity.description || "" }}
+                                    />
                                 </CardContent>
                                 <div className="px-6 md:px-10 py-6 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between">
                                     <div className="flex items-center gap-4">

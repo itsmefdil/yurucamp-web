@@ -22,6 +22,8 @@ export default async function ActivitiesPage() {
         `)
         .order("created_at", { ascending: false })
 
+    const { data: { user } } = await supabase.auth.getUser()
+
     return (
         <div className="min-h-screen flex flex-col bg-gray-50">
             <Navbar />
@@ -59,7 +61,7 @@ export default async function ActivitiesPage() {
             </div>
 
             <main className="flex-1 container mx-auto px-4 -mt-8 relative z-20 pb-24">
-                <ActivityFeed initialActivities={activities || []} />
+                <ActivityFeed initialActivities={activities || []} currentUser={user} />
             </main>
             <Footer />
         </div>
