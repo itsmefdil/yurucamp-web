@@ -11,7 +11,7 @@ import { useEffect, useState } from "react"
 const seasonData: Record<string, { title: string, description: string, episodes: { id: number, title: string, duration: string, thumbnail: string, videoId: string }[] }> = {
     "season-1": {
         title: "Yuru Camp Season 1",
-        description: "Nadeshiko, a high school student who had moved from Shizuoka to Yamanashi, decides to see the famous, 1000 yen-bill-featured Mount Fuji.",
+        description: "Nadeshiko, seorang siswi SMA yang pindah dari Shizuoka ke Yamanashi, memutuskan untuk melihat Gunung Fuji yang terkenal dan ada di uang kertas 1000 yen.",
         episodes: Array.from({ length: 12 }).map((_, i) => {
             const id = i + 1
             const videoIds: Record<number, string> = {
@@ -37,7 +37,7 @@ const seasonData: Record<string, { title: string, description: string, episodes:
     },
     "season-2": {
         title: "Yuru Camp Season 2",
-        description: "The girls are back for more camping adventures! Join Nadeshiko, Rin, and the gang as they explore new campsites, cook delicious food, and enjoy the great outdoors in winter.",
+        description: "Para gadis kembali untuk petualangan berkemah lainnya! Bergabunglah dengan Nadeshiko, Rin, dan teman-teman saat mereka menjelajahi tempat perkemahan baru, memasak makanan lezat, dan menikmati alam bebas di musim dingin.",
         episodes: Array.from({ length: 13 }).map((_, i) => {
             const id = i + 1
             const videoIds: Record<number, string> = {
@@ -67,7 +67,7 @@ const seasonData: Record<string, { title: string, description: string, episodes:
     },
     "season-3": {
         title: "Yuru Camp Season 3",
-        description: "Nadeshiko, Rin, and the others return for more camping adventures! As they progress through the school year, new camping spots and delicious food await them.",
+        description: "Nadeshiko, Rin, dan yang lainnya kembali untuk petualangan berkemah lainnya! Seiring berjalannya tahun ajaran, tempat perkemahan baru dan makanan lezat menanti mereka.",
         episodes: Array.from({ length: 15 }).map((_, i) => {
             const id = i + 1
             const videoIds: Record<number, string> = {

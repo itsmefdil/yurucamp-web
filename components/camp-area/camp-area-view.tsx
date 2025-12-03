@@ -6,21 +6,27 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { MapPin, Star, Search } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
 
-export function CampAreaView() {
+interface CampArea {
+    id: string
+    name: string
+    location: string | null
+    description: string | null
+    image_url: string | null
+    price: number | null
+}
+
+interface CampAreaViewProps {
+    initialCampAreas: CampArea[]
+}
+
+export function CampAreaView({ initialCampAreas }: CampAreaViewProps) {
     const [searchQuery, setSearchQuery] = useState("")
 
-    const campAreas = Array.from({ length: 6 }).map((_, i) => ({
-        id: i + 1,
-        name: `Camp Area ${i + 1}`,
-        location: `Lokasi ${i + 1}, Jawa Barat`,
-        rating: 4.8,
-        description: "Tempat camping yang nyaman dengan fasilitas lengkap. Cocok untuk keluarga dan pemula. Pemandangan indah dan udara sejuk."
-    }))
-
-    const filteredCampAreas = campAreas.filter(camp =>
+    const filteredCampAreas = initialCampAreas.filter(camp =>
         camp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        camp.location.toLowerCase().includes(searchQuery.toLowerCase())
+        (camp.location && camp.location.toLowerCase().includes(searchQuery.toLowerCase()))
     )
 
     return (
@@ -28,7 +34,7 @@ export function CampAreaView() {
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
                 <h1 className="text-2xl md:text-3xl font-extrabold text-primary">Temukan Camp Area</h1>
                 <Button className="w-full md:w-auto rounded-full shadow-md" asChild>
-                    <Link href="/tambah-camp-area">Tambah Lokasi</Link>
+                    <Link href="/dashboard/add-camp-area">Tambah Lokasi</Link>
                 </Button>
             </div>
 
@@ -48,23 +54,37 @@ export function CampAreaView() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-8">
                 {filteredCampAreas.map((camp) => (
-                    <Card key={camp.id} className="bg-white hover:-translate-y-1 transition-transform duration-300">
-                        <div className="aspect-[4/3] bg-blue-100 animate-pulse rounded-t-3xl" />
+                    <Card key={camp.id} className="bg-white hover:-translate-y-1 transition-transform duration-300 overflow-hidden">
+                        <div className="relative aspect-[4/3] bg-gray-100">
+                            {camp.image_url ? (
+                                <Image
+                                    src={camp.image_url}
+                                    alt={camp.name}
+                                    fill
+                                    className="object-cover"
+                                />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                    <MapPin className="h-12 w-12 opacity-20" />
+                                </div>
+                            )}
+                        </div>
                         <CardHeader>
                             <div className="flex justify-between items-start">
-                                <CardTitle className="text-xl">{camp.name}</CardTitle>
+                                <CardTitle className="text-xl line-clamp-1">{camp.name}</CardTitle>
+                                {/* Rating placeholder - could be real later */}
                                 <div className="flex items-center gap-1 text-yellow-500 bg-yellow-50 px-2 py-1 rounded-full">
                                     <Star className="h-4 w-4 fill-current" />
-                                    <span className="text-sm font-bold">{camp.rating}</span>
+                                    <span className="text-sm font-bold">New</span>
                                 </div>
                             </div>
                             <CardDescription className="flex items-center gap-1">
-                                <MapPin className="h-4 w-4" /> {camp.location}
+                                <MapPin className="h-4 w-4" /> {camp.location || "Lokasi tidak tersedia"}
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
                             <p className="text-sm text-muted-foreground line-clamp-3">
-                                {camp.description}
+                                {camp.description || "Tidak ada deskripsi"}
                             </p>
                         </CardContent>
                         <CardFooter>

@@ -12,15 +12,16 @@ import { useState } from "react"
 import { createCampArea } from "@/app/camp-area/actions"
 import { toast } from "sonner"
 
-interface AddCampAreaFormProps {
+interface EditCampAreaFormProps {
+    initialData: any
     action: (formData: FormData) => Promise<{ error?: string } | void>
     buttonText?: string
 }
 
-export function AddCampAreaForm({ action, buttonText = "Tambah Camp Area" }: AddCampAreaFormProps) {
-    const [selectedImage, setSelectedImage] = useState<string | null>(null)
-    const [additionalImagePreviews, setAdditionalImagePreviews] = useState<string[]>([])
-    const [existingAdditionalImages, setExistingAdditionalImages] = useState<string[]>([])
+export function EditCampAreaForm({ initialData, action, buttonText = "Simpan Perubahan" }: EditCampAreaFormProps) {
+    const [selectedImage, setSelectedImage] = useState<string | null>(initialData?.image_url || null)
+    const [additionalImagePreviews, setAdditionalImagePreviews] = useState<string[]>(initialData?.additional_images || [])
+    const [existingAdditionalImages, setExistingAdditionalImages] = useState<string[]>(initialData?.additional_images || [])
     const [additionalFiles, setAdditionalFiles] = useState<File[]>([])
     const [loading, setLoading] = useState(false)
 
@@ -103,7 +104,7 @@ export function AddCampAreaForm({ action, buttonText = "Tambah Camp Area" }: Add
     }
 
     const hasFacility = (facility: string) => {
-        return false
+        return initialData?.facilities?.includes(facility)
     }
 
     return (
@@ -197,7 +198,7 @@ export function AddCampAreaForm({ action, buttonText = "Tambah Camp Area" }: Add
                         {/* Name */}
                         <div className="space-y-2">
                             <Label htmlFor="name">Nama Camp Area</Label>
-                            <Input id="name" name="name" placeholder="Contoh: Pine Forest Camp" className="rounded-xl py-6 bg-gray-50 border-gray-200" required />
+                            <Input id="name" name="name" placeholder="Contoh: Pine Forest Camp" className="rounded-xl py-6 bg-gray-50 border-gray-200" required defaultValue={initialData?.name} />
                         </div>
 
                         {/* Location */}
@@ -205,7 +206,7 @@ export function AddCampAreaForm({ action, buttonText = "Tambah Camp Area" }: Add
                             <Label htmlFor="location">Lokasi</Label>
                             <div className="relative">
                                 <MapPin className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                                <Input id="location" name="location" placeholder="Cari lokasi..." className="rounded-xl pl-10 py-6 bg-gray-50 border-gray-200" required />
+                                <Input id="location" name="location" placeholder="Cari lokasi..." className="rounded-xl pl-10 py-6 bg-gray-50 border-gray-200" required defaultValue={initialData?.location} />
                             </div>
                         </div>
 
@@ -218,6 +219,7 @@ export function AddCampAreaForm({ action, buttonText = "Tambah Camp Area" }: Add
                                 placeholder="Jelaskan keunggulan tempat ini..."
                                 className="rounded-xl bg-gray-50 border-gray-200 min-h-[120px] resize-none"
                                 required
+                                defaultValue={initialData?.description}
                             />
                         </div>
 
@@ -270,6 +272,7 @@ export function AddCampAreaForm({ action, buttonText = "Tambah Camp Area" }: Add
                                     placeholder="50.000"
                                     className="rounded-xl pl-10 py-6 bg-gray-50 border-gray-200"
                                     required
+                                    defaultValue={initialData?.price}
                                 />
                                 <span className="absolute right-3 top-3 text-gray-400 text-sm">/ malam</span>
                             </div>

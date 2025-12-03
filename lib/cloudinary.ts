@@ -16,7 +16,7 @@ export async function uploadImage(file: File, folder?: string): Promise<string> 
                 resource_type: 'auto',
                 folder: folder,
                 transformation: [
-                    { width: 1024, crop: 'scale' },
+                    { width: 1920, crop: 'scale' },
                     { quality: 'auto', fetch_format: 'auto' }
                 ]
             },

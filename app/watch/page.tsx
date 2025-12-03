@@ -1,17 +1,10 @@
 import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
-import { Button } from "@/components/ui/button"
-import { Play, Info, ChevronRight, Star, Calendar, Film, Tv } from "lucide-react"
+import { ChevronRight, Star, Tv, Play } from "lucide-react"
 import Link from "next/link"
+import { WatchHero } from "@/components/watch/watch-hero"
 
 export default function WatchPage() {
-    const featuredContent = {
-        id: "season-3",
-        title: "Yuru Camp Season 3",
-        description: "Nadeshiko, Rin, and the others return for more camping adventures! As they progress through the school year, new camping spots and delicious food await them.",
-        image: "/bg-nonton.png"
-    }
-
     const categories = [
         {
             title: "Anime Series",
@@ -53,45 +46,7 @@ export default function WatchPage() {
 
             <main className="flex-1 pb-24">
                 {/* Hero Section */}
-                <div className="relative h-[65vh] md:h-[85vh] w-full overflow-hidden">
-                    <div className="absolute inset-0">
-                        <img
-                            src={featuredContent.image}
-                            alt={featuredContent.title}
-                            className="w-full h-full object-cover"
-                        />
-                        {/* Light gradient overlay for text readability but keeping it bright */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/40 to-transparent" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#fdfdfd] via-transparent to-transparent" />
-                    </div>
-
-                    <div className="relative container mx-auto px-4 h-full flex flex-col justify-center pt-16 md:pt-20">
-                        <div className="max-w-2xl space-y-4 md:space-y-6 animate-in fade-in slide-in-from-bottom-10 duration-1000">
-                            <div className="flex items-center gap-2 text-primary font-black tracking-widest uppercase text-[10px] md:text-sm bg-orange-100 w-fit px-2 md:px-3 py-1 rounded-full shadow-sm">
-                                <Star className="h-3 w-3 md:h-4 md:w-4 fill-current" />
-                                #1 Camping Anime
-                            </div>
-                            <h1 className="text-3xl md:text-7xl font-black leading-tight text-gray-800 drop-shadow-sm">
-                                {featuredContent.title}
-                            </h1>
-                            <p className="text-sm md:text-xl text-gray-700 line-clamp-3 leading-relaxed max-w-xl font-medium">
-                                {featuredContent.description}
-                            </p>
-                            <div className="flex items-center gap-3 md:gap-4 pt-2 md:pt-4">
-                                <Button size="lg" className="rounded-full px-6 md:px-8 py-4 md:py-6 text-sm md:text-lg font-bold shadow-lg hover:scale-105 transition-transform gap-2" asChild>
-                                    <Link href={`/watch/${featuredContent.id}`}>
-                                        <Play className="h-4 w-4 md:h-6 md:w-6 fill-white" />
-                                        Mulai Nonton
-                                    </Link>
-                                </Button>
-                                <Button size="lg" variant="outline" className="rounded-full px-6 md:px-8 py-4 md:py-6 text-sm md:text-lg font-bold border-2 bg-white/80 backdrop-blur-sm hover:bg-white shadow-md hover:scale-105 transition-transform gap-2 text-gray-700">
-                                    <Info className="h-4 w-4 md:h-6 md:w-6" />
-                                    Selengkapnya
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <WatchHero />
 
                 {/* Content Rows */}
                 <div className="container mx-auto px-4 -mt-20 md:-mt-32 relative z-10 space-y-12 md:space-y-16">

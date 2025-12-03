@@ -1,131 +1,229 @@
+import { createClient } from "@/lib/supabase/server"
 import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { MapPin, Star, Wifi, Car, Coffee, Tent, Info, Share2, Heart } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { MapPin, Star, Wifi, Car, Coffee, Tent, Info, Share2, Heart, ArrowLeft, Edit } from "lucide-react"
 import Image from "next/image"
+import Link from "next/link"
+import { notFound } from "next/navigation"
+import { ImageSlider } from "@/components/ui/image-slider"
 
-export default function CampAreaDetailPage({ params }: { params: { id: string } }) {
+export const dynamic = 'force-dynamic'
+
+export default async function CampAreaDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params
+    const supabase = await createClient()
+    const { data: campArea } = await supabase
+        .from("camp_areas")
+        .select("*")
+        .eq("id", id)
+        .single()
+
+    if (!campArea) {
+        notFound()
+    }
+
+    // Helper to check if a facility is available
+    const hasFacility = (facility: string) => {
+        return campArea.facilities?.includes(facility)
+    }
+
+    const facilityIcons: Record<string, any> = {
+        "Wifi": Wifi,
+        "Parkir": Car,
+        "Kantin": Coffee,
+        "Sewa Tenda": Tent,
+        "Pusat Info": Info
+    }
+
     return (
         <div className="min-h-screen flex flex-col bg-[#fdfdfd]">
             <Navbar />
 
             <main className="flex-1 pb-24 md:pb-12">
-                {/* Hero Image */}
-                <div className="relative h-[40vh] md:h-[60vh] w-full bg-gray-200">
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10" />
-                    {/* Placeholder for actual image */}
-                    <div className="w-full h-full bg-blue-100 flex items-center justify-center text-blue-300">
-                        <span className="text-4xl font-bold opacity-50">Camp Area Image {params.id}</span>
-                    </div>
+                <div className="container mx-auto px-4 pt-6">
+                    {/* Hero Image */}
+                    <div className="relative h-[40vh] md:h-[50vh] w-full bg-gray-200 rounded-3xl overflow-hidden shadow-sm">
+                        {campArea.image_url ? (
+                            <Image
+                                src={campArea.image_url}
+                                alt={campArea.name}
+                                fill
+                                className="object-cover"
+                                priority
+                            />
+                        ) : (
+                            <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400">
+                                <span className="text-4xl font-bold opacity-50">No Image</span>
+                            </div>
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10" />
 
-                    <div className="absolute top-4 right-4 z-20 flex gap-2">
-                        <Button variant="secondary" size="icon" className="rounded-full bg-white/80 backdrop-blur-sm hover:bg-white text-gray-700">
-                            <Share2 className="h-5 w-5" />
-                        </Button>
-                        <Button variant="secondary" size="icon" className="rounded-full bg-white/80 backdrop-blur-sm hover:bg-white text-red-500">
-                            <Heart className="h-5 w-5" />
-                        </Button>
-                    </div>
+                        <div className="absolute top-6 left-6 z-20">
+                            <Button variant="secondary" size="icon" className="rounded-full bg-white hover:bg-gray-100 text-gray-900 shadow-lg border-none transition-all hover:scale-105" asChild>
+                                <Link href="/camp-area">
+                                    <ArrowLeft className="h-5 w-5" />
+                                </Link>
+                            </Button>
+                        </div>
 
-                    <div className="absolute bottom-0 left-0 right-0 p-6 md:p-12 z-20 container mx-auto">
-                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                            <div>
-                                <div className="flex items-center gap-2 text-white/90 mb-2">
-                                    <span className="bg-yellow-500 text-black px-2 py-0.5 rounded text-xs font-bold flex items-center gap-1">
-                                        <Star className="h-3 w-3 fill-current" /> 4.8
-                                    </span>
-                                    <span className="text-sm font-medium flex items-center gap-1">
-                                        <MapPin className="h-4 w-4" /> Jawa Barat
-                                    </span>
+                        <div className="absolute top-6 right-6 z-20 flex gap-2">
+                            <Button variant="secondary" size="icon" className="rounded-full bg-white hover:bg-gray-100 text-gray-900 shadow-lg border-none transition-all hover:scale-105" asChild>
+                                <Link href={`/dashboard/edit-camp-area/${id}`}>
+                                    <Edit className="h-5 w-5" />
+                                </Link>
+                            </Button>
+                            <Button variant="secondary" size="icon" className="rounded-full bg-white hover:bg-gray-100 text-gray-900 shadow-lg border-none transition-all hover:scale-105">
+                                <Share2 className="h-5 w-5" />
+                            </Button>
+                            <Button variant="secondary" size="icon" className="rounded-full bg-white hover:bg-gray-100 text-gray-900 shadow-lg border-none transition-all hover:scale-105">
+                                <Heart className="h-5 w-5" />
+                            </Button>
+                        </div>
+
+                        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 z-20">
+                            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                                <div>
+                                    <div className="flex items-center gap-2 text-white/90 mb-2">
+                                        <span className="text-sm font-medium flex items-center gap-1">
+                                            <MapPin className="h-4 w-4" /> {campArea.location || "Lokasi tidak tersedia"}
+                                        </span>
+                                    </div>
+                                    <h1 className="text-3xl md:text-5xl font-extrabold text-white mb-2 drop-shadow-md">
+                                        {campArea.name}
+                                    </h1>
                                 </div>
-                                <h1 className="text-3xl md:text-5xl font-extrabold text-white mb-2 drop-shadow-md">
-                                    Pine Forest Camp {params.id}
-                                </h1>
+                                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 text-white min-w-[200px]">
+                                    <p className="text-sm opacity-80">Harga mulai dari</p>
+                                    <p className="text-2xl font-bold">
+                                        Rp {campArea.price?.toLocaleString('id-ID') || "0"}
+                                        <span className="text-sm font-normal opacity-80"> / malam</span>
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="container mx-auto px-4 py-8">
-                    <div className="max-w-4xl mx-auto space-y-8">
-                        {/* Main Content */}
-                        <div className="space-y-8">
+                <div className="container mx-auto px-4 mt-8 relative z-30">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        {/* Left Column - Main Content */}
+                        <div className="lg:col-span-2 space-y-8">
+                            {/* Header Info (Mobile/Desktop) */}
+                            <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+                                <div className="flex flex-col gap-4">
+                                    <div>
+                                        <div className="flex items-center gap-2 text-gray-600 mb-2">
+                                            <span className="text-sm font-medium flex items-center gap-1">
+                                                <MapPin className="h-4 w-4" /> {campArea.location || "Lokasi tidak tersedia"}
+                                            </span>
+                                        </div>
+                                        <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-2">
+                                            {campArea.name}
+                                        </h1>
+                                    </div>
+
+                                    {/* Facilities Preview */}
+                                    {campArea.facilities && campArea.facilities.length > 0 && (
+                                        <div className="flex flex-wrap gap-2">
+                                            {campArea.facilities.slice(0, 5).map((facility: string, i: number) => (
+                                                <span key={i} className="text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-gray-600">
+                                                    {facility}
+                                                </span>
+                                            ))}
+                                            {campArea.facilities.length > 5 && (
+                                                <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-gray-600">
+                                                    +{campArea.facilities.length - 5} lainnya
+                                                </span>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
                             {/* Description */}
-                            <section>
-                                <h2 className="text-2xl font-bold text-gray-800 mb-4">Tentang Tempat Ini</h2>
-                                <p className="text-gray-600 leading-relaxed text-lg">
-                                    Nikmati pengalaman camping yang tak terlupakan di tengah hutan pinus yang asri.
-                                    Udara sejuk dan pemandangan yang memanjakan mata akan membuat liburan anda semakin berkesan.
-                                    Cocok untuk keluarga, pasangan, maupun solo camper.
+                            <section className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+                                <h2 className="text-xl font-bold text-gray-900 mb-4">Tentang Tempat Ini</h2>
+                                <p className="text-gray-600 leading-relaxed whitespace-pre-line">
+                                    {campArea.description || "Belum ada deskripsi untuk tempat ini."}
                                 </p>
                             </section>
 
-                            {/* Facilities */}
-                            <section>
-                                <h2 className="text-2xl font-bold text-gray-800 mb-6">Fasilitas</h2>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    {[
-                                        { icon: Wifi, label: "Free Wifi" },
-                                        { icon: Car, label: "Parkir Luas" },
-                                        { icon: Coffee, label: "Kantin" },
-                                        { icon: Tent, label: "Sewa Tenda" },
-                                        { icon: Info, label: "Pusat Informasi" },
-                                    ].map((item, i) => (
-                                        <div key={i} className="flex items-center gap-3 p-4 rounded-2xl bg-gray-50 border border-gray-100">
-                                            <item.icon className="h-6 w-6 text-primary" />
-                                            <span className="font-medium text-gray-700">{item.label}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </section>
-
-                            {/* Map Placeholder */}
-                            <section>
-                                <h2 className="text-2xl font-bold text-gray-800 mb-4">Lokasi</h2>
-                                <div className="aspect-video w-full bg-gray-200 rounded-3xl flex items-center justify-center text-gray-400">
-                                    <div className="text-center">
-                                        <MapPin className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                                        <span>Peta Lokasi</span>
-                                    </div>
-                                </div>
-                            </section>
-
-                            {/* Reviews */}
-                            <section>
-                                <div className="flex justify-between items-center mb-6">
-                                    <h2 className="text-2xl font-bold text-gray-800">Ulasan (128)</h2>
-                                    <Button variant="link" className="text-primary">Lihat Semua</Button>
-                                </div>
-                                <div className="space-y-4">
-                                    {[1, 2].map((i) => (
-                                        <Card key={i} className="border-none shadow-sm bg-white">
-                                            <CardContent className="p-6">
-                                                <div className="flex justify-between items-start mb-4">
-                                                    <div className="flex items-center gap-3">
-                                                        <Avatar>
-                                                            <AvatarFallback>U{i}</AvatarFallback>
-                                                        </Avatar>
-                                                        <div>
-                                                            <h4 className="font-bold text-gray-800">Pengunjung {i}</h4>
-                                                            <span className="text-xs text-muted-foreground">Minggu lalu</span>
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex items-center gap-1 text-yellow-500">
-                                                        <Star className="h-4 w-4 fill-current" />
-                                                        <span className="font-bold">5.0</span>
-                                                    </div>
+                            {/* Facilities Full List */}
+                            {campArea.facilities && campArea.facilities.length > 0 && (
+                                <section className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+                                    <h2 className="text-xl font-bold text-gray-900 mb-6">Fasilitas Lengkap</h2>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                                        {campArea.facilities.map((facility: string, i: number) => {
+                                            const Icon = facilityIcons[facility] || Info
+                                            return (
+                                                <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100 hover:bg-blue-50 hover:border-blue-100 transition-colors">
+                                                    <Icon className="h-5 w-5 text-primary" />
+                                                    <span className="font-medium text-gray-700 text-sm">{facility}</span>
                                                 </div>
-                                                <p className="text-gray-600">
-                                                    Tempatnya sangat bersih dan nyaman. Fasilitas lengkap, toilet bersih.
-                                                    Sangat recommended untuk camping ceria bersama keluarga.
-                                                </p>
-                                            </CardContent>
-                                        </Card>
-                                    ))}
+                                            )
+                                        })}
+                                    </div>
+                                </section>
+                            )}
+
+                            {/* Gallery */}
+                            {campArea.additional_images && campArea.additional_images.length > 0 && (
+                                <section className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+                                    <h2 className="text-xl font-bold text-gray-900 mb-6">Galeri Foto</h2>
+                                    <ImageSlider images={campArea.additional_images} />
+                                </section>
+                            )}
+
+                            {/* Map */}
+                            <section className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+                                <h2 className="text-xl font-bold text-gray-900 mb-4">Lokasi</h2>
+                                <div className="aspect-video w-full bg-gray-200 rounded-xl overflow-hidden shadow-inner">
+                                    {campArea.location ? (
+                                        <iframe
+                                            width="100%"
+                                            height="100%"
+                                            style={{ border: 0 }}
+                                            loading="lazy"
+                                            allowFullScreen
+                                            referrerPolicy="no-referrer-when-downgrade"
+                                            src={`https://maps.google.com/maps?q=${encodeURIComponent(campArea.location)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                                        ></iframe>
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                            <div className="text-center">
+                                                <MapPin className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                                                <span>Lokasi tidak tersedia</span>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </section>
+                        </div>
+
+                        {/* Right Column - Sticky Sidebar */}
+                        <div className="lg:col-span-1">
+                            <div className="sticky top-24 space-y-6">
+                                <Card className="border-none shadow-lg overflow-hidden">
+                                    <CardContent className="p-6">
+                                        <div className="flex justify-between items-end mb-6">
+                                            <div>
+                                                <p className="text-sm text-gray-500 mb-1">Harga mulai dari</p>
+                                                <div className="flex items-baseline gap-1">
+                                                    <span className="text-3xl font-bold text-primary">
+                                                        Rp {campArea.price?.toLocaleString('id-ID') || "0"}
+                                                    </span>
+                                                    <span className="text-gray-500 font-medium">/ malam</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Booking button removed as requested */}
+                                    </CardContent>
+                                </Card>
+                            </div>
                         </div>
                     </div>
                 </div>
