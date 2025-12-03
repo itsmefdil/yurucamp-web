@@ -1,5 +1,4 @@
 import { createClient } from "@/lib/supabase/server"
-import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -10,11 +9,15 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { ImageSlider } from "@/components/ui/image-slider"
 
+import { DeleteCampAreaButton } from "@/components/camp-area/delete-button"
+
 export const dynamic = 'force-dynamic'
 
 export default async function CampAreaDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
     const { data: campArea } = await supabase
         .from("camp_areas")
         .select("*")
@@ -24,6 +27,8 @@ export default async function CampAreaDetailPage({ params }: { params: Promise<{
     if (!campArea) {
         notFound()
     }
+
+    const isOwner = user && campArea.user_id === user.id
 
     // Helper to check if a facility is available
     const hasFacility = (facility: string) => {
@@ -40,10 +45,9 @@ export default async function CampAreaDetailPage({ params }: { params: Promise<{
 
     return (
         <div className="min-h-screen flex flex-col bg-[#fdfdfd]">
-            <Navbar />
 
             <main className="flex-1 pb-24 md:pb-12">
-                <div className="container mx-auto px-4 pt-6">
+                <div className="container mx-auto px-4 pt-24 md:pt-32">
                     {/* Hero Image */}
                     <div className="relative h-[40vh] md:h-[50vh] w-full bg-gray-200 rounded-3xl overflow-hidden shadow-sm">
                         {campArea.image_url ? (
@@ -59,7 +63,7 @@ export default async function CampAreaDetailPage({ params }: { params: Promise<{
                                 <span className="text-4xl font-bold opacity-50">No Image</span>
                             </div>
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-10" />
 
                         <div className="absolute top-6 left-6 z-20">
                             <Button variant="secondary" size="icon" className="rounded-full bg-white hover:bg-gray-100 text-gray-900 shadow-lg border-none transition-all hover:scale-105" asChild>
@@ -70,17 +74,16 @@ export default async function CampAreaDetailPage({ params }: { params: Promise<{
                         </div>
 
                         <div className="absolute top-6 right-6 z-20 flex gap-2">
-                            <Button variant="secondary" size="icon" className="rounded-full bg-white hover:bg-gray-100 text-gray-900 shadow-lg border-none transition-all hover:scale-105" asChild>
-                                <Link href={`/dashboard/edit-camp-area/${id}`}>
-                                    <Edit className="h-5 w-5" />
-                                </Link>
-                            </Button>
-                            <Button variant="secondary" size="icon" className="rounded-full bg-white hover:bg-gray-100 text-gray-900 shadow-lg border-none transition-all hover:scale-105">
-                                <Share2 className="h-5 w-5" />
-                            </Button>
-                            <Button variant="secondary" size="icon" className="rounded-full bg-white hover:bg-gray-100 text-gray-900 shadow-lg border-none transition-all hover:scale-105">
-                                <Heart className="h-5 w-5" />
-                            </Button>
+                            {isOwner && (
+                                <>
+                                    <Button variant="secondary" size="icon" className="rounded-full bg-white hover:bg-gray-100 text-gray-900 shadow-lg border-none transition-all hover:scale-105" asChild>
+                                        <Link href={`/dashboard/edit-camp-area/${id}`}>
+                                            <Edit className="h-5 w-5" />
+                                        </Link>
+                                    </Button>
+                                    <DeleteCampAreaButton id={id} />
+                                </>
+                            )}
                         </div>
 
                         <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 z-20">
@@ -95,13 +98,7 @@ export default async function CampAreaDetailPage({ params }: { params: Promise<{
                                         {campArea.name}
                                     </h1>
                                 </div>
-                                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 text-white min-w-[200px]">
-                                    <p className="text-sm opacity-80">Harga mulai dari</p>
-                                    <p className="text-2xl font-bold">
-                                        Rp {campArea.price?.toLocaleString('id-ID') || "0"}
-                                        <span className="text-sm font-normal opacity-80"> / malam</span>
-                                    </p>
-                                </div>
+
                             </div>
                         </div>
                     </div>
@@ -112,36 +109,7 @@ export default async function CampAreaDetailPage({ params }: { params: Promise<{
                         {/* Left Column - Main Content */}
                         <div className="lg:col-span-2 space-y-8">
                             {/* Header Info (Mobile/Desktop) */}
-                            <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
-                                <div className="flex flex-col gap-4">
-                                    <div>
-                                        <div className="flex items-center gap-2 text-gray-600 mb-2">
-                                            <span className="text-sm font-medium flex items-center gap-1">
-                                                <MapPin className="h-4 w-4" /> {campArea.location || "Lokasi tidak tersedia"}
-                                            </span>
-                                        </div>
-                                        <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-2">
-                                            {campArea.name}
-                                        </h1>
-                                    </div>
 
-                                    {/* Facilities Preview */}
-                                    {campArea.facilities && campArea.facilities.length > 0 && (
-                                        <div className="flex flex-wrap gap-2">
-                                            {campArea.facilities.slice(0, 5).map((facility: string, i: number) => (
-                                                <span key={i} className="text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-gray-600">
-                                                    {facility}
-                                                </span>
-                                            ))}
-                                            {campArea.facilities.length > 5 && (
-                                                <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-gray-600">
-                                                    +{campArea.facilities.length - 5} lainnya
-                                                </span>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
 
                             {/* Description */}
                             <section className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">

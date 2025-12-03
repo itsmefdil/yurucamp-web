@@ -1,4 +1,3 @@
-import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
 import { ChevronRight, Star, Tv, Play } from "lucide-react"
 import Link from "next/link"
@@ -41,7 +40,6 @@ export default function WatchPage() {
     return (
         <div className="min-h-screen flex flex-col bg-[#fdfdfd] text-gray-800 overflow-x-hidden">
             <div className="fixed top-0 left-0 right-0 z-50">
-                <Navbar />
             </div>
 
             <main className="flex-1 pb-24">

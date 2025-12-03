@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
-import { Navbar } from "@/components/layout/Navbar"
+
 import { Footer } from "@/components/layout/Footer"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -26,7 +26,7 @@ export default async function ActivitiesPage() {
 
     return (
         <div className="min-h-screen flex flex-col bg-gray-50">
-            <Navbar />
+
 
             {/* Hero Section */}
             <div className="relative bg-primary overflow-hidden pt-24 pb-16 md:pt-32 md:pb-24">

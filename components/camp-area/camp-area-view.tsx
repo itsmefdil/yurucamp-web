@@ -30,7 +30,7 @@ export function CampAreaView({ initialCampAreas }: CampAreaViewProps) {
     )
 
     return (
-        <div className="container mx-auto py-8 px-4 pb-24 md:pb-8">
+        <div className="container mx-auto px-4 pt-24 md:pt-32 pb-24 md:pb-8">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
                 <h1 className="text-2xl md:text-3xl font-extrabold text-primary">Temukan Camp Area</h1>
                 <Button className="w-full md:w-auto rounded-full shadow-md" asChild>

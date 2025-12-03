@@ -1,4 +1,3 @@
-import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
@@ -36,7 +35,6 @@ export default async function EditActivityPage({ params }: { params: Promise<{ i
 
     return (
         <div className="min-h-screen flex flex-col bg-[#fdfdfd]">
-            <Navbar />
 
             <main className="flex-1 container mx-auto px-4 pt-24 md:pt-32 pb-24">
                 <div className="max-w-4xl mx-auto space-y-8">

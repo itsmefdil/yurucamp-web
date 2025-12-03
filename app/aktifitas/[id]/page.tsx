@@ -1,4 +1,3 @@
-import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -43,7 +42,6 @@ export default async function ActivityDetailPage({ params }: { params: Promise<{
 
     return (
         <div className="min-h-screen flex flex-col bg-[#f8f9fa]">
-            <Navbar />
 
             <main className="flex-1 pb-24 md:pb-12">
                 {/* Hero Image */}

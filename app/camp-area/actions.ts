@@ -199,3 +199,60 @@ export async function updateCampArea(id: string, formData: FormData) {
     revalidatePath(`/camp-area/${id}`)
     redirect(`/camp-area/${id}`)
 }
+
+export async function deleteCampArea(id: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        return { error: "Unauthorized" }
+    }
+
+    // Fetch existing data to get images
+    const { data: campArea, error: fetchError } = await supabase
+        .from("camp_areas")
+        .select("image_url, additional_images, user_id")
+        .eq("id", id)
+        .single()
+
+    if (fetchError || !campArea) {
+        return { error: "Camp area not found" }
+    }
+
+    // Check ownership
+    if (campArea.user_id !== user.id) {
+        return { error: "Unauthorized" }
+    }
+
+    // Delete main image
+    if (campArea.image_url) {
+        const publicId = getPublicIdFromUrl(campArea.image_url)
+        if (publicId) {
+            await deleteImage(publicId)
+        }
+    }
+
+    // Delete additional images
+    if (campArea.additional_images && campArea.additional_images.length > 0) {
+        for (const img of campArea.additional_images) {
+            const publicId = getPublicIdFromUrl(img)
+            if (publicId) {
+                await deleteImage(publicId)
+            }
+        }
+    }
+
+    // Delete from database
+    const { error } = await supabase
+        .from("camp_areas")
+        .delete()
+        .eq("id", id)
+
+    if (error) {
+        console.error("Error deleting camp area:", error)
+        return { error: error.message }
+    }
+
+    revalidatePath("/camp-area")
+    redirect("/camp-area")
+}

@@ -1,4 +1,3 @@
-import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
 import { Button } from "@/components/ui/button"
 import { Info, Users, Heart } from "lucide-react"
@@ -7,7 +6,6 @@ import Link from "next/link"
 export default function AboutPage() {
     return (
         <div className="min-h-screen flex flex-col bg-[#fdfdfd]">
-            <Navbar />
 
             <main className="flex-1">
                 {/* Hero Section */}

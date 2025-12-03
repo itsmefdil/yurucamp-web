@@ -22,8 +22,8 @@ interface NavbarClientProps {
 
 export function NavbarClient({ user, profile }: NavbarClientProps) {
     return (
-        <header className="sticky top-0 lg:sticky lg:top-4 lg:mt-4 z-50 w-full lg:px-4 bg-white lg:bg-transparent">
-            <div className="container mx-auto bg-white lg:bg-white/90 lg:backdrop-blur-md rounded-none lg:rounded-full lg:shadow-[0_8px_30px_rgb(0,0,0,0.12)] border-b border-gray-100 lg:border-2 lg:border-white/50 relative">
+        <header className="fixed top-0 left-0 right-0 z-50 w-full lg:top-4 lg:px-4 bg-transparent">
+            <div className="container mx-auto bg-white/80 backdrop-blur-md lg:bg-white/90 lg:backdrop-blur-md rounded-none lg:rounded-full lg:shadow-[0_8px_30px_rgb(0,0,0,0.12)] border-b border-white/20 lg:border-2 lg:border-white/50 relative">
                 <div className="flex h-14 lg:h-20 items-center justify-between px-4 lg:px-8">
                     <div className="flex items-center gap-2">
                         <Link href="/">

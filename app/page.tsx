@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Navbar } from "@/components/layout/Navbar"
+
 import { Footer } from "@/components/layout/Footer"
 import Link from "next/link"
 import { ArrowRight, MapPin, Calendar, Activity, Tent, MessageSquare, Flame, Camera } from "lucide-react"
@@ -26,7 +26,6 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
 
       <main className="flex-1 pt-4 md:pt-8 pb-24 md:pb-0">
         {/* Hero Section */}

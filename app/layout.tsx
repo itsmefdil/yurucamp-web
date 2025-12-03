@@ -14,6 +14,7 @@ export const metadata: Metadata = {
 };
 
 import { BottomNav } from "@/components/layout/BottomNav";
+import { Navbar } from "@/components/layout/Navbar";
 
 export default function RootLayout({
   children,
@@ -25,6 +26,7 @@ export default function RootLayout({
       <body
         className={`${nunito.variable} antialiased`}
       >
+        <Navbar />
         {children}
         <BottomNav />
       </body>

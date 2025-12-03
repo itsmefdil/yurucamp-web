@@ -1,4 +1,3 @@
-import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
@@ -9,7 +8,6 @@ import { ActivityForm } from "@/components/activities/activity-form"
 export default function AddActivityPage() {
     return (
         <div className="min-h-screen flex flex-col bg-[#fdfdfd]">
-            <Navbar />
 
             <main className="flex-1 container mx-auto px-4 pt-24 md:pt-32 pb-24">
                 <div className="max-w-4xl mx-auto space-y-8">

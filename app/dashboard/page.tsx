@@ -1,5 +1,4 @@
 import { createClient } from "@/lib/supabase/server"
-import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
 import { DashboardView } from "@/components/dashboard/dashboard-view"
 import { redirect } from "next/navigation"
@@ -22,7 +21,6 @@ export default async function ProfilePage() {
 
     return (
         <div className="min-h-screen flex flex-col bg-[#fdfdfd]">
-            <Navbar />
             <main className="flex-1 container mx-auto px-4 pt-24 md:pt-32 pb-24">
                 <DashboardView profile={profile} />
             </main>

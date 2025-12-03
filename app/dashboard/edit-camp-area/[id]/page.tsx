@@ -1,4 +1,3 @@
-import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
 import { EditCampAreaForm } from "@/components/camp-area/edit-camp-area-form"
 import { createClient } from "@/lib/supabase/server"
@@ -33,7 +32,6 @@ export default async function EditCampAreaPage({ params }: { params: Promise<{ i
 
     return (
         <div className="min-h-screen flex flex-col bg-[#fdfdfd]">
-            <Navbar />
             <main className="flex-1 container mx-auto px-4 py-8">
                 <div className="max-w-4xl mx-auto">
                     <h1 className="text-3xl font-bold text-gray-800 mb-8">Edit Lokasi Camping</h1>
