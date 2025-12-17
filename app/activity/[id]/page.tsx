@@ -101,7 +101,7 @@ export default async function ActivityDetailPage({ params }: { params: Promise<{
 
                         <div className="absolute top-6 left-6 z-20">
                             <Button variant="outline" size="icon" className="rounded-full bg-white/10 border-white/20 text-white hover:bg-white/20 backdrop-blur-md" asChild>
-                                <Link href="/aktifitas">
+                                <Link href="/activity">
                                     <ArrowLeft className="h-5 w-5" />
                                 </Link>
                             </Button>
