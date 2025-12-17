@@ -33,6 +33,13 @@ export default async function Home() {
     .order("created_at", { ascending: false })
     .limit(3)
 
+  const { data: events } = await supabase
+    .from("events")
+    .select("*")
+    .order("date_start", { ascending: true })
+    .gte('date_start', new Date().toISOString())
+    .limit(3)
+
   return (
     <div className="min-h-screen flex flex-col">
 
@@ -59,20 +66,20 @@ export default async function Home() {
 
           {/* Image Strip */}
           <div className="flex justify-center gap-4 md:gap-8 overflow-x-auto pb-12 px-4 no-scrollbar mask-linear-fade">
-            {[
-              { color: "bg-orange-100", rotate: "-rotate-3" },
-              { color: "bg-blue-100", rotate: "rotate-2" },
-              { color: "bg-green-100", rotate: "-rotate-2" },
-              { color: "bg-yellow-100", rotate: "rotate-3" },
-              { color: "bg-pink-100", rotate: "-rotate-1" },
-            ].map((item, i) => (
+            {heroImages.map((img, i) => (
               <div
                 key={i}
-                className={`shrink-0 w-48 h-64 md:w-64 md:h-80 ${item.color} rounded-2xl shadow-lg transform ${item.rotate} hover:scale-105 hover:z-10 transition-all duration-300 border-4 border-white overflow-hidden`}
+                className={`shrink-0 w-48 h-64 md:w-64 md:h-80 ${[
+                  "bg-orange-100 rotate-[-3deg]",
+                  "bg-blue-100 rotate-[2deg]",
+                  "bg-green-100 rotate-[-2deg]",
+                  "bg-yellow-100 rotate-[3deg]",
+                  "bg-pink-100 rotate-[-1deg]"
+                ][i]} rounded-2xl shadow-lg transform hover:scale-105 hover:z-10 transition-all duration-300 border-4 border-white overflow-hidden`}
               >
                 <div
                   className="w-full h-full opacity-50 mix-blend-multiply bg-cover bg-center"
-                  style={{ backgroundImage: `url('${heroImages[i]}')` }}
+                  style={{ backgroundImage: `url('${img}')` }}
                 />
               </div>
             ))}
@@ -164,8 +171,8 @@ export default async function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {activities?.map((activity: any) => (
               <Link key={activity.id} href={`/aktifitas/${activity.id}`} className="block group">
-                <Card className="overflow-hidden bg-white group-hover:-translate-y-2 transition-all duration-300 h-full flex flex-col border-2 border-transparent hover:border-orange-200 shadow-lg hover:shadow-2xl rounded-3xl">
-                  <div className="relative aspect-video bg-orange-50 overflow-hidden m-2 rounded-2xl">
+                <Card className="overflow-hidden bg-white group-hover:-translate-y-2 transition-all duration-300 h-full flex flex-col border-2 border-transparent hover:border-orange-200 shadow-lg hover:shadow-2xl rounded-[2rem]">
+                  <div className="relative aspect-video bg-orange-50 overflow-hidden m-2 rounded-[1.5rem]">
                     <Image
                       src={activity.image_url || "/aktifitas.jpg"}
                       alt={activity.title}
@@ -198,7 +205,7 @@ export default async function Home() {
               </Link>
             ))}
             {(!activities || activities.length === 0) && (
-              <div className="col-span-full text-center py-12 text-gray-500 bg-orange-50 rounded-3xl border-2 border-dashed border-orange-200">
+              <div className="col-span-full text-center py-12 text-gray-500 bg-orange-50 rounded-[2rem] border-2 border-dashed border-orange-200">
                 <Tent className="h-12 w-12 text-orange-300 mx-auto mb-3" />
                 <p className="font-medium">Belum ada aktifitas terbaru.</p>
               </div>
@@ -272,37 +279,64 @@ export default async function Home() {
         </section>
 
         {/* Acara Preview */}
-        <section className="py-12 md:py-32 container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 md:mb-12">
-            <h2 className="text-2xl md:text-4xl font-extrabold text-gray-800 tracking-tight text-center md:text-left">Acara Mendatang</h2>
-            <Button variant="ghost" className="text-base md:text-lg hover:bg-orange-50 rounded-full px-6 w-full md:w-auto" asChild>
-              <Link href="/event" className="flex items-center justify-center gap-2">
-                Lihat Semua <ArrowRight className="h-5 w-5" />
-              </Link>
-            </Button>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-            {[1, 2].map((i) => (
-              <Card key={i} className="flex flex-col md:flex-row overflow-hidden bg-white">
-                <div className="w-full md:w-1/3 aspect-video md:aspect-auto bg-gray-100 animate-pulse" />
-                <div className="flex-1 p-2">
-                  <CardHeader>
-                    <CardTitle className="text-2xl">Gathering Komunitas {i}</CardTitle>
-                    <CardDescription className="flex items-center gap-1 text-base">
-                      <Calendar className="h-4 w-4" /> 20 Nov 2024
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-base text-muted-foreground line-clamp-2">
-                      Bergabunglah dengan kami untuk acara gathering tahunan.
-                    </p>
-                  </CardContent>
-                  <CardFooter>
-                    <Button variant="outline" size="sm" className="text-base px-6">Daftar</Button>
-                  </CardFooter>
+        <section className="py-12 md:py-32 px-4 bg-orange-50/30">
+          <div className="container mx-auto">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 md:mb-12">
+              <h2 className="text-2xl md:text-4xl font-extrabold text-gray-800 tracking-tight text-center md:text-left">Acara Mendatang</h2>
+              <Button variant="ghost" className="text-base md:text-lg hover:bg-orange-100 text-orange-600 font-bold rounded-full px-6 w-full md:w-auto" asChild>
+                <Link href="/event" className="flex items-center justify-center gap-2">
+                  Lihat Semua <ArrowRight className="h-5 w-5" />
+                </Link>
+              </Button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {events?.map((event) => (
+                <div key={event.id} className="group relative h-full">
+                  <Link href={`/event/${event.id}`} className="block h-full">
+                    {/* Decorative Card Offset */}
+                    <div className="absolute inset-0 bg-orange-200/60 rounded-[2rem] transform translate-y-2 translate-x-2 group-hover:translate-x-3 group-hover:translate-y-3 transition-transform" />
+
+                    <Card className="relative bg-[#FFFCF8] border-2 border-orange-100/50 shadow-sm rounded-[2rem] overflow-hidden hover:-translate-y-1 transition-transform duration-300 h-full flex flex-col">
+                      <div className="relative h-56 bg-orange-50 overflow-hidden">
+                        <div className="absolute top-4 left-4 z-10">
+                          <div className="bg-white/90 backdrop-blur-sm border border-orange-100 text-orange-700 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm">
+                            <Calendar className="w-3.5 h-3.5" />
+                            {new Date(event.date_start).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
+                          </div>
+                        </div>
+                        <Image
+                          src={event.image_url || "/event-placeholder.jpg"}
+                          alt={event.title}
+                          fill
+                          className="object-cover transition-transform duration-700 group-hover:scale-105"
+                        />
+                      </div>
+
+                      <CardContent className="flex-1 p-6 flex flex-col">
+                        <h3 className="text-xl font-black text-gray-800 mb-3 line-clamp-2 leading-tight group-hover:text-orange-500 transition-colors">
+                          {event.title}
+                        </h3>
+
+                        <div className="flex items-start gap-2 text-gray-500 text-sm mb-6 flex-1">
+                          <MapPin className="w-4 h-4 mt-0.5 shrink-0 text-gray-400" />
+                          <span className="line-clamp-2">{event.location}</span>
+                        </div>
+
+                        <Button className="w-full rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-bold">
+                          Daftar Sekarang
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </Link>
                 </div>
-              </Card>
-            ))}
+              ))}
+              {(!events || events.length === 0) && (
+                <div className="col-span-full text-center py-12 text-gray-500 bg-orange-50 rounded-[2rem] border-2 border-dashed border-orange-200">
+                  <Calendar className="h-12 w-12 text-orange-300 mx-auto mb-3" />
+                  <p className="font-medium">Belum ada acara mendatang.</p>
+                </div>
+              )}
+            </div>
           </div>
         </section>
       </main>

@@ -251,7 +251,7 @@ export default async function EventDetailPage(props: { params: Promise<{ id: str
                                         </div>
                                     )}
                                     <ParticipantsModal
-                                        participants={participants}
+                                        participants={participants || []}
                                         totalCount={participantsCount || 0}
                                         maxParticipants={event.max_participants}
                                     />
