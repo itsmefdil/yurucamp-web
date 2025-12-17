@@ -67,61 +67,65 @@ export function ActivityFeed({ initialActivities, currentUser }: ActivityFeedPro
                     {filteredActivities.map((activity) => (
                         <div key={activity.id} className="group relative h-full">
                             <Link href={`/aktifitas/${activity.id}`} className="block h-full">
-                                <Card className="border-none shadow-sm hover:shadow-xl transition-all duration-300 bg-white overflow-hidden rounded-3xl h-full flex flex-col group-hover:-translate-y-1">
-                                    <div className="relative aspect-[4/3] overflow-hidden">
+                                {/* Decorative Card Offset */}
+                                <div className="absolute inset-0 bg-orange-200/60 rounded-[2rem] transform translate-y-2 translate-x-2 group-hover:translate-x-3 group-hover:translate-y-3 transition-transform" />
+
+                                <Card className="relative bg-[#FFFCF8] border-2 border-orange-100/50 shadow-sm rounded-[2rem] overflow-hidden hover:-translate-y-1 transition-transform duration-300 h-full flex flex-col">
+                                    <div className="relative aspect-[4/3] overflow-hidden bg-orange-50">
                                         <div className="absolute inset-0 bg-gray-200 animate-pulse" />
                                         <NextImage
                                             src={activity.image_url || "/aktifitas.jpg"}
                                             alt={activity.title}
                                             fill
-                                            className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                            className="object-cover transition-transform duration-700 group-hover:scale-105"
                                         />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
 
                                         <div className="absolute top-4 left-4">
-                                            <Badge className="bg-white/90 text-primary hover:bg-white shadow-sm backdrop-blur-sm border-none px-3 py-1">
+                                            <Badge className="bg-white/90 text-orange-600 hover:bg-white shadow-sm backdrop-blur-sm border-none px-3 py-1.5 rounded-full font-bold">
                                                 {activity.category || "Umum"}
                                             </Badge>
                                         </div>
 
                                         <div className="absolute bottom-4 left-4 right-4 text-white">
-                                            <div className="flex items-center gap-2 text-xs font-medium mb-2 opacity-90">
-                                                <span className="flex items-center gap-1">
+                                            <div className="flex items-center gap-2 text-xs font-bold mb-2 opacity-95">
+                                                <span className="flex items-center gap-1 bg-black/20 backdrop-blur-md px-2 py-1 rounded-full">
                                                     <Calendar className="h-3 w-3" />
                                                     {formatDistanceToNow(new Date(activity.created_at), { addSuffix: true, locale: id })}
                                                 </span>
-                                                {activity.location && (
-                                                    <span className="flex items-center gap-1 truncate max-w-[150px]">
-                                                        <MapPin className="h-3 w-3" />
-                                                        {activity.location}
-                                                    </span>
-                                                )}
                                             </div>
+                                            {activity.location && (
+                                                <div className="flex items-center gap-1.5 text-xs font-medium text-white/90">
+                                                    <MapPin className="h-3.5 w-3.5 text-yellow-300 shrink-0" />
+                                                    <span className="truncate">{activity.location}</span>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                     <CardContent className="p-6 flex-1">
-                                        <h3 className="text-xl font-bold text-gray-800 mb-3 line-clamp-2 group-hover:text-primary transition-colors">
+                                        <h3 className="text-xl font-black text-gray-800 mb-3 line-clamp-2 group-hover:text-orange-500 transition-colors leading-tight">
                                             {activity.title}
                                         </h3>
                                         <p className="text-gray-500 text-sm line-clamp-3 leading-relaxed">
                                             {stripHtml(activity.description || "")}
                                         </p>
                                     </CardContent>
-                                    <CardFooter className="p-6 pt-0 flex items-center justify-between border-t border-gray-50 mt-auto">
-                                        <div className="flex items-center gap-3 pt-4">
-                                            <Avatar className="h-8 w-8 border border-gray-100">
+                                    <CardFooter className="p-6 pt-0 flex items-center justify-between mt-auto">
+                                        <div className="flex items-center gap-3 pt-4 border-t border-orange-100 w-full">
+                                            <Avatar className="h-9 w-9 border-2 border-white shadow-sm">
                                                 <AvatarImage src={activity.profiles?.avatar_url || undefined} />
-                                                <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                                                <AvatarFallback className="text-xs bg-orange-100 text-orange-600 font-bold">
                                                     {activity.profiles?.full_name?.[0] || "U"}
                                                 </AvatarFallback>
                                             </Avatar>
-                                            <span className="text-sm font-medium text-gray-600 truncate max-w-[120px]">
-                                                {activity.profiles?.full_name || "Pengguna"}
-                                            </span>
-                                        </div>
-                                        <div className="pt-4">
-                                            <div className="h-8 w-8 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
-                                                <ArrowRight className="h-4 w-4" />
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-bold text-gray-800 truncate">
+                                                    {activity.profiles?.full_name || "Pengguna"}
+                                                </p>
+                                                <p className="text-xs text-gray-400">Pencinta Alam</p>
+                                            </div>
+                                            <div className="h-10 w-10 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center group-hover:bg-orange-500 group-hover:text-white transition-all shadow-sm">
+                                                <ArrowRight className="h-5 w-5" />
                                             </div>
                                         </div>
                                     </CardFooter>
