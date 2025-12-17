@@ -7,13 +7,15 @@ import { useOptimistic, startTransition } from "react"
 import { cn } from "@/lib/utils"
 
 interface LikeButtonProps {
-    activityId: string
+    activityId?: string
+    videoId?: string
     initialIsLiked: boolean
     initialLikeCount: number
     isLoggedIn: boolean
+    onUpdate?: () => void
 }
 
-export function LikeButton({ activityId, initialIsLiked, initialLikeCount, isLoggedIn }: LikeButtonProps) {
+export function LikeButton({ activityId, videoId, initialIsLiked, initialLikeCount, isLoggedIn, onUpdate }: LikeButtonProps) {
     const [optimisticState, addOptimisticState] = useOptimistic(
         { isLiked: initialIsLiked, count: initialLikeCount },
         (state) => ({
@@ -31,9 +33,12 @@ export function LikeButton({ activityId, initialIsLiked, initialLikeCount, isLog
 
         startTransition(() => {
             addOptimisticState(null)
-            toggleLikeActivity(activityId)
         })
+
+        await toggleLikeActivity(activityId, videoId)
+        onUpdate?.()
     }
+
 
     return (
         <Button
