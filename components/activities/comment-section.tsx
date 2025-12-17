@@ -22,12 +22,14 @@ interface Comment {
 }
 
 interface CommentSectionProps {
-    activityId: string
+    activityId?: string
+    videoId?: string
     comments: Comment[]
     currentUserId: string | null | undefined
+    onUpdate?: () => void
 }
 
-export function CommentSection({ activityId, comments, currentUserId }: CommentSectionProps) {
+export function CommentSection({ activityId, videoId, comments, currentUserId, onUpdate }: CommentSectionProps) {
     const [content, setContent] = useState("")
     const [isPending, startTransition] = useTransition()
 
@@ -36,15 +38,17 @@ export function CommentSection({ activityId, comments, currentUserId }: CommentS
         if (!content.trim() || !currentUserId) return
 
         startTransition(async () => {
-            await addComment(activityId, content)
+            await addComment(content, activityId, videoId)
             setContent("")
+            onUpdate?.()
         })
     }
 
     const handleDelete = async (commentId: string) => {
         if (!confirm("Hapus komentar ini?")) return
         startTransition(async () => {
-            await deleteComment(commentId, activityId)
+            await deleteComment(commentId, activityId, videoId)
+            onUpdate?.()
         })
     }
 

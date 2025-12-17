@@ -125,20 +125,25 @@ export function WatchSessionView() {
     const [isLoading, setIsLoading] = useState(true)
 
     // Fetch activity data when episode changes
-    useEffect(() => {
-        const fetchActivity = async () => {
+    const fetchActivity = async () => {
+        // Only show loading on initial fetch or episode change, not on background updates
+        if (!activityData || activityData.video_id !== currentEpisode.videoId) {
             setIsLoading(true)
-            try {
-                const data = await getVideoActivity(currentEpisode.videoId)
-                setActivityData(data)
-            } catch (error) {
-                console.error("Failed to fetch activity:", error)
-                setActivityData(null)
-            } finally {
-                setIsLoading(false)
-            }
         }
 
+        try {
+            const data = await getVideoActivity(currentEpisode.videoId)
+            setActivityData(data)
+        } catch (error) {
+            console.error("Failed to fetch activity:", error)
+            setActivityData(null)
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    useEffect(() => {
+        setActivityData(null) // Reset data on episode change
         fetchActivity()
     }, [currentEpisode.videoId])
 
@@ -191,9 +196,11 @@ export function WatchSessionView() {
                                 <>
                                     <LikeButton
                                         activityId={activityData.id}
+                                        videoId={currentEpisode.videoId}
                                         initialIsLiked={activityData.isLiked}
                                         initialLikeCount={activityData.likeCount}
                                         isLoggedIn={!!activityData.currentUserId}
+                                        onUpdate={fetchActivity}
                                     />
                                     <Button
                                         variant="secondary"
@@ -217,8 +224,10 @@ export function WatchSessionView() {
                             <div className="mt-8">
                                 <CommentSection
                                     activityId={activityData.id}
+                                    videoId={currentEpisode.videoId}
                                     comments={activityData.activity_comments || []}
                                     currentUserId={activityData.currentUserId}
+                                    onUpdate={fetchActivity}
                                 />
                             </div>
                         )}
