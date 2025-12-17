@@ -171,3 +171,53 @@ export async function deleteEvent(eventId: string) {
     revalidatePath("/")
     return { success: true }
 }
+
+export async function joinEvent(eventId: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        return { error: "Harus login untuk mendaftar acara" }
+    }
+
+    const { error } = await supabase
+        .from("event_participants")
+        .insert({
+            event_id: eventId,
+            user_id: user.id
+        })
+
+    if (error) {
+        if (error.code === '23505') {
+            return { error: "Anda sudah terdaftar di acara ini" }
+        }
+        console.error("Error joining event:", error)
+        return { error: "Gagal mendaftar acara" }
+    }
+
+    revalidatePath(`/event/${eventId}`)
+    return { success: true }
+}
+
+export async function leaveEvent(eventId: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        return { error: "Unauthorized" }
+    }
+
+    const { error } = await supabase
+        .from("event_participants")
+        .delete()
+        .eq("event_id", eventId)
+        .eq("user_id", user.id)
+
+    if (error) {
+        console.error("Error leaving event:", error)
+        return { error: "Gagal membatalkan pendaftaran" }
+    }
+
+    revalidatePath(`/event/${eventId}`)
+    return { success: true }
+}

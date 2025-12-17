@@ -25,24 +25,24 @@ export function EventsView({ initialEvents }: { initialEvents: any[] }) {
     return (
         <div className="min-h-screen bg-gray-50">
             {/* Hero Section */}
-            <div className="relative bg-primary overflow-hidden pt-24 pb-16 md:pt-32 md:pb-24">
-                <div className="absolute inset-0 bg-[url('/pattern.svg')] opacity-10" />
+            <div className="relative bg-[#FFF8F0] overflow-hidden pt-24 pb-16 md:pt-32 md:pb-24 border-b border-orange-100">
+                <div className="absolute inset-0 bg-[url('/pattern.svg')] opacity-[0.03]" />
                 <div className="container mx-auto px-4 relative z-10">
                     <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-                        <div className="text-center md:text-left max-w-2xl text-white">
-                            <div className="inline-flex items-center gap-2 mb-4 px-4 py-1 text-sm font-medium bg-white/20 text-white rounded-full backdrop-blur-sm">
+                        <div className="text-center md:text-left max-w-2xl text-gray-800">
+                            <div className="inline-flex items-center gap-2 mb-4 px-4 py-1.5 text-sm font-bold bg-orange-100 text-orange-600 rounded-full">
                                 <Sparkles className="w-4 h-4" />
                                 <span>Jadwal Yuru Camp</span>
                             </div>
-                            <h1 className="text-4xl md:text-6xl font-black mb-6 leading-tight">
+                            <h1 className="text-4xl md:text-6xl font-black mb-6 leading-tight text-gray-900">
                                 Temukan <br />
-                                <span className="text-yellow-300">Petualanganmu!</span>
+                                <span className="text-orange-500">Petualanganmu!</span>
                             </h1>
-                            <p className="text-lg md:text-xl text-white/90 mb-8 leading-relaxed max-w-lg">
+                            <p className="text-lg md:text-xl text-gray-600 mb-8 leading-relaxed max-w-lg">
                                 Bergabunglah dengan acara seru, nikmati alam, dan buat kenangan tak terlupakan bersama teman baru.
                             </p>
                             <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                                <Button size="lg" className="rounded-full bg-white text-primary hover:bg-gray-100 font-bold text-base px-8 shadow-lg" asChild>
+                                <Button size="lg" className="rounded-2xl bg-orange-500 text-white hover:bg-orange-600 font-bold text-base px-8 shadow-lg hover:shadow-orange-200 hover:scale-105 transition-all" asChild>
                                     <Link href="/event/create">
                                         Buat Acara Baru
                                     </Link>
@@ -51,7 +51,8 @@ export function EventsView({ initialEvents }: { initialEvents: any[] }) {
                         </div>
                         <div className="hidden md:block relative w-80 h-80 lg:w-96 lg:h-96">
                             {/* Decorative elements */}
-                            <div className="absolute inset-0 bg-white/10 rounded-full blur-3xl animate-pulse" />
+                            <div className="absolute inset-0 bg-gradient-to-tr from-orange-200 to-yellow-100 rounded-full blur-3xl opacity-50 animate-pulse" />
+                            <div className="absolute inset-4 bg-white/40 rounded-full blur-2xl" />
                         </div>
                     </div>
                 </div>

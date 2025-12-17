@@ -7,6 +7,8 @@ import Image from "next/image"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
 import { notFound } from "next/navigation"
+import { JoinEventButton } from "@/components/events/join-event-button"
+import { ParticipantsModal } from "@/components/events/participants-modal"
 
 export const dynamic = 'force-dynamic'
 
@@ -32,6 +34,26 @@ export default async function EventDetailPage(props: { params: Promise<{ id: str
 
     const { data: { user } } = await supabase.auth.getUser()
     const isOrganizer = user?.id === event.organizer_id
+
+    const { data: participants, count: participantsCount } = await supabase
+        .from("event_participants")
+        .select(`
+            user:user_id (
+                full_name,
+                avatar_url
+            )
+        `, { count: 'exact' })
+        .eq("event_id", params.id)
+
+    // Check participation
+    const { data: userParticipation } = user ? await supabase
+        .from("event_participants")
+        .select("id")
+        .eq("event_id", params.id)
+        .eq("user_id", user.id)
+        .single() : { data: null }
+
+    const isUserParticipating = !!userParticipation
 
     return (
         <div className="min-h-screen flex flex-col bg-[#fdfdfd]">
@@ -94,7 +116,7 @@ export default async function EventDetailPage(props: { params: Promise<{ id: str
                                                 <Users className="h-5 w-5" />
                                             </div>
                                             <div>
-                                                <p className="font-bold text-gray-900">{event.max_participants} Kuota</p>
+                                                <p className="font-bold text-gray-900">{participantsCount || 0} / {event.max_participants || '-'} Peserta</p>
                                             </div>
                                         </div>
                                     </div>
@@ -119,9 +141,12 @@ export default async function EventDetailPage(props: { params: Promise<{ id: str
                                             </Link>
                                         </Button>
                                     ) : (
-                                        <Button size="lg" className="flex-1 rounded-full text-lg py-6 shadow-lg">
-                                            Daftar Sekarang
-                                        </Button>
+                                        <JoinEventButton
+                                            eventId={event.id}
+                                            isParticipating={isUserParticipating}
+                                            isFull={event.max_participants ? (participantsCount || 0) >= event.max_participants : false}
+                                            className="flex-1"
+                                        />
                                     )}
                                     <Button
                                         size="lg"
@@ -195,24 +220,41 @@ export default async function EventDetailPage(props: { params: Promise<{ id: str
                                 <CardHeader className="p-0 mb-6">
                                     <CardTitle className="text-xl font-bold flex justify-between items-center">
                                         Peserta
-                                        <span className="text-sm font-normal text-muted-foreground bg-gray-100 px-3 py-1 rounded-full">120/150</span>
+                                        <span className="text-sm font-normal text-muted-foreground bg-gray-100 px-3 py-1 rounded-full">
+                                            {participantsCount || 0}/{event.max_participants || '∞'}
+                                        </span>
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="p-0">
-                                    <div className="flex flex-wrap gap-2 mb-6">
-                                        {Array.from({ length: 12 }).map((_, i) => (
-                                            <Avatar key={i} className="h-10 w-10 border-2 border-white shadow-sm -ml-2 first:ml-0 hover:z-10 hover:scale-110 transition-transform cursor-pointer">
-                                                <AvatarFallback className="bg-orange-100 text-orange-600 text-xs">U{i}</AvatarFallback>
-                                            </Avatar>
-                                        ))}
-                                        <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-500 border-2 border-white shadow-sm -ml-2 z-0">
-                                            +108
+                                    {participants && participants.length > 0 ? (
+                                        <>
+                                            <div className="flex flex-wrap gap-2 mb-6">
+                                                {participants.slice(0, 12).map((p: any, i: number) => (
+                                                    <Avatar key={i} className="h-10 w-10 border-2 border-white shadow-sm -ml-2 first:ml-0 hover:z-10 hover:scale-110 transition-transform cursor-pointer" title={p.user?.full_name}>
+                                                        <AvatarFallback className="bg-orange-100 text-orange-600 text-xs">{p.user?.full_name?.[0] || "?"}</AvatarFallback>
+                                                        <AvatarImage src={p.user?.avatar_url} />
+                                                    </Avatar>
+                                                ))}
+                                                {(participantsCount || 0) > 12 && (
+                                                    <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-500 border-2 border-white shadow-sm -ml-2 z-0">
+                                                        +{(participantsCount || 0) - 12}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <p className="text-sm text-gray-500 mb-4">
+                                                Bergabunglah dengan teman-teman baru!
+                                            </p>
+                                        </>
+                                    ) : (
+                                        <div className="text-center py-6 text-gray-500">
+                                            <p>Belum ada peserta. Jadilah yang pertama!</p>
                                         </div>
-                                    </div>
-                                    <p className="text-sm text-gray-500 mb-4">
-                                        Bergabunglah dengan teman-teman baru!
-                                    </p>
-                                    <Button variant="outline" className="w-full rounded-full">Lihat Semua Peserta</Button>
+                                    )}
+                                    <ParticipantsModal
+                                        participants={participants}
+                                        totalCount={participantsCount || 0}
+                                        maxParticipants={event.max_participants}
+                                    />
                                 </CardContent>
                             </Card>
 
@@ -251,9 +293,12 @@ export default async function EventDetailPage(props: { params: Promise<{ id: str
                         </Link>
                     </Button>
                 ) : (
-                    <Button className="rounded-full px-8 shadow-md">
-                        Daftar
-                    </Button>
+                    <JoinEventButton
+                        eventId={event.id}
+                        isParticipating={isUserParticipating}
+                        isFull={event.max_participants ? (participantsCount || 0) >= event.max_participants : false}
+                        className="rounded-full px-8 shadow-md"
+                    />
                 )}
             </div>
 
