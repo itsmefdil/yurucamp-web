@@ -4,8 +4,17 @@ import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { addActivity } from "@/app/actions/activities"
 import { ActivityForm } from "@/components/activities/activity-form"
+import { createClient } from "@/lib/supabase/server"
+import { redirect } from "next/navigation"
 
-export default function AddActivityPage() {
+export default async function AddActivityPage() {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        redirect("/login")
+    }
+
     return (
         <div className="min-h-screen flex flex-col bg-[#fdfdfd]">
 

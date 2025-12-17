@@ -1,7 +1,16 @@
 import { Footer } from "@/components/layout/Footer"
 import { AddEventForm } from "@/components/events/add-event-form"
+import { createClient } from "@/lib/supabase/server"
+import { redirect } from "next/navigation"
 
-export default function AddEventPage() {
+export default async function AddEventPage() {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        redirect("/login")
+    }
+
     return (
         <div className="min-h-screen flex flex-col bg-[#fdfdfd]">
 
