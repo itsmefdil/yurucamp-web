@@ -2,7 +2,7 @@ import { Footer } from "@/components/layout/Footer"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
-import { addActivity } from "./actions"
+import { addActivity } from "@/app/actions/activities"
 import { ActivityForm } from "@/components/activities/activity-form"
 
 export default function AddActivityPage() {

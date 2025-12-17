@@ -2,7 +2,7 @@ import { Footer } from "@/components/layout/Footer"
 import { EditCampAreaForm } from "@/components/camp-area/edit-camp-area-form"
 import { createClient } from "@/lib/supabase/server"
 import { notFound, redirect } from "next/navigation"
-import { updateCampArea } from "@/app/camp-area/actions"
+import { updateCampArea } from "@/app/actions/camp-area"
 
 export default async function EditCampAreaPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params

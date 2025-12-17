@@ -1,6 +1,6 @@
 import { Footer } from "@/components/layout/Footer"
 import { AddCampAreaForm } from "@/components/camp-area/add-camp-area-form"
-import { createCampArea } from "@/app/camp-area/actions"
+import { createCampArea } from "@/app/actions/camp-area"
 
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"

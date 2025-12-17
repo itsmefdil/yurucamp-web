@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { User as UserIcon, Settings, LogOut, ChevronDown, Info } from "lucide-react"
-import { logout } from "@/app/auth/actions"
+import { logout } from "@/app/actions/auth"
 
 interface UserNavProps {
     user: User | null

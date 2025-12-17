@@ -7,7 +7,7 @@ import { Calendar, MapPin, Settings, LogOut, Edit, Heart, Tent, Ticket, MessageS
 import Link from "next/link"
 import { useState } from "react"
 import { cn } from "@/lib/utils"
-import { logout } from "@/app/auth/actions"
+import { logout } from "@/app/actions/auth"
 
 interface DashboardViewProps {
     profile: any

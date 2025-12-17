@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
 import { createClient } from '@/lib/supabase/server'
+import { uploadImage, deleteImage, getPublicIdFromUrl } from "@/lib/cloudinary"
 
 export async function login(formData: FormData) {
     const supabase = await createClient()
@@ -75,8 +76,6 @@ export async function loginWithGoogle() {
         return { error: error.message }
     }
 }
-
-import { uploadImage, deleteImage, getPublicIdFromUrl } from "@/lib/cloudinary"
 
 export async function updateProfile(formData: FormData) {
     const supabase = await createClient()

@@ -5,7 +5,7 @@ import Link from "next/link"
 import { ActivityForm } from "@/components/activities/activity-form"
 import { createClient } from "@/lib/supabase/server"
 import { notFound, redirect } from "next/navigation"
-import { updateActivity } from "./actions"
+import { updateActivity } from "@/app/actions/activities"
 
 export default async function EditActivityPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params

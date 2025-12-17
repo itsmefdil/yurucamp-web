@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Camera } from "lucide-react"
-import { updateProfile } from "@/app/auth/actions"
+import { updateProfile } from "@/app/actions/auth"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 

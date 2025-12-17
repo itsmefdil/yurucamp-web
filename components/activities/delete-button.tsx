@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { Trash2 } from "lucide-react"
-import { deleteActivity } from "@/app/aktifitas/actions"
+import { deleteActivity } from "@/app/actions/activities"
 import { useState, useTransition } from "react"
 import {
     AlertDialog,

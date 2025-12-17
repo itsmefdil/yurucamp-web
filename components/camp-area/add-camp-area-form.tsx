@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { ArrowLeft, Image as ImageIcon, MapPin, X, Plus, Wifi, Car, Coffee, Tent, Info, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { useState, useRef } from "react"
-import { createCampArea } from "@/app/camp-area/actions"
+import { createCampArea } from "@/app/actions/camp-area"
 import { toast } from "sonner"
 
 interface AddCampAreaFormProps {

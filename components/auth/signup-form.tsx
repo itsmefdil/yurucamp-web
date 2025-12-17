@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Icons } from "@/components/ui/icons"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { signup, loginWithGoogle } from '@/app/auth/actions'
+import { signup, loginWithGoogle } from '@/app/actions/auth'
 
 const initialState = {
     error: '',

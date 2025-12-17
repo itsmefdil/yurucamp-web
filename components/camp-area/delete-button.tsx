@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { Trash2 } from "lucide-react"
-import { deleteCampArea } from "@/app/camp-area/actions"
+import { deleteCampArea } from "@/app/actions/camp-area"
 import { useState, useTransition } from "react"
 import {
     AlertDialog,
