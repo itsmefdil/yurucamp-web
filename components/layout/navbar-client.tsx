@@ -47,7 +47,7 @@ export function NavbarClient({ user, profile }: NavbarClientProps) {
                             Camp Area
                         </Link>
 
-                        <Link href="/acara" className="flex items-center gap-2 transition-colors hover:text-primary hover:scale-105 transform">
+                        <Link href="/event" className="flex items-center gap-2 transition-colors hover:text-primary hover:scale-105 transform">
                             <Calendar className="w-4 h-4" />
                             Acara
                         </Link>

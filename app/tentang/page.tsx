@@ -88,7 +88,7 @@ export default function AboutPage() {
                         </p>
                         <div className="pt-4">
                             <Button size="lg" className="rounded-full px-8 py-6 text-lg shadow-lg hover:scale-105 transition-transform" asChild>
-                                <Link href="/acara">Lihat Acara Mendatang</Link>
+                                <Link href="/event">Lihat Acara Mendatang</Link>
                             </Button>
                         </div>
                     </div>

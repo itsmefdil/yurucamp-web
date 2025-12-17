@@ -15,6 +15,7 @@ export const metadata: Metadata = {
 
 import { BottomNav } from "@/components/layout/BottomNav";
 import { Navbar } from "@/components/layout/Navbar";
+import { Toaster } from "sonner";
 
 export default function RootLayout({
   children,
@@ -29,6 +30,7 @@ export default function RootLayout({
         <Navbar />
         {children}
         <BottomNav />
+        <Toaster />
       </body>
     </html>
   );

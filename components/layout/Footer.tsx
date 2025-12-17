@@ -15,7 +15,7 @@ export function Footer() {
                             <li><a href="/" className="hover:text-primary">Beranda</a></li>
                             <li><a href="/aktifitas" className="hover:text-primary">Aktifitas</a></li>
                             <li><a href="/camp-area" className="hover:text-primary">Camp Area</a></li>
-                            <li><a href="/acara" className="hover:text-primary">Acara</a></li>
+                            <li><a href="/event" className="hover:text-primary">Acara</a></li>
                         </ul>
                     </div>
                     <div>

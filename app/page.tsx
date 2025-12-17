@@ -276,7 +276,7 @@ export default async function Home() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 md:mb-12">
             <h2 className="text-2xl md:text-4xl font-extrabold text-gray-800 tracking-tight text-center md:text-left">Acara Mendatang</h2>
             <Button variant="ghost" className="text-base md:text-lg hover:bg-orange-50 rounded-full px-6 w-full md:w-auto" asChild>
-              <Link href="/acara" className="flex items-center justify-center gap-2">
+              <Link href="/event" className="flex items-center justify-center gap-2">
                 Lihat Semua <ArrowRight className="h-5 w-5" />
               </Link>
             </Button>
