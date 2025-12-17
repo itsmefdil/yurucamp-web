@@ -40,7 +40,7 @@ export default async function EditActivityPage({ params }: { params: Promise<{ i
                 <div className="max-w-4xl mx-auto space-y-8">
                     <div className="flex items-center gap-4">
                         <Button variant="ghost" size="icon" className="rounded-full" asChild>
-                            <Link href={`/aktifitas/${id}`}>
+                            <Link href={`/activity/${id}`}>
                                 <ArrowLeft className="h-6 w-6" />
                             </Link>
                         </Button>

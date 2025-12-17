@@ -13,7 +13,7 @@ export function Footer() {
                         <h3 className="text-sm font-semibold mb-4">Menu</h3>
                         <ul className="space-y-2 text-sm text-muted-foreground">
                             <li><a href="/" className="hover:text-primary">Beranda</a></li>
-                            <li><a href="/aktifitas" className="hover:text-primary">Aktifitas</a></li>
+                            <li><a href="/activity" className="hover:text-primary">Activity</a></li>
                             <li><a href="/camp-area" className="hover:text-primary">Camp Area</a></li>
                             <li><a href="/event" className="hover:text-primary">Acara</a></li>
                         </ul>

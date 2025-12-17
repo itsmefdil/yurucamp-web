@@ -66,7 +66,7 @@ export function ActivityFeed({ initialActivities, currentUser }: ActivityFeedPro
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {filteredActivities.map((activity) => (
                         <div key={activity.id} className="group relative h-full">
-                            <Link href={`/aktifitas/${activity.id}`} className="block h-full">
+                            <Link href={`/activity/${activity.id}`} className="block h-full">
                                 {/* Decorative Card Offset */}
                                 <div className="absolute inset-0 bg-orange-200/60 rounded-[2rem] transform translate-y-2 translate-x-2 group-hover:translate-x-3 group-hover:translate-y-3 transition-transform" />
 

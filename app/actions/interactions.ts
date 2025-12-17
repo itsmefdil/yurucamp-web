@@ -35,7 +35,7 @@ export async function toggleLikeActivity(activityId: string) {
             })
     }
 
-    revalidatePath(`/aktifitas/${activityId}`)
+    revalidatePath(`/activity/${activityId}`)
 }
 
 export async function addComment(activityId: string, content: string) {
@@ -62,7 +62,7 @@ export async function addComment(activityId: string, content: string) {
         throw error
     }
 
-    revalidatePath(`/aktifitas/${activityId}`)
+    revalidatePath(`/activity/${activityId}`)
 }
 
 export async function deleteComment(commentId: string, activityId: string) {
@@ -83,5 +83,5 @@ export async function deleteComment(commentId: string, activityId: string) {
         throw error
     }
 
-    revalidatePath(`/aktifitas/${activityId}`)
+    revalidatePath(`/activity/${activityId}`)
 }

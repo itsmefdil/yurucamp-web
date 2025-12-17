@@ -37,7 +37,7 @@ export function NavbarClient({ user, profile }: NavbarClientProps) {
                             Beranda
                         </Link>
 
-                        <Link href="/aktifitas" className="flex items-center gap-2 transition-colors hover:text-primary hover:scale-105 transform">
+                        <Link href="/activity" className="flex items-center gap-2 transition-colors hover:text-primary hover:scale-105 transform">
                             <Mountain className="w-4 h-4" />
                             Aktifitas
                         </Link>

@@ -63,9 +63,9 @@ export async function addActivity(formData: FormData) {
         return { error: error.message }
     }
 
-    revalidatePath("/aktifitas")
+    revalidatePath("/activity")
     revalidatePath("/dashboard/activities")
-    redirect("/aktifitas")
+    redirect("/activity")
 }
 
 export async function updateActivity(id: string, formData: FormData) {
@@ -147,9 +147,9 @@ export async function updateActivity(id: string, formData: FormData) {
         return { error: "Failed to update activity" }
     }
 
-    revalidatePath("/aktifitas")
-    revalidatePath(`/aktifitas/${id}`)
-    redirect(`/aktifitas/${id}`)
+    revalidatePath("/activity")
+    revalidatePath(`/activity/${id}`)
+    redirect(`/activity/${id}`)
 }
 
 export async function deleteActivity(activityId: string) {
@@ -212,7 +212,7 @@ export async function deleteActivity(activityId: string) {
         return { error: "Failed to delete activity" }
     }
 
-    revalidatePath("/aktifitas")
+    revalidatePath("/activity")
     revalidatePath("/") // Also revalidate homepage since it shows latest activities
     return { success: true }
 }

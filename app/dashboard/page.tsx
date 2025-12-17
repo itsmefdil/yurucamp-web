@@ -19,10 +19,26 @@ export default async function ProfilePage() {
         .eq('id', user.id)
         .single()
 
+    const { data: activities } = await supabase
+        .from('activities')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+
+    const { data: campAreas } = await supabase
+        .from('camp_areas')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+
     return (
         <div className="min-h-screen flex flex-col bg-[#fdfdfd]">
             <main className="flex-1 container mx-auto px-4 pt-24 md:pt-32 pb-24">
-                <DashboardView profile={profile} />
+                <DashboardView
+                    profile={profile}
+                    activities={activities || []}
+                    campAreas={campAreas || []}
+                />
             </main>
             <Footer />
         </div>

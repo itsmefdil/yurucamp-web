@@ -11,7 +11,7 @@ export function BottomNav() {
 
     const navItems = [
         { href: "/", label: "Beranda", icon: Home },
-        { href: "/aktifitas", label: "Aktifitas", icon: Mountain },
+        { href: "/activity", label: "Activity", icon: Mountain },
         { href: "/camp-area", label: "Camp Area", icon: Tent },
         { href: "/event", label: "Acara", icon: Calendar },
         { href: "/watch", label: "Nonton", icon: PlayCircle },

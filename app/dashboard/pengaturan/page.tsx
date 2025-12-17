@@ -4,7 +4,26 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { User, Bell, Shield, HelpCircle, LogOut, ChevronRight, Globe, Lock } from "lucide-react"
 import Link from "next/link"
 
-export default function SettingsPage() {
+import { createClient } from "@/lib/supabase/server"
+import { redirect } from "next/navigation"
+import { logout } from "@/app/actions/auth"
+
+export const dynamic = 'force-dynamic'
+
+export default async function SettingsPage() {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        redirect('/login')
+    }
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single()
+
     return (
         <div className="min-h-screen flex flex-col bg-[#fdfdfd]">
 
@@ -24,12 +43,12 @@ export default function SettingsPage() {
                                     <div className="divide-y divide-gray-100">
                                         <Link href="/dashboard" className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors">
                                             <Avatar className="h-12 w-12 border-2 border-white shadow-sm">
-                                                <AvatarImage src="https://github.com/shadcn.png" />
-                                                <AvatarFallback>CN</AvatarFallback>
+                                                <AvatarImage src={profile?.avatar_url} />
+                                                <AvatarFallback>{profile?.full_name?.[0]?.toUpperCase() ?? 'U'}</AvatarFallback>
                                             </Avatar>
                                             <div className="flex-1">
-                                                <p className="font-bold text-gray-800">Nadeshiko Kagamihara</p>
-                                                <p className="text-sm text-gray-500">nadeshiko@yurucamp.id</p>
+                                                <p className="font-bold text-gray-800">{profile?.full_name ?? 'User'}</p>
+                                                <p className="text-sm text-gray-500">{profile?.email}</p>
                                             </div>
                                             <ChevronRight className="h-5 w-5 text-gray-400" />
                                         </Link>
@@ -56,70 +75,21 @@ export default function SettingsPage() {
                             </Card>
                         </section>
 
-                        {/* Preferences Section */}
+                        {/* Danger Zone / Logout */}
                         <section className="space-y-4">
-                            <h2 className="text-xl font-bold text-gray-800 px-2">Preferensi</h2>
                             <Card className="border-none shadow-md bg-white overflow-hidden">
                                 <CardContent className="p-0">
-                                    <div className="divide-y divide-gray-100">
-                                        <Link href="/dashboard/pengaturan/notifikasi" className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors text-left">
-                                            <div className="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center text-orange-500">
-                                                <Bell className="h-5 w-5" />
-                                            </div>
-                                            <div className="flex-1">
-                                                <p className="font-medium text-gray-800">Notifikasi</p>
-                                                <p className="text-xs text-gray-500">Atur notifikasi aplikasi</p>
-                                            </div>
-                                            <ChevronRight className="h-5 w-5 text-gray-400" />
-                                        </Link>
-                                        <Link href="/dashboard/pengaturan/bahasa" className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors text-left">
-                                            <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-500">
-                                                <Globe className="h-5 w-5" />
-                                            </div>
-                                            <div className="flex-1">
-                                                <p className="font-medium text-gray-800">Bahasa</p>
-                                                <p className="text-xs text-gray-500">Indonesia</p>
-                                            </div>
-                                            <ChevronRight className="h-5 w-5 text-gray-400" />
-                                        </Link>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </section>
-
-                        {/* Support Section */}
-                        <section className="space-y-4">
-                            <h2 className="text-xl font-bold text-gray-800 px-2">Lainnya</h2>
-                            <Card className="border-none shadow-md bg-white overflow-hidden">
-                                <CardContent className="p-0">
-                                    <div className="divide-y divide-gray-100">
-                                        <Link href="/dashboard/pengaturan/bantuan" className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors text-left">
-                                            <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
-                                                <HelpCircle className="h-5 w-5" />
-                                            </div>
-                                            <div className="flex-1">
-                                                <p className="font-medium text-gray-800">Bantuan & Dukungan</p>
-                                            </div>
-                                            <ChevronRight className="h-5 w-5 text-gray-400" />
-                                        </Link>
-                                        <Link href="/dashboard/pengaturan/privasi" className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors text-left">
-                                            <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
-                                                <Shield className="h-5 w-5" />
-                                            </div>
-                                            <div className="flex-1">
-                                                <p className="font-medium text-gray-800">Kebijakan Privasi</p>
-                                            </div>
-                                            <ChevronRight className="h-5 w-5 text-gray-400" />
-                                        </Link>
-                                        <button className="w-full flex items-center gap-4 p-4 hover:bg-red-50 transition-colors text-left group">
-                                            <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-500 group-hover:bg-red-100 transition-colors">
-                                                <LogOut className="h-5 w-5" />
-                                            </div>
-                                            <div className="flex-1">
-                                                <p className="font-medium text-red-500">Keluar</p>
-                                            </div>
-                                        </button>
-                                    </div>
+                                    <button
+                                        onClick={logout}
+                                        className="w-full flex items-center gap-4 p-4 hover:bg-red-50 transition-colors text-left group"
+                                    >
+                                        <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-500 group-hover:bg-red-100 transition-colors">
+                                            <LogOut className="h-5 w-5" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="font-medium text-red-500">Keluar</p>
+                                        </div>
+                                    </button>
                                 </CardContent>
                             </Card>
                         </section>

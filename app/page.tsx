@@ -163,14 +163,14 @@ export default async function Home() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 md:mb-12">
             <h2 className="text-2xl md:text-4xl font-extrabold text-gray-800 tracking-tight text-center md:text-left">Aktifitas Terbaru</h2>
             <Button variant="ghost" className="text-base md:text-lg hover:bg-orange-50 rounded-full px-6 w-full md:w-auto" asChild>
-              <Link href="/aktifitas" className="flex items-center justify-center gap-2">
+              <Link href="/activity" className="flex items-center justify-center gap-2">
                 Lihat Semua <ArrowRight className="h-5 w-5" />
               </Link>
             </Button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {activities?.map((activity: any) => (
-              <Link key={activity.id} href={`/aktifitas/${activity.id}`} className="block group">
+              <Link key={activity.id} href={`/activity/${activity.id}`} className="block group">
                 <Card className="overflow-hidden bg-white group-hover:-translate-y-2 transition-all duration-300 h-full flex flex-col border-2 border-transparent hover:border-orange-200 shadow-lg hover:shadow-2xl rounded-[2rem]">
                   <div className="relative aspect-video bg-orange-50 overflow-hidden m-2 rounded-[1.5rem]">
                     <Image
