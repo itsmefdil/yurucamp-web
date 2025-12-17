@@ -47,7 +47,7 @@ export default function WatchPage() {
                 <WatchHero />
 
                 {/* Content Rows */}
-                <div className="container mx-auto px-4 -mt-20 md:-mt-32 relative z-10 space-y-12 md:space-y-16">
+                <div className="container mx-auto px-4 -mt-10 md:-mt-20 relative z-10 space-y-12 md:space-y-16">
                     {categories.map((category, idx) => (
                         <div key={idx} className="space-y-4 md:space-y-6">
                             <div className="flex items-center gap-3">

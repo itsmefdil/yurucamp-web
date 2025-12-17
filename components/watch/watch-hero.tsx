@@ -57,7 +57,7 @@ export function WatchHero() {
                 <div className="absolute inset-0 bg-gradient-to-t from-[#fdfdfd] via-transparent to-transparent" />
             </div>
 
-            <div className="relative container mx-auto px-4 h-full flex flex-col justify-center pt-24 md:pt-32">
+            <div className="relative container mx-auto px-4 h-full flex flex-col justify-center pt-24 md:pt-32 pb-20">
                 <div className={`max-w-2xl space-y-4 md:space-y-6 transition-all duration-500 ${isTransitioning ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
                     <div className="flex items-center gap-2 text-primary font-black tracking-widest uppercase text-[10px] md:text-sm bg-orange-100 w-fit px-2 md:px-3 py-1 rounded-full shadow-sm">
                         <Star className="h-3 w-3 md:h-4 md:w-4 fill-current" />
