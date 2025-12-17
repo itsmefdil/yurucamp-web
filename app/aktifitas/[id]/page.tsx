@@ -5,11 +5,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Heart, MessageCircle, Share2, MapPin, Calendar, User, ArrowLeft } from "lucide-react"
 import Image from "next/image"
 import { createClient } from "@/lib/supabase/server"
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import { format } from "date-fns"
 import { id as idLocale } from "date-fns/locale"
 import Link from "next/link"
 import { ActivityGallery } from "@/components/activities/activity-gallery"
+import { DeleteActivityButton } from "@/components/activities/delete-button"
+import { Edit } from "lucide-react"
 
 export default async function ActivityDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
@@ -27,90 +29,94 @@ export default async function ActivityDetailPage({ params }: { params: Promise<{
             )
         `)
         .eq("id", id)
-        .single()
+        .maybeSingle()
 
     if (error) {
         console.error("Error fetching activity:", error)
     }
-    if (!activity) {
-        console.log("Activity not found for ID:", id)
-    }
 
-    if (error || !activity) {
-        notFound()
+    if (!activity) {
+        redirect("/aktifitas")
     }
 
     return (
         <div className="min-h-screen flex flex-col bg-[#f8f9fa]">
 
             <main className="flex-1 pb-24 md:pb-12">
-                {/* Hero Image */}
-                <div className="relative h-[50vh] md:h-[60vh] w-full bg-gray-900 overflow-hidden">
-                    {activity.image_url ? (
-                        <Image
-                            src={activity.image_url}
-                            alt={activity.title}
-                            fill
-                            className="object-cover opacity-90"
-                            priority
-                        />
-                    ) : (
-                        <div className="w-full h-full bg-gray-800 flex items-center justify-center text-gray-500">
-                            <span className="text-4xl font-bold opacity-30">No Image</span>
-                        </div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10" />
-
-                    <div className="absolute top-24 left-4 md:left-12 z-20">
-                        <Button variant="outline" size="icon" className="rounded-full bg-white/10 border-white/20 text-white hover:bg-white/20 backdrop-blur-md" asChild>
-                            <Link href="/aktifitas">
-                                <ArrowLeft className="h-5 w-5" />
-                            </Link>
-                        </Button>
-                    </div>
-
-                    <div className="absolute bottom-0 left-0 right-0 p-6 pb-16 md:p-16 z-20 container mx-auto">
-                        <div className="max-w-4xl">
-                            <div className="flex flex-wrap items-center gap-3 text-white/90 mb-4 text-sm md:text-base font-medium animate-fade-in-up">
-                                {activity.category && (
-                                    <span className="bg-primary/90 backdrop-blur-sm px-4 py-1.5 rounded-full text-white text-xs md:text-sm font-bold uppercase tracking-wider shadow-lg">
-                                        {activity.category}
-                                    </span>
-                                )}
-                                {activity.date && (
-                                    <span className="flex items-center gap-1.5 bg-black/30 backdrop-blur-sm px-3 py-1 rounded-full border border-white/10">
-                                        <Calendar className="h-4 w-4 text-yellow-400" />
-                                        {format(new Date(activity.date), "dd MMMM yyyy", { locale: idLocale })}
-                                    </span>
-                                )}
-                                {activity.location && (
-                                    <span className="flex items-center gap-1.5 bg-black/30 backdrop-blur-sm px-3 py-1 rounded-full border border-white/10">
-                                        <MapPin className="h-4 w-4 text-red-400" />
-                                        {activity.location}
-                                    </span>
-                                )}
+                <div className="container mx-auto px-4 pt-24 md:pt-32">
+                    {/* Hero Image */}
+                    <div className="relative h-[45vh] md:h-[60vh] w-full bg-gray-900 rounded-3xl overflow-hidden shadow-2xl">
+                        {activity.image_url ? (
+                            <Image
+                                src={activity.image_url}
+                                alt={activity.title}
+                                fill
+                                className="object-cover opacity-90"
+                                priority
+                            />
+                        ) : (
+                            <div className="w-full h-full bg-gray-800 flex items-center justify-center text-gray-500">
+                                <span className="text-4xl font-bold opacity-30">No Image</span>
                             </div>
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10" />
 
+                        <div className="absolute top-6 left-6 z-20">
+                            <Button variant="outline" size="icon" className="rounded-full bg-white/10 border-white/20 text-white hover:bg-white/20 backdrop-blur-md" asChild>
+                                <Link href="/aktifitas">
+                                    <ArrowLeft className="h-5 w-5" />
+                                </Link>
+                            </Button>
+                        </div>
+
+                        <div className="absolute top-6 right-6 z-20 flex gap-2">
                             {user && user.id === activity.user_id && (
-                                <Button variant="secondary" size="sm" className="mb-4" asChild>
-                                    <Link href={`/dashboard/edit-activity/${activity.id}`}>
-                                        Edit Aktifitas
-                                    </Link>
-                                </Button>
+                                <>
+                                    <Button variant="secondary" size="icon" className="rounded-full bg-white hover:bg-gray-100 text-gray-900 shadow-lg border-none transition-all hover:scale-105" asChild>
+                                        <Link href={`/dashboard/edit-activity/${activity.id}`}>
+                                            <Edit className="h-5 w-5" />
+                                        </Link>
+                                    </Button>
+                                    <DeleteActivityButton id={activity.id} />
+                                </>
                             )}
+                        </div>
 
-                            <h1 className="text-3xl md:text-5xl lg:text-6xl font-black text-white mb-6 drop-shadow-xl leading-tight tracking-tight">
-                                {activity.title}
-                            </h1>
-                            <div className="flex items-center gap-4">
-                                <div className="flex items-center gap-3 text-white bg-black/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/10">
-                                    <Avatar className="h-10 w-10 border-2 border-white/50 ring-2 ring-black/20">
-                                        <AvatarImage src={activity.profiles?.avatar_url || undefined} />
-                                        <AvatarFallback className="bg-primary text-white font-bold">{activity.profiles?.full_name?.[0] || "U"}</AvatarFallback>
-                                    </Avatar>
-                                    <div className="flex flex-col">
-                                        <span className="text-xs text-white/70 uppercase tracking-wider font-bold">Dibuat oleh</span>
-                                        <span className="font-bold text-sm md:text-base">{activity.profiles?.full_name || "Unknown User"}</span>
+                        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 z-20">
+                            <div className="max-w-4xl">
+                                <div className="flex flex-wrap items-center gap-2 md:gap-3 text-white/90 mb-3 md:mb-4 text-sm md:text-base font-medium animate-fade-in-up">
+                                    {activity.category && (
+                                        <span className="bg-primary/90 backdrop-blur-sm px-3 md:px-4 py-1.5 rounded-full text-white text-[10px] md:text-sm font-bold uppercase tracking-wider shadow-lg">
+                                            {activity.category}
+                                        </span>
+                                    )}
+                                    {activity.date && (
+                                        <span className="flex items-center gap-1.5 bg-black/30 backdrop-blur-sm px-2 md:px-3 py-1 rounded-full border border-white/10 text-xs md:text-base">
+                                            <Calendar className="h-3 w-3 md:h-4 md:w-4 text-yellow-400" />
+                                            {format(new Date(activity.date), "dd MMMM yyyy", { locale: idLocale })}
+                                        </span>
+                                    )}
+                                    {activity.location && (
+                                        <span className="flex items-center gap-1.5 bg-black/30 backdrop-blur-sm px-2 md:px-3 py-1 rounded-full border border-white/10 text-xs md:text-base">
+                                            <MapPin className="h-3 w-3 md:h-4 md:w-4 text-red-400" />
+                                            {activity.location}
+                                        </span>
+                                    )}
+                                </div>
+
+                                <h1 className="text-2xl md:text-5xl lg:text-6xl font-black text-white mb-4 md:mb-6 drop-shadow-xl leading-tight tracking-tight">
+                                    {activity.title}
+                                </h1>
+                                <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-3 text-white bg-black/40 backdrop-blur-md px-3 md:px-4 py-2 rounded-full border border-white/10">
+                                        <Avatar className="h-8 w-8 md:h-10 md:w-10 border-2 border-white/50 ring-2 ring-black/20">
+                                            <AvatarImage src={activity.profiles?.avatar_url || undefined} />
+                                            <AvatarFallback className="bg-primary text-white font-bold">{activity.profiles?.full_name?.[0] || "U"}</AvatarFallback>
+                                        </Avatar>
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] md:text-xs text-white/70 uppercase tracking-wider font-bold">Dibuat oleh</span>
+                                            <span className="font-bold text-xs md:text-base">{activity.profiles?.full_name || "Unknown User"}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -118,14 +124,14 @@ export default async function ActivityDetailPage({ params }: { params: Promise<{
                     </div>
                 </div>
 
-                <div className="container mx-auto px-4 -mt-12 relative z-30">
+                <div className="container mx-auto px-4 mt-8 relative z-30">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                         {/* Main Content */}
                         <div className="lg:col-span-8 space-y-8">
                             <Card className="border-none shadow-xl rounded-3xl overflow-hidden bg-white ring-1 ring-black/5">
-                                <CardContent className="p-6 md:p-10 space-y-6">
+                                <CardContent className="p-5 md:p-10 space-y-6">
                                     <div
-                                        className="prose prose-lg max-w-none text-gray-600 leading-loose"
+                                        className="prose md:prose-lg max-w-none text-gray-600 leading-loose"
                                         dangerouslySetInnerHTML={{ __html: activity.description || "" }}
                                     />
                                 </CardContent>

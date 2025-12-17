@@ -2,12 +2,12 @@ import { createClient } from "@/lib/supabase/server"
 import { Footer } from "@/components/layout/Footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { MapPin, Star, Wifi, Car, Coffee, Tent, Info, Share2, Heart, ArrowLeft, Edit } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { notFound } from "next/navigation"
-import { ImageSlider } from "@/components/ui/image-slider"
+import { notFound, redirect } from "next/navigation"
+import { CampAreaGallery } from "@/components/camp-area/camp-gallery"
 
 import { DeleteCampAreaButton } from "@/components/camp-area/delete-button"
 
@@ -20,12 +20,18 @@ export default async function CampAreaDetailPage({ params }: { params: Promise<{
 
     const { data: campArea } = await supabase
         .from("camp_areas")
-        .select("*")
+        .select(`
+            *,
+            profiles:user_id (
+                full_name,
+                avatar_url
+            )
+        `)
         .eq("id", id)
-        .single()
+        .maybeSingle()
 
     if (!campArea) {
-        notFound()
+        redirect("/camp-area")
     }
 
     const isOwner = user && campArea.user_id === user.id
@@ -94,11 +100,23 @@ export default async function CampAreaDetailPage({ params }: { params: Promise<{
                                             <MapPin className="h-4 w-4" /> {campArea.location || "Lokasi tidak tersedia"}
                                         </span>
                                     </div>
-                                    <h1 className="text-3xl md:text-5xl font-extrabold text-white mb-2 drop-shadow-md">
+                                    <h1 className="text-3xl md:text-5xl font-extrabold text-white mb-4 drop-shadow-md">
                                         {campArea.name}
                                     </h1>
-                                </div>
 
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex items-center gap-3 text-white bg-black/40 backdrop-blur-md px-3 md:px-4 py-2 rounded-full border border-white/10">
+                                            <Avatar className="h-8 w-8 md:h-10 md:w-10 border-2 border-white/50 ring-2 ring-black/20">
+                                                <AvatarImage src={campArea.profiles?.avatar_url || undefined} />
+                                                <AvatarFallback className="bg-primary text-white font-bold">{campArea.profiles?.full_name?.[0] || "U"}</AvatarFallback>
+                                            </Avatar>
+                                            <div className="flex flex-col">
+                                                <span className="text-[10px] md:text-xs text-white/70 uppercase tracking-wider font-bold">Dibuat oleh</span>
+                                                <span className="font-bold text-xs md:text-base">{campArea.profiles?.full_name || "Unknown User"}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -141,7 +159,7 @@ export default async function CampAreaDetailPage({ params }: { params: Promise<{
                             {campArea.additional_images && campArea.additional_images.length > 0 && (
                                 <section className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
                                     <h2 className="text-xl font-bold text-gray-900 mb-6">Galeri Foto</h2>
-                                    <ImageSlider images={campArea.additional_images} />
+                                    <CampAreaGallery images={campArea.additional_images} />
                                 </section>
                             )}
 
@@ -195,9 +213,9 @@ export default async function CampAreaDetailPage({ params }: { params: Promise<{
                         </div>
                     </div>
                 </div>
-            </main>
+            </main >
 
             <Footer />
-        </div>
+        </div >
     )
 }

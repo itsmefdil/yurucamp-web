@@ -6,11 +6,11 @@ import { X, ChevronLeft, ChevronRight, Maximize2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
-interface ActivityGalleryProps {
+interface CampAreaGalleryProps {
     images: string[]
 }
 
-export function ActivityGallery({ images }: ActivityGalleryProps) {
+export function CampAreaGallery({ images }: CampAreaGalleryProps) {
     const [isOpen, setIsOpen] = useState(false)
     const [currentIndex, setCurrentIndex] = useState(0)
 
@@ -77,34 +77,28 @@ export function ActivityGallery({ images }: ActivityGalleryProps) {
     return (
         <>
             {/* Thumbnail Grid (Main Page View) */}
-            <div className="space-y-6">
-                <h3 className="text-2xl font-bold text-gray-800 px-2 flex items-center gap-2">
-                    <div className="h-2 w-2 rounded-full bg-primary" />
-                    Galeri Foto
-                </h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {images.map((img, index) => (
-                        <div
-                            key={index}
-                            className={cn(
-                                "relative aspect-square rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group cursor-pointer bg-gray-100",
-                                index === 0 ? "col-span-2 row-span-2" : ""
-                            )}
-                            onClick={() => openGallery(index)}
-                        >
-                            <Image
-                                src={img}
-                                alt={`Foto aktivitas ${index + 1}`}
-                                fill
-                                className="object-cover group-hover:scale-105 transition-transform duration-500"
-                                sizes={index === 0 ? "(max-width: 768px) 100vw, 50vw" : "(max-width: 768px) 50vw, 25vw"}
-                            />
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 flex items-center justify-center">
-                                <Maximize2 className="text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg h-8 w-8" />
-                            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {images.map((img, index) => (
+                    <div
+                        key={index}
+                        className={cn(
+                            "relative aspect-square rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group cursor-pointer bg-gray-100",
+                            index === 0 ? "col-span-2 row-span-2" : ""
+                        )}
+                        onClick={() => openGallery(index)}
+                    >
+                        <Image
+                            src={img}
+                            alt={`Foto camp area ${index + 1}`}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-500"
+                            sizes={index === 0 ? "(max-width: 768px) 100vw, 50vw" : "(max-width: 768px) 50vw, 25vw"}
+                        />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 flex items-center justify-center">
+                            <Maximize2 className="text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg h-8 w-8" />
                         </div>
-                    ))}
-                </div>
+                    </div>
+                ))}
             </div>
 
             {/* Lightbox Modal - Milky Glass Theme */}
