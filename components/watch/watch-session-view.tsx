@@ -6,6 +6,10 @@ import Link from "next/link"
 import { useParams, useSearchParams, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { useEffect, useState } from "react"
+import { getVideoActivity } from "@/app/actions/interactions"
+import { LikeButton } from "@/components/activities/like-button"
+import { CommentSection } from "@/components/activities/comment-section"
+import { ShareButton } from "@/components/activities/share-button"
 
 // Mock Data
 const seasonData: Record<string, { title: string, description: string, episodes: { id: number, title: string, duration: string, thumbnail: string, videoId: string }[] }> = {
@@ -116,6 +120,35 @@ export function WatchSessionView() {
         router.push(`/watch/${seasonId}?ep=${epId}`, { scroll: false })
     }
 
+    // Interaction State
+    const [activityData, setActivityData] = useState<any>(null)
+    const [isLoading, setIsLoading] = useState(true)
+
+    // Fetch activity data when episode changes
+    useEffect(() => {
+        const fetchActivity = async () => {
+            setIsLoading(true)
+            try {
+                const data = await getVideoActivity(currentEpisode.videoId)
+                setActivityData(data)
+            } catch (error) {
+                console.error("Failed to fetch activity:", error)
+                setActivityData(null)
+            } finally {
+                setIsLoading(false)
+            }
+        }
+
+        fetchActivity()
+    }, [currentEpisode.videoId])
+
+    const scrollToComments = () => {
+        const element = document.getElementById("comments")
+        if (element) {
+            element.scrollIntoView({ behavior: "smooth" })
+        }
+    }
+
     return (
         <div className="container mx-auto px-0 md:px-4">
             <div className="flex flex-col lg:flex-row gap-0 lg:gap-8">
@@ -146,17 +179,49 @@ export function WatchSessionView() {
                             </p>
                         </div>
 
+                        {/* Social Actions */}
                         <div className="flex items-center gap-3 md:gap-4 overflow-x-auto pb-2 md:pb-0 no-scrollbar">
-                            <Button variant="secondary" className="rounded-full gap-2 bg-gray-100 text-gray-700 hover:bg-gray-200 border-none h-9 md:h-10 text-xs md:text-sm shrink-0 shadow-sm">
-                                <Heart className="h-4 w-4" /> 1.2k
-                            </Button>
-                            <Button variant="secondary" className="rounded-full gap-2 bg-gray-100 text-gray-700 hover:bg-gray-200 border-none h-9 md:h-10 text-xs md:text-sm shrink-0 shadow-sm">
-                                <Share2 className="h-4 w-4" /> Share
-                            </Button>
-                            <Button variant="secondary" className="rounded-full gap-2 bg-gray-100 text-gray-700 hover:bg-gray-200 border-none h-9 md:h-10 text-xs md:text-sm shrink-0 shadow-sm">
-                                <MessageCircle className="h-4 w-4" /> Comment
-                            </Button>
+                            {isLoading ? (
+                                <div className="flex gap-2">
+                                    <div className="h-10 w-24 bg-gray-200 rounded-full animate-pulse" />
+                                    <div className="h-10 w-24 bg-gray-200 rounded-full animate-pulse" />
+                                    <div className="h-10 w-10 bg-gray-200 rounded-full animate-pulse" />
+                                </div>
+                            ) : activityData ? (
+                                <>
+                                    <LikeButton
+                                        activityId={activityData.id}
+                                        initialIsLiked={activityData.isLiked}
+                                        initialLikeCount={activityData.likeCount}
+                                        isLoggedIn={!!activityData.currentUserId}
+                                    />
+                                    <Button
+                                        variant="secondary"
+                                        className="rounded-full gap-2 bg-gray-100 text-gray-700 hover:bg-gray-200 border-none h-9 md:h-10 text-xs md:text-sm shrink-0 shadow-sm"
+                                        onClick={scrollToComments}
+                                    >
+                                        <MessageCircle className="h-4 w-4" />
+                                        {activityData.activity_comments?.length || 0} Komentar
+                                    </Button>
+                                    <ShareButton />
+                                </>
+                            ) : (
+                                <div className="text-sm text-gray-500 italic">
+                                    Interaksi belum tersedia untuk video ini
+                                </div>
+                            )}
                         </div>
+
+                        {/* Comment Section */}
+                        {!isLoading && activityData && (
+                            <div className="mt-8">
+                                <CommentSection
+                                    activityId={activityData.id}
+                                    comments={activityData.activity_comments || []}
+                                    currentUserId={activityData.currentUserId}
+                                />
+                            </div>
+                        )}
                     </div>
                 </div>
 

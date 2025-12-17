@@ -38,6 +38,54 @@ export async function toggleLikeActivity(activityId: string) {
     revalidatePath(`/activity/${activityId}`)
 }
 
+export async function getVideoActivity(videoId: string) {
+    const supabase = await createClient()
+
+    const { data: activity } = await supabase
+        .from("activities")
+        .select(`
+            id,
+            video_id,
+            activity_likes (count),
+            activity_comments (
+                id,
+                content,
+                created_at,
+                user_id,
+                profiles (
+                    full_name,
+                    avatar_url
+                )
+            )
+        `)
+        .eq("video_id", videoId)
+        .single()
+
+    if (!activity) return null
+
+    // Get current user's like status
+    const { data: { user } } = await supabase.auth.getUser()
+    let isLiked = false
+
+    if (user) {
+        const { data: like } = await supabase
+            .from("activity_likes")
+            .select("id")
+            .eq("activity_id", activity.id)
+            .eq("user_id", user.id)
+            .single()
+
+        isLiked = !!like
+    }
+
+    return {
+        ...activity,
+        isLiked,
+        likeCount: activity.activity_likes[0]?.count || 0,
+        currentUserId: user?.id
+    }
+}
+
 export async function addComment(activityId: string, content: string) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
