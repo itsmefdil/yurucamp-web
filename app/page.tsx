@@ -7,11 +7,17 @@ import { ArrowRight, MapPin, Calendar, Activity, Tent, MessageSquare, Flame, Cam
 import { createClient } from "@/lib/supabase/server"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import Image from "next/image"
+import { getRandomImages } from "@/lib/cloudinary"
 
 export const dynamic = 'force-dynamic'
 
 export default async function Home() {
   const supabase = await createClient()
+  const randomImages = await getRandomImages(5, 'camp_areas')
+
+  // Create an array of 5 images, using random ones if available, or fallback
+  const heroImages = Array(5).fill('/yc-bg.png').map((defaultImg, i) => randomImages[i] || defaultImg)
+
   const { data: activities } = await supabase
     .from("activities")
     .select(`
@@ -21,8 +27,11 @@ export default async function Home() {
             avatar_url
         )
     `)
+  const { data: campAreas } = await supabase
+    .from("camp_areas")
+    .select("*")
     .order("created_at", { ascending: false })
-    .limit(4)
+    .limit(3)
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -59,9 +68,12 @@ export default async function Home() {
             ].map((item, i) => (
               <div
                 key={i}
-                className={`shrink-0 w-48 h-64 md:w-64 md:h-80 ${item.color} rounded-2xl shadow-lg transform ${item.rotate} hover:scale-105 hover:z-10 transition-all duration-300 border-4 border-white`}
+                className={`shrink-0 w-48 h-64 md:w-64 md:h-80 ${item.color} rounded-2xl shadow-lg transform ${item.rotate} hover:scale-105 hover:z-10 transition-all duration-300 border-4 border-white overflow-hidden`}
               >
-                <div className="w-full h-full opacity-50 mix-blend-multiply bg-[url('/yc-bg.png')] bg-cover bg-center rounded-xl" />
+                <div
+                  className="w-full h-full opacity-50 mix-blend-multiply bg-cover bg-center"
+                  style={{ backgroundImage: `url('${heroImages[i]}')` }}
+                />
               </div>
             ))}
           </div>
@@ -149,35 +161,35 @@ export default async function Home() {
               </Link>
             </Button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {activities?.map((activity: any) => (
               <Link key={activity.id} href={`/aktifitas/${activity.id}`} className="block group">
-                <Card className="overflow-hidden bg-white group-hover:-translate-y-1 transition-transform duration-300 h-full flex flex-col border-none shadow-md hover:shadow-xl">
-                  <div className="relative aspect-video bg-gray-100 overflow-hidden">
+                <Card className="overflow-hidden bg-white group-hover:-translate-y-2 transition-all duration-300 h-full flex flex-col border-2 border-transparent hover:border-orange-200 shadow-lg hover:shadow-2xl rounded-3xl">
+                  <div className="relative aspect-video bg-orange-50 overflow-hidden m-2 rounded-2xl">
                     <Image
                       src={activity.image_url || "/aktifitas.jpg"}
                       alt={activity.title}
                       fill
                       className="object-cover transition-transform duration-500 group-hover:scale-110"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-60" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-60" />
                     <div className="absolute bottom-3 left-3 right-3 text-white">
-                      <div className="flex items-center gap-1 text-xs font-medium">
+                      <div className="flex items-center gap-1 text-xs font-bold bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-full w-fit">
                         <MapPin className="h-3 w-3" />
-                        <span className="truncate">{activity.location || "Lokasi tidak tersedia"}</span>
+                        <span className="truncate max-w-[150px] inline-block align-bottom">{activity.location || "Lokasi tidak tersedia"}</span>
                       </div>
                     </div>
                   </div>
-                  <CardHeader className="p-4 pb-2">
-                    <CardTitle className="line-clamp-1 text-lg group-hover:text-primary transition-colors">{activity.title}</CardTitle>
+                  <CardHeader className="p-5 pb-2">
+                    <CardTitle className="line-clamp-2 text-xl font-bold text-gray-800 group-hover:text-orange-500 transition-colors leading-tight">{activity.title}</CardTitle>
                   </CardHeader>
-                  <CardFooter className="p-4 pt-0 mt-auto">
-                    <div className="flex items-center gap-2 w-full">
-                      <Avatar className="h-6 w-6">
+                  <CardFooter className="p-5 pt-0 mt-auto">
+                    <div className="flex items-center gap-3 w-full bg-orange-50/50 p-2 rounded-2xl">
+                      <Avatar className="h-8 w-8 border-2 border-white shadow-sm">
                         <AvatarImage src={activity.profiles?.avatar_url} />
-                        <AvatarFallback className="text-[10px]">{activity.profiles?.full_name?.[0] || "U"}</AvatarFallback>
+                        <AvatarFallback className="text-xs bg-orange-200 text-orange-700 font-bold">{activity.profiles?.full_name?.[0] || "U"}</AvatarFallback>
                       </Avatar>
-                      <span className="text-sm text-muted-foreground truncate flex-1">
+                      <span className="text-sm font-semibold text-gray-600 truncate flex-1">
                         {activity.profiles?.full_name || "Pengguna"}
                       </span>
                     </div>
@@ -186,54 +198,75 @@ export default async function Home() {
               </Link>
             ))}
             {(!activities || activities.length === 0) && (
-              <div className="col-span-full text-center py-12 text-gray-500">
-                Belum ada aktifitas terbaru.
+              <div className="col-span-full text-center py-12 text-gray-500 bg-orange-50 rounded-3xl border-2 border-dashed border-orange-200">
+                <Tent className="h-12 w-12 text-orange-300 mx-auto mb-3" />
+                <p className="font-medium">Belum ada aktifitas terbaru.</p>
               </div>
             )}
           </div>
         </section>
 
         {/* Camp Area Preview */}
-        <section className="py-12 md:py-32 px-4">
+        <section className="py-12 md:py-32 px-4 bg-orange-50/30">
           <div className="container mx-auto">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 md:mb-12">
-              <h2 className="text-2xl md:text-4xl font-extrabold text-gray-800 tracking-tight text-center md:text-left">Rekomendasi Camp Area</h2>
-              <Button variant="ghost" className="text-base md:text-lg hover:bg-orange-50 rounded-full px-6 w-full md:w-auto" asChild>
+              <h2 className="text-2xl md:text-4xl font-black text-gray-800 tracking-tight text-center md:text-left">
+                Rekomendasi <span className="text-orange-500">Camp Area</span>
+              </h2>
+              <Button variant="ghost" className="text-base md:text-lg hover:bg-orange-100 text-orange-600 font-bold rounded-full px-6 w-full md:w-auto" asChild>
                 <Link href="/camp-area" className="flex items-center justify-center gap-2">
                   Lihat Semua <ArrowRight className="h-5 w-5" />
                 </Link>
               </Button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-              {[1, 2, 3].map((i) => (
-                <Card key={i} className="bg-white">
-                  <div className="aspect-[4/3] bg-blue-100 animate-pulse rounded-t-3xl" />
-                  <CardHeader>
-                    <CardTitle className="text-2xl">Camp Area {i}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription className="flex items-center gap-1 text-base mb-4">
-                      <MapPin className="h-4 w-4" /> Lokasi {i}
-                    </CardDescription>
-                    <p className="text-base text-muted-foreground line-clamp-2">
-                      Deskripsi singkat mengenai camp area ini. Fasilitas lengkap dan pemandangan indah.
-                    </p>
-                  </CardContent>
-                  <CardFooter className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                    <div className="w-full sm:w-auto">
-                      <div className="flex -space-x-2 overflow-hidden">
-                        {[1, 2, 3].map((j) => (
-                          <div key={j} className="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-gray-200" />
-                        ))}
-                        <div className="flex items-center justify-center h-8 w-8 rounded-full ring-2 ring-white bg-gray-100 text-xs font-medium text-gray-500">+42</div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {campAreas?.map((campArea: any) => (
+                <Link key={campArea.id} href={`/camp-area/${campArea.id}`} className="block group">
+                  <Card className="bg-white overflow-hidden group-hover:-translate-y-2 transition-all duration-300 border-2 border-gray-100 hover:border-orange-300 shadow-xl hover:shadow-2xl h-full flex flex-col rounded-[2rem]">
+                    <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden m-2 rounded-[1.5rem]">
+                      <Image
+                        src={campArea.image_url || "/camp-placeholder.jpg"}
+                        alt={campArea.name}
+                        fill
+                        className="object-cover transition-transform duration-700 group-hover:scale-110"
+                      />
+                      <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-md px-4 py-1.5 rounded-full text-sm font-black text-orange-500 shadow-sm border border-orange-100">
+                        {campArea.price ? `Rp ${campArea.price.toLocaleString('id-ID')}` : "Gratis"}
                       </div>
                     </div>
-                    <Button className="w-full sm:w-auto rounded-full shadow-md" asChild>
-                      <Link href={`/acara/${i}`}>Daftar Sekarang</Link>
-                    </Button>
-                  </CardFooter>
-                </Card>
+                    <CardHeader className="px-6 pt-4 pb-2">
+                      <CardTitle className="text-2xl font-black text-gray-800 group-hover:text-orange-500 transition-colors">{campArea.name}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="px-6 flex-1">
+                      <CardDescription className="flex items-center gap-2 text-sm font-medium text-gray-500 mb-4 bg-gray-50 w-fit px-3 py-1 rounded-full">
+                        <MapPin className="h-3.5 w-3.5 text-orange-400" /> {campArea.location || "Lokasi tidak tersedia"}
+                      </CardDescription>
+                      <p className="text-gray-600 line-clamp-2 leading-relaxed text-sm">
+                        {campArea.description || "Tidak ada deskripsi tersedia."}
+                      </p>
+                    </CardContent>
+                    <CardFooter className="px-6 pb-6 pt-2 flex flex-col sm:flex-row justify-between items-center gap-4 mt-auto">
+                      <div className="flex flex-wrap gap-2">
+                        {campArea.facilities && campArea.facilities.slice(0, 3).map((facility: string, idx: number) => (
+                          <span key={idx} className="text-[10px] font-bold uppercase tracking-wider bg-orange-50 border border-orange-100 px-2 py-1 rounded-lg text-orange-600">{facility}</span>
+                        ))}
+                        {campArea.facilities && campArea.facilities.length > 3 && (
+                          <span className="text-[10px] font-bold bg-gray-100 px-2 py-1 rounded-lg text-gray-500">+{campArea.facilities.length - 3}</span>
+                        )}
+                      </div>
+                    </CardFooter>
+                  </Card>
+                </Link>
               ))}
+              {(!campAreas || campAreas.length === 0) && (
+                <div className="col-span-full text-center py-12 text-gray-500 bg-white rounded-[2rem] border-2 border-dashed border-gray-200">
+                  <div className="inline-block p-4 rounded-full bg-orange-50 mb-4">
+                    <Tent className="h-8 w-8 text-orange-400" />
+                  </div>
+                  <p className="font-bold text-lg text-gray-700">Belum ada rekomendasi</p>
+                  <p className="text-sm text-gray-400">Coba cek lagi nanti ya!</p>
+                </div>
+              )}
             </div>
           </div>
         </section>

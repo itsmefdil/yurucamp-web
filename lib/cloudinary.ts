@@ -73,3 +73,26 @@ export function getPublicIdFromUrl(url: string): string | null {
         return null;
     }
 }
+
+export async function getRandomImages(count: number = 5, folder: string = 'camp_areas'): Promise<string[]> {
+    try {
+        const result = await cloudinary.search
+            .expression(`folder:${folder} AND resource_type:image`)
+            .sort_by('created_at', 'desc')
+            .max_results(count * 3) // Fetch more to allow for better randomization
+            .execute();
+
+        if (!result || !result.resources) {
+            console.log("No resources found in Cloudinary search");
+            return [];
+        }
+
+        const resources = result.resources;
+        // Shuffle and pick count
+        const shuffled = resources.sort(() => 0.5 - Math.random());
+        return shuffled.slice(0, count).map((res: any) => res.secure_url);
+    } catch (error) {
+        console.error("Error fetching random images from Cloudinary:", error);
+        return [];
+    }
+}
