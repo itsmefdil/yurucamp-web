@@ -39,12 +39,20 @@ export async function addActivity(formData: FormData) {
 
     if (additionalImageFiles && additionalImageFiles.length > 0) {
         try {
-            const uploadPromises = additionalImageFiles
-                .filter(file => file.size > 0)
-                .map(file => uploadImage(file, "activities"))
+            // Upload sequentially to avoid hitting limits or timeouts
+            const filesToUpload = additionalImageFiles.filter(file => file.size > 0)
 
-            if (uploadPromises.length > 0) {
-                additional_images = await Promise.all(uploadPromises)
+            for (const file of filesToUpload) {
+                try {
+                    const url = await uploadImage(file, "activities")
+                    if (url) {
+                        additional_images.push(url)
+                    }
+                } catch (err) {
+                    console.error("Failed to upload one of the additional images:", err)
+                    // Abort if one fails to ensure consistency
+                    throw err
+                }
             }
         } catch (error) {
             console.error("Error uploading additional images:", error)
@@ -128,13 +136,20 @@ export async function updateActivity(id: string, formData: FormData) {
     // Handle additional images update (append new ones)
     if (additionalImageFiles && additionalImageFiles.length > 0) {
         try {
-            const uploadPromises = additionalImageFiles
-                .filter(file => file.size > 0)
-                .map(file => uploadImage(file, "activities"))
+            // Upload sequentially to avoid hitting limits or timeouts
+            const filesToUpload = additionalImageFiles.filter(file => file.size > 0)
 
-            if (uploadPromises.length > 0) {
-                const newImages = await Promise.all(uploadPromises)
-                additional_images = [...additional_images, ...newImages]
+            for (const file of filesToUpload) {
+                try {
+                    const url = await uploadImage(file, "activities")
+                    if (url) {
+                        additional_images.push(url)
+                    }
+                } catch (err) {
+                    console.error("Failed to upload one of the additional images:", err)
+                    // Abort if one fails to ensure consistency
+                    throw err
+                }
             }
         } catch (error) {
             console.error("Error uploading additional images:", error)
