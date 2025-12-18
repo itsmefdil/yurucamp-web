@@ -31,22 +31,7 @@ export default function EventsPage() {
     return (
         <div className="min-h-screen flex flex-col">
             <main className="flex-1">
-                {loading ? (
-                    <div className="container mx-auto px-4 py-8 space-y-6">
-                        <Skeleton className="h-[300px] w-full rounded-3xl" />
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {[1, 2, 3].map((i) => (
-                                <div key={i} className="space-y-4">
-                                    <Skeleton className="h-[250px] w-full rounded-2xl" />
-                                    <Skeleton className="h-4 w-[200px]" />
-                                    <Skeleton className="h-4 w-[150px]" />
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                ) : (
-                    <EventsView initialEvents={events} />
-                )}
+                <EventsView initialEvents={events} isLoading={loading} />
             </main>
             <Footer />
         </div>
