@@ -1,45 +1,59 @@
-import { createClient } from "@/lib/supabase/server"
+'use client'
+
+import { createClient } from "@/lib/supabase/client"
 import { Footer } from "@/components/layout/Footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { MapPin, Star, Wifi, Car, Coffee, Tent, Info, Share2, Heart, ArrowLeft, Edit } from "lucide-react"
+import { MapPin, Wifi, Car, Coffee, Tent, Info, ArrowLeft, Edit } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { notFound, redirect } from "next/navigation"
+import { notFound, useParams, useRouter } from "next/navigation"
 import { CampAreaGallery } from "@/components/camp-area/camp-gallery"
-
 import { DeleteCampAreaButton } from "@/components/camp-area/delete-button"
+import { useEffect, useState } from "react"
+import { Skeleton } from "@/components/ui/skeleton"
 
-export const dynamic = 'force-dynamic'
+export default function CampAreaDetailPage() {
+    const params = useParams()
+    const id = params.id as string
+    const router = useRouter()
 
-export default async function CampAreaDetailPage({ params }: { params: Promise<{ id: string }> }) {
-    const { id } = await params
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const [campArea, setCampArea] = useState<any>(null)
+    const [loading, setLoading] = useState(true)
+    const [user, setUser] = useState<any>(null)
 
-    const { data: campArea } = await supabase
-        .from("camp_areas")
-        .select(`
-            *,
-            profiles:user_id (
-                full_name,
-                avatar_url
-            )
-        `)
-        .eq("id", id)
-        .maybeSingle()
+    useEffect(() => {
+        const fetchData = async () => {
+            if (!id) return
 
-    if (!campArea) {
-        redirect("/camp-area")
-    }
+            const supabase = createClient()
+            const { data: { user } } = await supabase.auth.getUser()
+            setUser(user)
 
-    const isOwner = user && campArea.user_id === user.id
+            const { data: campArea } = await supabase
+                .from("camp_areas")
+                .select(`
+                    *,
+                    profiles:user_id (
+                        full_name,
+                        avatar_url
+                    )
+                `)
+                .eq("id", id)
+                .maybeSingle()
 
-    // Helper to check if a facility is available
-    const hasFacility = (facility: string) => {
-        return campArea.facilities?.includes(facility)
-    }
+            if (!campArea) {
+                router.push("/camp-area")
+                return
+            }
+
+            setCampArea(campArea)
+            setLoading(false)
+        }
+
+        fetchData()
+    }, [id, router])
 
     const facilityIcons: Record<string, any> = {
         "Wifi": Wifi,
@@ -48,6 +62,31 @@ export default async function CampAreaDetailPage({ params }: { params: Promise<{
         "Sewa Tenda": Tent,
         "Pusat Info": Info
     }
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex flex-col bg-[#fdfdfd]">
+                <main className="flex-1 pb-24 md:pb-12">
+                    <div className="container mx-auto px-4 pt-24 md:pt-32">
+                        <Skeleton className="h-[40vh] md:h-[50vh] w-full rounded-3xl" />
+                        <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            <div className="lg:col-span-2 space-y-8">
+                                <Skeleton className="h-[200px] w-full rounded-3xl" />
+                                <Skeleton className="h-[300px] w-full rounded-3xl" />
+                            </div>
+                            <div className="lg:col-span-1">
+                                <Skeleton className="h-[200px] w-full rounded-3xl" />
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        )
+    }
+
+    if (!campArea) return null // Should have redirected
+
+    const isOwner = user && campArea.user_id === user.id
 
     return (
         <div className="min-h-screen flex flex-col bg-[#fdfdfd]">
@@ -219,3 +258,4 @@ export default async function CampAreaDetailPage({ params }: { params: Promise<{
         </div >
     )
 }
+

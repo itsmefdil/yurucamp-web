@@ -1,19 +1,12 @@
 'use client'
-
-import useEmblaCarousel from 'embla-carousel-react'
-import { useCallback, useEffect } from 'react'
+import Image from 'next/image'
 
 interface InfiniteCarouselProps {
     images: string[]
 }
 
 export function InfiniteCarousel({ images }: InfiniteCarouselProps) {
-    const [emblaRef, emblaApi] = useEmblaCarousel({
-        loop: true,
-        align: 'center',
-        skipSnaps: false,
-        dragFree: false,
-    })
+    if (!images || images.length === 0) return null
 
     // Color classes for each image
     const colorClasses = [
@@ -24,33 +17,23 @@ export function InfiniteCarousel({ images }: InfiniteCarouselProps) {
         "bg-pink-100 rotate-[-1deg]"
     ]
 
-    const scrollPrev = useCallback(() => {
-        if (emblaApi) emblaApi.scrollPrev()
-    }, [emblaApi])
-
-    const scrollNext = useCallback(() => {
-        if (emblaApi) emblaApi.scrollNext()
-    }, [emblaApi])
-
-    useEffect(() => {
-        if (emblaApi) {
-            // Optional: Add any additional embla event listeners here
-        }
-    }, [emblaApi])
-
     return (
-        <div className="overflow-hidden pb-12 px-4 mask-linear-fade max-w-screen-xl mx-auto" ref={emblaRef}>
-            <div className="flex gap-3 md:gap-8 touch-pan-x">
+        <div className="w-full max-w-[100vw] overflow-hidden py-12">
+            <div className="flex gap-4 md:gap-8 overflow-x-auto pb-8 px-4 md:px-8 snap-x scroll-smooth no-scrollbar touch-pan-x items-center justify-start md:justify-center">
                 {images.map((img, i) => {
                     const colorIndex = i % colorClasses.length
                     return (
                         <div
                             key={i}
-                            className={`shrink-0 w-44 h-60 md:w-64 md:h-80 ${colorClasses[colorIndex]} rounded-2xl shadow-lg transform hover:scale-105 hover:z-10 transition-all duration-300 border-4 border-white overflow-hidden active:scale-95`}
+                            className={`shrink-0 w-[40vw] md:w-64 aspect-[3/4] ${colorClasses[colorIndex]} rounded-2xl shadow-lg transform hover:scale-105 hover:z-10 transition-all duration-300 border-4 border-white overflow-hidden active:scale-95 relative snap-center`}
                         >
-                            <div
-                                className="w-full h-full opacity-50 mix-blend-multiply bg-cover bg-center"
-                                style={{ backgroundImage: `url('${img}')` }}
+                            <Image
+                                src={img}
+                                alt={`Hero Image ${i + 1}`}
+                                fill
+                                sizes="(max-width: 768px) 40vw, 256px"
+                                className="object-cover object-center opacity-80 mix-blend-multiply"
+                                priority={i < 5}
                             />
                         </div>
                     )

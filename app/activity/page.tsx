@@ -1,28 +1,46 @@
-import { createClient } from "@/lib/supabase/server"
+'use client'
 
+import { createClient } from "@/lib/supabase/client"
+import { useEffect, useState } from "react"
 import { Footer } from "@/components/layout/Footer"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Plus } from "lucide-react"
 import { ActivityFeed } from "@/components/activities/activity-feed"
+import { Skeleton } from "@/components/ui/skeleton"
 
-export const dynamic = 'force-dynamic'
+export default function ActivitiesPage() {
+    const [activities, setActivities] = useState<any[]>([])
+    const [loading, setLoading] = useState(true)
+    const [user, setUser] = useState<any>(null)
 
-export default async function ActivitiesPage() {
-    const supabase = await createClient()
-    const { data: activities } = await supabase
-        .from("activities")
-        .select(`
-            *,
-            profiles:user_id (
-                full_name,
-                avatar_url
-            )
-        `)
-        .order("created_at", { ascending: false })
+    useEffect(() => {
+        const fetchData = async () => {
+            const supabase = createClient()
 
-    const { data: { user } } = await supabase.auth.getUser()
+            const { data: { user } } = await supabase.auth.getUser()
+            setUser(user)
+
+            const { data } = await supabase
+                .from("activities")
+                .select(`
+                    *,
+                    profiles:user_id (
+                        full_name,
+                        avatar_url
+                    )
+                `)
+                .order("created_at", { ascending: false })
+
+            if (data) {
+                setActivities(data)
+            }
+            setLoading(false)
+        }
+
+        fetchData()
+    }, [])
 
     return (
         <div className="min-h-screen flex flex-col bg-gray-50">
@@ -62,9 +80,27 @@ export default async function ActivitiesPage() {
             </div>
 
             <main className="flex-1 container mx-auto px-4 -mt-8 relative z-20 pb-24">
-                <ActivityFeed initialActivities={activities || []} currentUser={user} />
+                {loading ? (
+                    <div className="space-y-6">
+                        {[1, 2, 3].map((i) => (
+                            <div key={i} className="bg-white rounded-3xl p-4 shadow-sm space-y-4">
+                                <div className="flex items-center gap-4">
+                                    <Skeleton className="h-12 w-12 rounded-full" />
+                                    <div className="space-y-2">
+                                        <Skeleton className="h-4 w-[200px]" />
+                                        <Skeleton className="h-4 w-[150px]" />
+                                    </div>
+                                </div>
+                                <Skeleton className="h-[300px] w-full rounded-xl" />
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <ActivityFeed initialActivities={activities} currentUser={user} />
+                )}
             </main>
             <Footer />
         </div>
     )
 }
+

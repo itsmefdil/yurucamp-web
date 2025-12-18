@@ -1,3 +1,5 @@
+'use client'
+
 import { Footer } from "@/components/layout/Footer"
 import { WatchSessionView } from "@/components/watch/watch-session-view"
 

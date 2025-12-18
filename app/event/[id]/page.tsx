@@ -1,59 +1,114 @@
+'use client'
+
 import { Footer } from "@/components/layout/Footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Calendar, MapPin, Users, Clock, Share2, Heart, CheckCircle2 } from "lucide-react"
-import Image from "next/image"
+import { Calendar, MapPin, Users, Share2, Heart, CheckCircle2, ArrowLeft } from "lucide-react"
 import Link from "next/link"
-import { createClient } from "@/lib/supabase/server"
-import { notFound } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
+import { notFound, useParams } from "next/navigation"
 import { JoinEventButton } from "@/components/events/join-event-button"
 import { ParticipantsModal } from "@/components/events/participants-modal"
+import { useEffect, useState } from "react"
+import { Skeleton } from "@/components/ui/skeleton"
 
-export const dynamic = 'force-dynamic'
+export default function EventDetailPage() {
+    const params = useParams()
+    const id = params.id as string
 
-export default async function EventDetailPage(props: { params: Promise<{ id: string }> }) {
-    const params = await props.params;
-    const supabase = await createClient()
-    const { data: event } = await supabase
-        .from("events")
-        .select(`
-            *,
-            organizer:organizer_id (
-                full_name,
-                avatar_url,
-                phone
-            )
-        `)
-        .eq("id", params.id)
-        .single()
+    const [event, setEvent] = useState<any>(null)
+    const [participants, setParticipants] = useState<any[]>([])
+    const [participantsCount, setParticipantsCount] = useState(0)
+    const [isUserParticipating, setIsUserParticipating] = useState(false)
+    const [loading, setLoading] = useState(true)
+    const [user, setUser] = useState<any>(null)
 
-    if (!event) {
-        notFound()
+    useEffect(() => {
+        const fetchData = async () => {
+            if (!id) return
+
+            const supabase = createClient()
+            const { data: { user } } = await supabase.auth.getUser()
+            setUser(user)
+
+            // Fetch event
+            const { data: eventData } = await supabase
+                .from("events")
+                .select(`
+                    *,
+                    organizer:organizer_id (
+                        full_name,
+                        avatar_url,
+                        phone
+                    )
+                `)
+                .eq("id", id)
+                .single()
+
+            if (!eventData) {
+                setLoading(false)
+                return
+            }
+            setEvent(eventData)
+
+            // Fetch participants
+            const { data: participantsData, count } = await supabase
+                .from("event_participants")
+                .select(`
+                    user:user_id (
+                        full_name,
+                        avatar_url
+                    )
+                `, { count: 'exact' })
+                .eq("event_id", id)
+
+            setParticipants(participantsData || [])
+            setParticipantsCount(count || 0)
+
+            // Check participation
+            if (user) {
+                const { data: userParticipation } = await supabase
+                    .from("event_participants")
+                    .select("id")
+                    .eq("event_id", id)
+                    .eq("user_id", user.id)
+                    .single()
+                setIsUserParticipating(!!userParticipation)
+            }
+
+            setLoading(false)
+        }
+
+        fetchData()
+    }, [id])
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex flex-col bg-[#fdfdfd]">
+                <main className="flex-1 pb-24 md:pb-12">
+                    <div className="container mx-auto pt-32 px-4">
+                        <Skeleton className="h-[400px] w-full rounded-3xl mb-8" />
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                            <div className="lg:col-span-2 space-y-12">
+                                <Skeleton className="h-[200px] w-full rounded-3xl" />
+                                <Skeleton className="h-[150px] w-full rounded-3xl" />
+                            </div>
+                            <div className="space-y-8">
+                                <Skeleton className="h-[300px] w-full rounded-3xl" />
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        )
     }
 
-    const { data: { user } } = await supabase.auth.getUser()
+    if (!event) {
+        return notFound()
+    }
+
     const isOrganizer = user?.id === event.organizer_id
-
-    const { data: participants, count: participantsCount } = await supabase
-        .from("event_participants")
-        .select(`
-            user:user_id (
-                full_name,
-                avatar_url
-            )
-        `, { count: 'exact' })
-        .eq("event_id", params.id)
-
-    // Check participation
-    const { data: userParticipation } = user ? await supabase
-        .from("event_participants")
-        .select("id")
-        .eq("event_id", params.id)
-        .eq("user_id", user.id)
-        .single() : { data: null }
-
-    const isUserParticipating = !!userParticipation
 
     return (
         <div className="min-h-screen flex flex-col bg-[#fdfdfd]">
@@ -62,14 +117,21 @@ export default async function EventDetailPage(props: { params: Promise<{ id: str
                 <div className="relative bg-primary/5 pt-32 pb-12 md:py-32 px-4">
                     <div className="container mx-auto">
                         <div className="flex flex-col md:flex-row gap-8 items-start">
-                            {/* ... (image section remains same) */}
                             <div className="w-full md:w-1/2 bg-gray-200 rounded-3xl overflow-hidden shadow-lg relative group">
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
                                     src={event.image_url || "/event-placeholder.jpg"}
                                     alt={event.title}
                                     className="w-full h-auto object-contain"
                                 />
+                                <div className="absolute top-4 left-4 z-20">
+                                    <Button variant="secondary" size="icon" className="rounded-full bg-white/80 backdrop-blur-sm hover:bg-white text-gray-700 shadow-sm" asChild>
+                                        <Link href="/event">
+                                            <ArrowLeft className="h-5 w-5" />
+                                        </Link>
+                                    </Button>
+                                </div>
                                 <div className="absolute top-4 right-4 flex gap-2">
                                     <Button variant="secondary" size="icon" className="rounded-full bg-white/80 backdrop-blur-sm hover:bg-white text-gray-700 shadow-sm">
                                         <Share2 className="h-5 w-5" />
@@ -306,3 +368,4 @@ export default async function EventDetailPage(props: { params: Promise<{ id: str
         </div>
     )
 }
+
