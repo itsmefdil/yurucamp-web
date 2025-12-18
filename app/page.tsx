@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/server"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import Image from "next/image"
 import { getRandomImages } from "@/lib/cloudinary"
+import { InfiniteCarousel } from "@/components/ui/infinite-carousel"
 
 export const dynamic = 'force-dynamic'
 
@@ -64,26 +65,8 @@ export default async function Home() {
             </div>
           </div>
 
-          {/* Image Strip */}
-          <div className="flex justify-center gap-4 md:gap-8 overflow-x-auto pb-12 px-4 no-scrollbar mask-linear-fade">
-            {heroImages.map((img, i) => (
-              <div
-                key={i}
-                className={`shrink-0 w-48 h-64 md:w-64 md:h-80 ${[
-                  "bg-orange-100 rotate-[-3deg]",
-                  "bg-blue-100 rotate-[2deg]",
-                  "bg-green-100 rotate-[-2deg]",
-                  "bg-yellow-100 rotate-[3deg]",
-                  "bg-pink-100 rotate-[-1deg]"
-                ][i]} rounded-2xl shadow-lg transform hover:scale-105 hover:z-10 transition-all duration-300 border-4 border-white overflow-hidden`}
-              >
-                <div
-                  className="w-full h-full opacity-50 mix-blend-multiply bg-cover bg-center"
-                  style={{ backgroundImage: `url('${img}')` }}
-                />
-              </div>
-            ))}
-          </div>
+          {/* Image Strip - Infinite Carousel */}
+          <InfiniteCarousel images={heroImages} />
         </section>
 
         {/* Gambaran Umum */}
