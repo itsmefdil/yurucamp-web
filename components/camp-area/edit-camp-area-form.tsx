@@ -11,6 +11,7 @@ import Link from "next/link"
 import { useState, useRef } from "react"
 import { createCampArea } from "@/app/actions/camp-area"
 import { toast } from "sonner"
+import { compressImage } from "@/lib/utils/image-compression"
 
 interface EditCampAreaFormProps {
     initialData: any
@@ -24,6 +25,7 @@ export function EditCampAreaForm({ initialData, action, buttonText = "Simpan Per
     const [existingAdditionalImages, setExistingAdditionalImages] = useState<string[]>(initialData?.additional_images || [])
     const [additionalFiles, setAdditionalFiles] = useState<File[]>([])
     const [loading, setLoading] = useState(false)
+    const [statusMessage, setStatusMessage] = useState("")
 
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
@@ -73,18 +75,45 @@ export function EditCampAreaForm({ initialData, action, buttonText = "Simpan Per
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         setLoading(true)
+        setStatusMessage("Mempersiapkan...")
 
         const formData = new FormData(e.currentTarget)
+        const coverImage = formData.get('image') as File
 
-        // Append additional files
-        additionalFiles.forEach(file => {
-            formData.append('additional_images', file)
-        })
+        // Compress Cover Image
+        if (coverImage && coverImage.size > 0) {
+            setStatusMessage("Mengompres cover...")
+            try {
+                const compressedCover = await compressImage(coverImage)
+                formData.set('image', compressedCover)
+            } catch (err) {
+                console.error("Failed to compress cover image", err)
+            }
+        }
+
+        // Compress Additional Images
+        // Clear existing additional_images from formData to re-append compressed ones
+        formData.delete('additional_images')
+
+        let processedCount = 0
+        for (const file of additionalFiles) {
+            processedCount++
+            setStatusMessage(`Mengompres foto ${processedCount}/${additionalFiles.length}...`)
+            try {
+                const compressedFile = await compressImage(file)
+                formData.append('additional_images', compressedFile)
+            } catch (err) {
+                console.error("Failed to compress additional image", err)
+                formData.append('additional_images', file)
+            }
+        }
 
         // Append kept existing images
         existingAdditionalImages.forEach(url => {
             formData.append('kept_images', url)
         })
+
+        setStatusMessage("Mengupload data...")
 
         try {
             const result = await action(formData)
@@ -104,6 +133,7 @@ export function EditCampAreaForm({ initialData, action, buttonText = "Simpan Per
             toast.error("Terjadi kesalahan saat menyimpan")
         } finally {
             setLoading(false)
+            setStatusMessage("")
         }
     }
 
@@ -332,7 +362,7 @@ export function EditCampAreaForm({ initialData, action, buttonText = "Simpan Per
                         ) : (
                             <Plus className="h-5 w-5 mr-2" />
                         )}
-                        {loading ? "Menyimpan..." : buttonText}
+                        {loading ? statusMessage : buttonText}
                     </Button>
                 </div>
             </div>

@@ -11,6 +11,7 @@ import Link from "next/link"
 import { useState, useRef } from "react"
 import { createCampArea } from "@/app/actions/camp-area"
 import { toast } from "sonner"
+import { compressImage } from "@/lib/utils/image-compression"
 
 interface AddCampAreaFormProps {
     action: (formData: FormData) => Promise<{ error?: string } | void>
@@ -23,6 +24,7 @@ export function AddCampAreaForm({ action, buttonText = "Tambah Camp Area" }: Add
     const [existingAdditionalImages, setExistingAdditionalImages] = useState<string[]>([])
     const [additionalFiles, setAdditionalFiles] = useState<File[]>([])
     const [loading, setLoading] = useState(false)
+    const [statusMessage, setStatusMessage] = useState("")
 
     // Refs for file inputs
     const coverInputRef = useRef<HTMLInputElement>(null)
@@ -71,16 +73,44 @@ export function AddCampAreaForm({ action, buttonText = "Tambah Camp Area" }: Add
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         setLoading(true)
+        setStatusMessage("Mempersiapkan...")
 
         const formData = new FormData(e.currentTarget)
+        const coverImage = formData.get('image') as File
 
-        additionalFiles.forEach(file => {
-            formData.append('additional_images', file)
-        })
+        // Compress Cover Image
+        if (coverImage && coverImage.size > 0) {
+            setStatusMessage("Mengompres cover...")
+            try {
+                const compressedCover = await compressImage(coverImage)
+                formData.set('image', compressedCover)
+            } catch (err) {
+                console.error("Failed to compress cover image", err)
+            }
+        }
+
+        // Compress Additional Images
+        // Clear existing additional_images from formData to re-append compressed ones
+        formData.delete('additional_images')
+
+        let processedCount = 0
+        for (const file of additionalFiles) {
+            processedCount++
+            setStatusMessage(`Mengompres foto ${processedCount}/${additionalFiles.length}...`)
+            try {
+                const compressedFile = await compressImage(file)
+                formData.append('additional_images', compressedFile)
+            } catch (err) {
+                console.error("Failed to compress additional image", err)
+                formData.append('additional_images', file)
+            }
+        }
 
         existingAdditionalImages.forEach(url => {
             formData.append('kept_images', url)
         })
+
+        setStatusMessage("Mengupload data...")
 
         try {
             const result = await action(formData)
@@ -99,6 +129,7 @@ export function AddCampAreaForm({ action, buttonText = "Tambah Camp Area" }: Add
             toast.error("Terjadi kesalahan saat menyimpan")
         } finally {
             setLoading(false)
+            setStatusMessage("")
         }
     }
 
@@ -317,7 +348,7 @@ export function AddCampAreaForm({ action, buttonText = "Tambah Camp Area" }: Add
                         ) : (
                             <Plus className="h-5 w-5 mr-2" />
                         )}
-                        {loading ? "Menyimpan..." : buttonText}
+                        {loading ? statusMessage : buttonText}
                     </Button>
                 </div>
             </div>
