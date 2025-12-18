@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ArrowLeft, Image as ImageIcon, MapPin, X, Plus, Wifi, Car, Coffee, Tent, Info, Loader2 } from "lucide-react"
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { createCampArea } from "@/app/actions/camp-area"
 import { toast } from "sonner"
 
@@ -107,194 +107,231 @@ export function EditCampAreaForm({ initialData, action, buttonText = "Simpan Per
         return initialData?.facilities?.includes(facility)
     }
 
+    // Refs for file inputs
+    const coverInputRef = useRef<HTMLInputElement>(null)
+    const galleryInputRef = useRef<HTMLInputElement>(null)
+
     return (
-        <Card className="border-none shadow-lg bg-white/50 backdrop-blur-sm">
-            <CardContent className="p-6">
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Image Upload Area */}
-                        <div className="space-y-2">
-                            <Label>Foto Utama</Label>
-                            <div className="relative aspect-video rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 flex flex-col items-center justify-center overflow-hidden hover:bg-gray-100 transition-colors group">
-                                <input
-                                    id="image-upload"
-                                    name="image"
-                                    type="file"
-                                    accept="image/*"
-                                    className="hidden"
-                                    onChange={handleImageUpload}
-                                />
-                                {selectedImage ? (
-                                    <>
-                                        <img src={selectedImage} alt="Preview" className="w-full h-full object-cover" />
-
-                                        {/* Overlay to change image */}
-                                        <label
-                                            htmlFor="image-upload"
-                                            className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white"
-                                        >
-                                            <ImageIcon className="h-8 w-8 mb-2" />
-                                            <span className="font-medium">Ganti Foto</span>
-                                        </label>
-
-                                        <Button
-                                            type="button"
-                                            size="icon"
-                                            variant="destructive"
-                                            className="absolute top-2 right-2 rounded-full h-8 w-8 z-10 hover:scale-110 transition-transform"
-                                            onClick={() => {
-                                                setSelectedImage(null)
-                                                const input = document.getElementById('image-upload') as HTMLInputElement
-                                                if (input) input.value = ''
-                                            }}
-                                        >
-                                            <X className="h-4 w-4" />
-                                        </Button>
-                                    </>
-                                ) : (
-                                    <label htmlFor="image-upload" className="cursor-pointer w-full h-full flex flex-col items-center justify-center">
-                                        <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center text-primary mb-2 group-hover:scale-110 transition-transform">
-                                            <ImageIcon className="h-6 w-6" />
-                                        </div>
-                                        <p className="text-sm font-medium text-gray-500">Klik untuk upload foto</p>
-                                    </label>
-                                )}
-                            </div>
+        <form onSubmit={handleSubmit} className="space-y-8">
+            {/* Cover Image Area */}
+            <div
+                className="group relative w-full h-[30vh] md:h-[40vh] bg-gray-100 rounded-3xl overflow-hidden cursor-pointer hover:bg-gray-200 transition-colors"
+                onClick={() => coverInputRef.current?.click()}
+            >
+                <input
+                    ref={coverInputRef}
+                    id="image-upload"
+                    name="image"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleImageUpload}
+                />
+                {selectedImage ? (
+                    <>
+                        <img src={selectedImage} alt="Cover" className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center">
+                            <Button
+                                type="button"
+                                variant="secondary"
+                                size="sm"
+                                className="opacity-0 group-hover:opacity-100 transition-opacity translate-y-2 group-hover:translate-y-0"
+                            >
+                                <ImageIcon className="mr-2 h-4 w-4" />
+                                Ganti Cover
+                            </Button>
                         </div>
+                    </>
+                ) : (
+                    <div className="flex flex-col items-center justify-center h-full text-gray-400 gap-4">
+                        <ImageIcon className="h-12 w-12 opacity-50" />
+                        <span className="font-medium text-lg">Tambahkan Cover</span>
+                    </div>
+                )}
+            </div>
 
-                        {/* Additional Images */}
-                        <div className="space-y-2">
-                            <Label>Foto Tambahan</Label>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                {additionalImagePreviews.map((preview, i) => (
-                                    <div key={i} className="relative aspect-square rounded-xl overflow-hidden group bg-gray-100 border border-gray-200">
-                                        <img src={preview} alt={`Additional ${i}`} className="w-full h-full object-cover" />
-                                        <Button
-                                            type="button"
-                                            size="icon"
-                                            variant="destructive"
-                                            className="absolute top-2 right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                                            onClick={() => removeAdditionalImage(i)}
-                                        >
-                                            <X className="h-3 w-3" />
-                                        </Button>
-                                    </div>
-                                ))}
-                                <label className="aspect-square rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 transition-colors">
-                                    <Plus className="h-6 w-6 text-gray-400 mb-2" />
-                                    <span className="text-xs text-gray-500 font-medium">Tambah</span>
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        multiple
-                                        className="hidden"
-                                        onChange={handleAdditionalImagesUpload}
-                                        name="additional_images"
-                                    />
-                                </label>
-                            </div>
+            <div className="px-4 md:px-8 space-y-8">
+                {/* Title Input */}
+                <Input
+                    id="name"
+                    name="name"
+                    placeholder="Nama Camp Area..."
+                    className="text-4xl md:text-5xl font-black border-none shadow-none px-0 focus-visible:ring-0 placeholder:text-gray-300 h-auto py-2"
+                    required
+                    autoComplete="off"
+                    defaultValue={initialData?.name}
+                />
+
+                {/* Properties Grid */}
+                <div className="grid gap-4 max-w-2xl">
+                    {/* Location */}
+                    <div className="flex items-center gap-4 text-gray-600">
+                        <div className="w-32 flex items-center gap-2 text-sm font-medium text-gray-500">
+                            <MapPin className="h-4 w-4" />
+                            Lokasi
                         </div>
+                        <Input
+                            id="location"
+                            name="location"
+                            placeholder="Dimana lokasinya?"
+                            className="flex-1 border-none shadow-none bg-transparent hover:bg-gray-50 focus-visible:ring-0 px-2 h-9"
+                            required
+                            defaultValue={initialData?.location}
+                        />
+                    </div>
 
-                        {/* Name */}
-                        <div className="space-y-2">
-                            <Label htmlFor="name">Nama Camp Area</Label>
-                            <Input id="name" name="name" placeholder="Contoh: Pine Forest Camp" className="rounded-xl py-6 bg-gray-50 border-gray-200" required defaultValue={initialData?.name} />
+                    {/* Price */}
+                    <div className="flex items-center gap-4 text-gray-600">
+                        <div className="w-32 flex items-center gap-2 text-sm font-medium text-gray-500">
+                            <span className="font-bold text-xs bg-gray-200 rounded px-1">Rp</span>
+                            Harga
                         </div>
-
-                        {/* Location */}
-                        <div className="space-y-2">
-                            <Label htmlFor="location">Lokasi</Label>
-                            <div className="relative">
-                                <MapPin className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                                <Input id="location" name="location" placeholder="Cari lokasi..." className="rounded-xl pl-10 py-6 bg-gray-50 border-gray-200" required defaultValue={initialData?.location} />
-                            </div>
-                        </div>
-
-                        {/* Description */}
-                        <div className="space-y-2">
-                            <Label htmlFor="description">Deskripsi</Label>
-                            <Textarea
-                                id="description"
-                                name="description"
-                                placeholder="Jelaskan keunggulan tempat ini..."
-                                className="rounded-xl bg-gray-50 border-gray-200 min-h-[120px] resize-none"
+                        <div className="flex items-center flex-1 gap-2">
+                            <Input
+                                id="price"
+                                name="price"
+                                type="number"
+                                placeholder="50000"
+                                className="flex-1 border-none shadow-none bg-transparent hover:bg-gray-50 focus-visible:ring-0 px-2 h-9"
                                 required
-                                defaultValue={initialData?.description}
+                                defaultValue={initialData?.price}
                             />
+                            <span className="text-sm text-gray-400 whitespace-nowrap">/ malam</span>
                         </div>
-
-                        {/* Facilities */}
-                        <div className="space-y-3">
-                            <Label>Fasilitas</Label>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="flex items-center space-x-2 p-3 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors">
-                                    <Checkbox id="wifi" name="wifi" defaultChecked={hasFacility("Wifi")} />
-                                    <Label htmlFor="wifi" className="flex items-center gap-2 cursor-pointer font-normal">
-                                        <Wifi className="h-4 w-4 text-primary" /> Free Wifi
-                                    </Label>
-                                </div>
-                                <div className="flex items-center space-x-2 p-3 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors">
-                                    <Checkbox id="parking" name="parking" defaultChecked={hasFacility("Parkir Luas")} />
-                                    <Label htmlFor="parking" className="flex items-center gap-2 cursor-pointer font-normal">
-                                        <Car className="h-4 w-4 text-primary" /> Parkir Luas
-                                    </Label>
-                                </div>
-                                <div className="flex items-center space-x-2 p-3 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors">
-                                    <Checkbox id="canteen" name="canteen" defaultChecked={hasFacility("Kantin")} />
-                                    <Label htmlFor="canteen" className="flex items-center gap-2 cursor-pointer font-normal">
-                                        <Coffee className="h-4 w-4 text-primary" /> Kantin
-                                    </Label>
-                                </div>
-                                <div className="flex items-center space-x-2 p-3 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors">
-                                    <Checkbox id="tent" name="tent" />
-                                    <Label htmlFor="tent" className="flex items-center gap-2 cursor-pointer font-normal">
-                                        <Tent className="h-4 w-4 text-primary" /> Sewa Tenda
-                                    </Label>
-                                </div>
-                                <div className="flex items-center space-x-2 p-3 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors">
-                                    <Checkbox id="info" name="info" />
-                                    <Label htmlFor="info" className="flex items-center gap-2 cursor-pointer font-normal">
-                                        <Info className="h-4 w-4 text-primary" /> Pusat Info
-                                    </Label>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Price */}
-                        <div className="space-y-2">
-                            <Label htmlFor="price">Harga Mulai Dari</Label>
-                            <div className="relative">
-                                <span className="absolute left-3 top-3 text-gray-500 font-bold">Rp</span>
-                                <Input
-                                    id="price"
-                                    name="price"
-                                    type="number"
-                                    placeholder="50.000"
-                                    className="rounded-xl pl-10 py-6 bg-gray-50 border-gray-200"
-                                    required
-                                    defaultValue={initialData?.price}
-                                />
-                                <span className="absolute right-3 top-3 text-gray-400 text-sm">/ malam</span>
-                            </div>
-                        </div>
-
                     </div>
-                    <div className="pt-4">
+                </div>
+
+                <div className="h-px bg-gray-100 my-8" />
+
+                {/* Description */}
+                <div className="min-h-[200px]">
+                    <Textarea
+                        id="description"
+                        name="description"
+                        placeholder="Jelaskan keunggulan dan detail tempat ini..."
+                        className="min-h-[200px] border-none shadow-none resize-none text-lg leading-relaxed focus-visible:ring-0 px-0 placeholder:text-gray-300"
+                        required
+                        defaultValue={initialData?.description}
+                    />
+                </div>
+
+                <div className="h-px bg-gray-100 my-8" />
+
+                {/* Facilities */}
+                <div className="space-y-4">
+                    <Label className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                        <Tent className="h-5 w-5" />
+                        Fasilitas
+                    </Label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <label className="flex items-center space-x-3 p-4 rounded-xl border border-gray-200 hover:bg-gray-50 hover:border-primary/50 transition-all cursor-pointer group">
+                            <Checkbox name="wifi" className="data-[state=checked]:bg-primary data-[state=checked]:border-primary" defaultChecked={hasFacility('Wifi')} />
+                            <div className="flex items-center gap-2">
+                                <Wifi className="h-4 w-4 text-gray-500 group-hover:text-primary" />
+                                <span className="font-medium text-gray-700 group-hover:text-gray-900">Free Wifi</span>
+                            </div>
+                        </label>
+                        <label className="flex items-center space-x-3 p-4 rounded-xl border border-gray-200 hover:bg-gray-50 hover:border-primary/50 transition-all cursor-pointer group">
+                            <Checkbox name="parking" className="data-[state=checked]:bg-primary data-[state=checked]:border-primary" defaultChecked={hasFacility('Parkir Luas')} />
+                            <div className="flex items-center gap-2">
+                                <Car className="h-4 w-4 text-gray-500 group-hover:text-primary" />
+                                <span className="font-medium text-gray-700 group-hover:text-gray-900">Parkir Luas</span>
+                            </div>
+                        </label>
+                        <label className="flex items-center space-x-3 p-4 rounded-xl border border-gray-200 hover:bg-gray-50 hover:border-primary/50 transition-all cursor-pointer group">
+                            <Checkbox name="canteen" className="data-[state=checked]:bg-primary data-[state=checked]:border-primary" defaultChecked={hasFacility('Kantin')} />
+                            <div className="flex items-center gap-2">
+                                <Coffee className="h-4 w-4 text-gray-500 group-hover:text-primary" />
+                                <span className="font-medium text-gray-700 group-hover:text-gray-900">Kantin</span>
+                            </div>
+                        </label>
+                        <label className="flex items-center space-x-3 p-4 rounded-xl border border-gray-200 hover:bg-gray-50 hover:border-primary/50 transition-all cursor-pointer group">
+                            <Checkbox name="tent" className="data-[state=checked]:bg-primary data-[state=checked]:border-primary" defaultChecked={hasFacility('Sewa Tenda')} />
+                            <div className="flex items-center gap-2">
+                                <Tent className="h-4 w-4 text-gray-500 group-hover:text-primary" />
+                                <span className="font-medium text-gray-700 group-hover:text-gray-900">Sewa Tenda</span>
+                            </div>
+                        </label>
+                        <label className="flex items-center space-x-3 p-4 rounded-xl border border-gray-200 hover:bg-gray-50 hover:border-primary/50 transition-all cursor-pointer group">
+                            <Checkbox name="info" className="data-[state=checked]:bg-primary data-[state=checked]:border-primary" defaultChecked={hasFacility('Pusat Info')} />
+                            <div className="flex items-center gap-2">
+                                <Info className="h-4 w-4 text-gray-500 group-hover:text-primary" />
+                                <span className="font-medium text-gray-700 group-hover:text-gray-900">Pusat Info</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div className="h-px bg-gray-100 my-8" />
+
+                {/* Gallery */}
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-bold text-gray-800">Galeri Foto</h3>
                         <Button
-                            type="submit"
-                            className="w-full rounded-full py-6 text-lg shadow-lg gap-2"
-                            disabled={loading}
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => galleryInputRef.current?.click()}
+                            className="rounded-full"
                         >
-                            {loading ? (
-                                <Loader2 className="h-5 w-5 animate-spin" />
-                            ) : (
-                                <Plus className="h-5 w-5" />
-                            )}
-                            {loading ? "Menyimpan..." : buttonText}
+                            <Plus className="h-4 w-4 mr-2" />
+                            Tambah Foto
                         </Button>
+                        <input
+                            ref={galleryInputRef}
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            className="hidden"
+                            onChange={handleAdditionalImagesUpload}
+                            name="additional_images"
+                        />
                     </div>
-                </form>
-            </CardContent>
-        </Card>
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                        {additionalImagePreviews.map((preview, i) => (
+                            <div key={i} className="relative aspect-square rounded-xl overflow-hidden group bg-gray-100">
+                                <img src={preview} alt={`Additional ${i}`} className="w-full h-full object-cover" />
+                                <Button
+                                    type="button"
+                                    size="icon"
+                                    variant="destructive"
+                                    className="absolute top-2 right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                    onClick={() => removeAdditionalImage(i)}
+                                >
+                                    <X className="h-3 w-3" />
+                                </Button>
+                            </div>
+                        ))}
+                        {additionalImagePreviews.length === 0 && (
+                            <div
+                                className="col-span-full py-12 flex flex-col items-center justify-center text-gray-400 border-2 border-dashed border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 hover:border-gray-200 transition-all"
+                                onClick={() => galleryInputRef.current?.click()}
+                            >
+                                <ImageIcon className="h-8 w-8 mb-2 opacity-50" />
+                                <span className="text-sm">Belum ada foto tambahan</span>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Submit Action */}
+                <div className="sticky bottom-6 flex justify-end pt-4 pointer-events-none">
+                    <Button
+                        type="submit"
+                        className="pointer-events-auto rounded-full h-12 px-8 text-base font-bold shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1"
+                        disabled={loading}
+                    >
+                        {loading ? (
+                            <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                        ) : (
+                            <Plus className="h-5 w-5 mr-2" />
+                        )}
+                        {loading ? "Menyimpan..." : buttonText}
+                    </Button>
+                </div>
+            </div>
+        </form>
     )
 }
