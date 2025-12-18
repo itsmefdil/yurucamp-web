@@ -10,7 +10,9 @@ import { useState, useRef } from "react"
 import { toast } from "sonner"
 import { Activity } from "@/types/activity"
 import Image from "next/image"
+import Link from "next/link"
 import dynamic from "next/dynamic"
+import { compressImage } from "@/lib/utils/image-compression"
 
 const Editor = dynamic(() => import("@/components/ui/blocknote-editor"), { ssr: false })
 
@@ -23,6 +25,7 @@ interface ActivityFormProps {
 export function ActivityForm({ initialData, action, buttonText = "Tambah Aktifitas" }: ActivityFormProps) {
     const [coverImagePreview, setCoverImagePreview] = useState<string | null>(initialData?.image_url || null)
     const [loading, setLoading] = useState(false)
+    const [statusMessage, setStatusMessage] = useState("")
     const [description, setDescription] = useState(initialData?.description || "")
 
     // State for additional images
@@ -87,17 +90,45 @@ export function ActivityForm({ initialData, action, buttonText = "Tambah Aktifit
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         setLoading(true)
+        setStatusMessage("Mempersiapkan...")
 
         const formData = new FormData(e.currentTarget)
         formData.set('description', description)
 
-        newFiles.forEach(file => {
-            formData.append('additional_images', file)
-        })
+        // Compress Cover Image
+        const coverImage = formData.get('image') as File
+        if (coverImage && coverImage.size > 0) {
+            setStatusMessage("Mengompres cover...")
+            try {
+                const compressedCover = await compressImage(coverImage)
+                formData.set('image', compressedCover)
+            } catch (err) {
+                console.error("Failed to compress cover image", err)
+            }
+        }
+
+        // Compress Additional Images
+        // Clear existing additional_images from formData to re-append compressed ones
+        formData.delete('additional_images')
+
+        let processedCount = 0
+        for (const file of newFiles) {
+            processedCount++
+            setStatusMessage(`Mengompres foto ${processedCount}/${newFiles.length}...`)
+            try {
+                const compressedFile = await compressImage(file)
+                formData.append('additional_images', compressedFile)
+            } catch (err) {
+                console.error("Failed to compress additional image", err)
+                formData.append('additional_images', file)
+            }
+        }
 
         existingImages.forEach(url => {
             formData.append('kept_images', url)
         })
+
+        setStatusMessage("Mengupload data...")
 
         try {
             const result = await action(formData)
@@ -115,6 +146,7 @@ export function ActivityForm({ initialData, action, buttonText = "Tambah Aktifit
             toast.error("Terjadi kesalahan")
         } finally {
             setLoading(false)
+            setStatusMessage("")
         }
     }
 
@@ -333,7 +365,7 @@ export function ActivityForm({ initialData, action, buttonText = "Tambah Aktifit
                         ) : (
                             <Plus className="h-5 w-5 mr-2" />
                         )}
-                        {loading ? "Menyimpan..." : buttonText}
+                        {loading ? statusMessage : buttonText}
                     </Button>
                 </div>
             </div>
