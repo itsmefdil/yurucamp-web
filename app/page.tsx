@@ -1,92 +1,107 @@
+'use client'
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-
 import { Footer } from "@/components/layout/Footer"
 import Link from "next/link"
 import { ArrowRight, MapPin, Calendar, Activity, Tent, MessageSquare, Flame, Camera } from "lucide-react"
-import { createClient } from "@/lib/supabase/server"
+import { createClient } from "@/lib/supabase/client"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import Image from "next/image"
-import { getRandomImages } from "@/lib/cloudinary"
+import { InfiniteCarousel } from "@/components/ui/infinite-carousel"
+import { useEffect, useState } from "react"
+import { fetchHeroImages } from "@/app/actions/get-images"
+import { Skeleton } from "@/components/ui/skeleton"
 
-export const dynamic = 'force-dynamic'
+export default function Home() {
+  const [heroImages, setHeroImages] = useState<string[]>([])
+  const [activities, setActivities] = useState<any[]>([])
+  const [campAreas, setCampAreas] = useState<any[]>([])
+  const [events, setEvents] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
-export default async function Home() {
-  const supabase = await createClient()
-  const randomImages = await getRandomImages(5, 'camp_areas')
+  useEffect(() => {
+    const fetchData = async () => {
+      const supabase = createClient()
 
-  // Create an array of 5 images, using random ones if available, or fallback
-  const heroImages = Array(5).fill('/yc-bg.png').map((defaultImg, i) => randomImages[i] || defaultImg)
+      try {
+        const [
+          heroImagesData,
+          { data: activitiesData },
+          { data: campAreasData },
+          { data: eventsData }
+        ] = await Promise.all([
+          fetchHeroImages(5),
+          supabase
+            .from("activities")
+            .select(`
+                *,
+                profiles:user_id (
+                    full_name,
+                    avatar_url
+                )
+            `)
+            .limit(3),
+          supabase
+            .from("camp_areas")
+            .select("*")
+            .order("created_at", { ascending: false })
+            .limit(3),
+          supabase
+            .from("events")
+            .select("*")
+            .order("date_start", { ascending: true })
+            .gte('date_start', new Date().toISOString())
+            .limit(3)
+        ])
 
-  const { data: activities } = await supabase
-    .from("activities")
-    .select(`
-        *,
-        profiles:user_id (
-            full_name,
-            avatar_url
-        )
-    `)
-  const { data: campAreas } = await supabase
-    .from("camp_areas")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(3)
+        setHeroImages(heroImagesData)
+        if (activitiesData) setActivities(activitiesData)
+        if (campAreasData) setCampAreas(campAreasData)
+        if (eventsData) setEvents(eventsData)
+      } catch (error) {
+        console.error("Error fetching data:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
 
-  const { data: events } = await supabase
-    .from("events")
-    .select("*")
-    .order("date_start", { ascending: true })
-    .gte('date_start', new Date().toISOString())
-    .limit(3)
+    fetchData()
+  }, [])
 
   return (
     <div className="min-h-screen flex flex-col">
 
       <main className="flex-1 pt-4 md:pt-8 pb-24 md:pb-0">
         {/* Hero Section */}
-        {/* Hero Section */}
         <section className="relative pt-20 pb-32 md:pt-32 md:pb-48 px-4 overflow-hidden">
           <div className="container mx-auto text-center relative z-10">
-            <span className="text-sm md:text-base font-bold tracking-[0.2em] text-muted-foreground uppercase mb-4 block">
+            <span className="text-sm md:text-base font-bold tracking-[0.2em] text-muted-foreground uppercase mb-4 block animate-in fade-in slide-in-from-bottom-4 duration-500">
               Komunitas Camping
             </span>
-            <h1 className="text-6xl md:text-9xl font-black tracking-tighter text-gray-800 mb-2">
+            <h1 className="text-6xl md:text-9xl font-black tracking-tighter text-gray-800 mb-2 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-100">
               Yuru<span className="text-primary">Camp</span>
             </h1>
-            <h2 className="text-3xl md:text-5xl font-bold text-gray-700 mb-6">
+            <h2 className="text-3xl md:text-5xl font-bold text-gray-700 mb-6 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
               Indonesia
             </h2>
-            <div className="flex justify-center gap-3 text-muted-foreground font-medium text-sm md:text-lg mb-16">
+            <div className="flex justify-center gap-3 text-muted-foreground font-medium text-sm md:text-lg mb-16 animate-in fade-in zoom-in duration-700 delay-300">
               <span>#camping</span>
               <span>#alam</span>
               <span>#santai</span>
             </div>
           </div>
 
-          {/* Image Strip */}
-          <div className="flex justify-center gap-4 md:gap-8 overflow-x-auto pb-12 px-4 no-scrollbar mask-linear-fade">
-            {heroImages.map((img, i) => (
-              <div
-                key={i}
-                className={`shrink-0 w-48 h-64 md:w-64 md:h-80 ${[
-                  "bg-orange-100 rotate-[-3deg]",
-                  "bg-blue-100 rotate-[2deg]",
-                  "bg-green-100 rotate-[-2deg]",
-                  "bg-yellow-100 rotate-[3deg]",
-                  "bg-pink-100 rotate-[-1deg]"
-                ][i]} rounded-2xl shadow-lg transform hover:scale-105 hover:z-10 transition-all duration-300 border-4 border-white overflow-hidden`}
-              >
-                <div
-                  className="w-full h-full opacity-50 mix-blend-multiply bg-cover bg-center"
-                  style={{ backgroundImage: `url('${img}')` }}
-                />
-              </div>
-            ))}
-          </div>
+          {/* Image Strip - Infinite Carousel */}
+          {loading && heroImages.length === 0 ? (
+            <div className="container mx-auto">
+              <Skeleton className="h-[300px] w-full rounded-2xl" />
+            </div>
+          ) : (
+            <InfiniteCarousel images={heroImages} />
+          )}
         </section>
 
-        {/* Gambaran Umum */}
         {/* Agenda Kami / Gambaran Umum */}
         <section className="py-16 md:py-24 bg-white">
           <div className="container mx-auto px-4">
@@ -169,7 +184,9 @@ export default async function Home() {
             </Button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {activities?.map((activity: any) => (
+            {loading ? Array(3).fill(0).map((_, i) => (
+              <Skeleton key={i} className="h-[300px] w-full rounded-[2rem]" />
+            )) : activities.map((activity: any) => (
               <Link key={activity.id} href={`/activity/${activity.id}`} className="block group">
                 <Card className="overflow-hidden bg-white group-hover:-translate-y-2 transition-all duration-300 h-full flex flex-col border-2 border-transparent hover:border-orange-200 shadow-lg hover:shadow-2xl rounded-[2rem]">
                   <div className="relative aspect-video bg-orange-50 overflow-hidden m-2 rounded-[1.5rem]">
@@ -204,7 +221,7 @@ export default async function Home() {
                 </Card>
               </Link>
             ))}
-            {(!activities || activities.length === 0) && (
+            {(!loading && (!activities || activities.length === 0)) && (
               <div className="col-span-full text-center py-12 text-gray-500 bg-orange-50 rounded-[2rem] border-2 border-dashed border-orange-200">
                 <Tent className="h-12 w-12 text-orange-300 mx-auto mb-3" />
                 <p className="font-medium">Belum ada aktifitas terbaru.</p>
@@ -227,7 +244,9 @@ export default async function Home() {
               </Button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {campAreas?.map((campArea: any) => (
+              {loading ? Array(3).fill(0).map((_, i) => (
+                <Skeleton key={i} className="h-[400px] w-full rounded-[2rem]" />
+              )) : campAreas.map((campArea: any) => (
                 <Link key={campArea.id} href={`/camp-area/${campArea.id}`} className="block group">
                   <Card className="bg-white overflow-hidden group-hover:-translate-y-2 transition-all duration-300 border-2 border-gray-100 hover:border-orange-300 shadow-xl hover:shadow-2xl h-full flex flex-col rounded-[2rem]">
                     <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden m-2 rounded-[1.5rem]">
@@ -265,7 +284,7 @@ export default async function Home() {
                   </Card>
                 </Link>
               ))}
-              {(!campAreas || campAreas.length === 0) && (
+              {(!loading && (!campAreas || campAreas.length === 0)) && (
                 <div className="col-span-full text-center py-12 text-gray-500 bg-white rounded-[2rem] border-2 border-dashed border-gray-200">
                   <div className="inline-block p-4 rounded-full bg-orange-50 mb-4">
                     <Tent className="h-8 w-8 text-orange-400" />
@@ -290,7 +309,9 @@ export default async function Home() {
               </Button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {events?.map((event) => (
+              {loading ? Array(3).fill(0).map((_, i) => (
+                <Skeleton key={i} className="h-[350px] w-full rounded-[2rem]" />
+              )) : events.map((event) => (
                 <div key={event.id} className="group relative h-full">
                   <Link href={`/event/${event.id}`} className="block h-full">
                     {/* Decorative Card Offset */}
@@ -330,7 +351,7 @@ export default async function Home() {
                   </Link>
                 </div>
               ))}
-              {(!events || events.length === 0) && (
+              {(!loading && (!events || events.length === 0)) && (
                 <div className="col-span-full text-center py-12 text-gray-500 bg-orange-50 rounded-[2rem] border-2 border-dashed border-orange-200">
                   <Calendar className="h-12 w-12 text-orange-300 mx-auto mb-3" />
                   <p className="font-medium">Belum ada acara mendatang.</p>
@@ -345,3 +366,4 @@ export default async function Home() {
     </div>
   )
 }
+

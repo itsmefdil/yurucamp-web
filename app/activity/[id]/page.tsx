@@ -1,11 +1,13 @@
+'use client'
+
 import { Footer } from "@/components/layout/Footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Heart, MessageCircle, Share2, MapPin, Calendar, User, ArrowLeft } from "lucide-react"
+import { MessageCircle, MapPin, Calendar, ArrowLeft, Edit } from "lucide-react"
 import Image from "next/image"
-import { createClient } from "@/lib/supabase/server"
-import { notFound, redirect } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
+import { notFound, useParams } from "next/navigation"
 import { format } from "date-fns"
 import { id as idLocale } from "date-fns/locale"
 import Link from "next/link"
@@ -14,68 +16,120 @@ import { DeleteActivityButton } from "@/components/activities/delete-button"
 import { LikeButton } from "@/components/activities/like-button"
 import { CommentSection } from "@/components/activities/comment-section"
 import { ShareButton } from "@/components/activities/share-button"
-import { Edit } from "lucide-react"
+import { useEffect, useState } from "react"
+import { Skeleton } from "@/components/ui/skeleton"
 
-export default async function ActivityDetailPage({ params }: { params: Promise<{ id: string }> }) {
-    const { id } = await params
-    const supabase = await createClient()
+export default function ActivityDetailPage() {
+    const params = useParams()
+    const id = params.id as string
 
-    const { data: { user } } = await supabase.auth.getUser()
+    const [activity, setActivity] = useState<any>(null)
+    const [comments, setComments] = useState<any[]>([])
+    const [likeCount, setLikeCount] = useState(0)
+    const [isLiked, setIsLiked] = useState(false)
+    const [otherActivities, setOtherActivities] = useState<any[]>([])
+    const [loading, setLoading] = useState(true)
+    const [user, setUser] = useState<any>(null)
 
-    const { data: activity, error } = await supabase
-        .from("activities")
-        .select(`
-            *,
-            profiles:user_id (
-                full_name,
-                avatar_url
-            )
-        `)
-        .eq("id", id)
-        .maybeSingle()
+    useEffect(() => {
+        const fetchData = async () => {
+            if (!id) return
 
-    if (error) {
-        console.error("Error fetching activity:", error)
+            const supabase = createClient()
+            const { data: { user } } = await supabase.auth.getUser()
+            setUser(user)
+
+            // Fetch activity
+            const { data: activityData, error } = await supabase
+                .from("activities")
+                .select(`
+                    *,
+                    profiles:user_id (
+                        full_name,
+                        avatar_url
+                    )
+                `)
+                .eq("id", id)
+                .maybeSingle()
+
+            if (error || !activityData) {
+                console.error("Error fetching activity:", error)
+                setLoading(false)
+                return
+            }
+            setActivity(activityData)
+
+            // Fetch comments
+            const { data: commentsData } = await supabase
+                .from("activity_comments")
+                .select(`
+                    *,
+                    profiles:user_id (
+                        full_name,
+                        avatar_url
+                    )
+                `)
+                .eq("activity_id", id)
+                .order("created_at", { ascending: false })
+            setComments(commentsData || [])
+
+            // Fetch like count
+            const { count } = await supabase
+                .from("activity_likes")
+                .select("*", { count: 'exact', head: true })
+                .eq("activity_id", id)
+            setLikeCount(count || 0)
+
+            // Check if liked
+            if (user) {
+                const { data: likeData } = await supabase
+                    .from("activity_likes")
+                    .select("id")
+                    .eq("activity_id", id)
+                    .eq("user_id", user.id)
+                    .maybeSingle()
+                setIsLiked(!!likeData)
+            }
+
+            // Fetch other activities
+            const { data: otherData } = await supabase
+                .from("activities")
+                .select("id, title, date, location, image_url")
+                .neq("id", id)
+                .order("created_at", { ascending: false })
+                .limit(5)
+            setOtherActivities(otherData || [])
+
+            setLoading(false)
+        }
+
+        fetchData()
+    }, [id])
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex flex-col bg-[#f8f9fa]">
+                <main className="flex-1 pb-24 md:pb-12">
+                    <div className="container mx-auto px-4 pt-24 md:pt-32">
+                        <Skeleton className="h-[45vh] md:h-[60vh] w-full rounded-3xl" />
+                        <div className="mt-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+                            <div className="lg:col-span-8 space-y-8">
+                                <Skeleton className="h-[200px] w-full rounded-3xl" />
+                                <Skeleton className="h-[100px] w-full rounded-3xl" />
+                            </div>
+                            <div className="lg:col-span-4">
+                                <Skeleton className="h-[400px] w-full rounded-3xl" />
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        )
     }
 
-    // Fetch comments
-    const { data: comments } = await supabase
-        .from("activity_comments")
-        .select(`
-            *,
-            profiles:user_id (
-                full_name,
-                avatar_url
-            )
-        `)
-        .eq("activity_id", id)
-        .order("created_at", { ascending: false })
-
-    // Fetch like count
-    const { count: likeCount } = await supabase
-        .from("activity_likes")
-        .select("*", { count: 'exact', head: true })
-        .eq("activity_id", id)
-
-    // Check if current user liked
-    let isLiked = false
-    if (user) {
-        const { data: likeData } = await supabase
-            .from("activity_likes")
-            .select("id")
-            .eq("activity_id", id)
-            .eq("user_id", user.id)
-            .maybeSingle()
-        isLiked = !!likeData
+    if (!activity) {
+        return notFound()
     }
-
-    // Fetch other activities (limit 5)
-    const { data: otherActivities } = await supabase
-        .from("activities")
-        .select("id, title, date, location, image_url")
-        .neq("id", id)
-        .order("created_at", { ascending: false })
-        .limit(5)
 
     return (
         <div className="min-h-screen flex flex-col bg-[#f8f9fa]">
@@ -217,7 +271,7 @@ export default async function ActivityDetailPage({ params }: { params: Promise<{
                                 <CardContent className="p-0 space-y-4">
                                     {otherActivities && otherActivities.length > 0 ? (
                                         otherActivities.map((item) => (
-                                            <Link href={`/aktifitas/${item.id}`} key={item.id} className="flex gap-4 group p-2 hover:bg-gray-50 rounded-xl transition-all duration-300">
+                                            <Link href={`/activity/${item.id}`} key={item.id} className="flex gap-4 group p-2 hover:bg-gray-50 rounded-xl transition-all duration-300">
                                                 <div className="relative w-20 h-20 rounded-xl overflow-hidden shrink-0">
                                                     <Image
                                                         src={item.image_url || "/placeholder.jpg"}

@@ -1,3 +1,5 @@
+'use client'
+
 import { Footer } from "@/components/layout/Footer"
 import { ChevronRight, Star, Tv, Play } from "lucide-react"
 import Link from "next/link"

@@ -21,6 +21,10 @@ export async function addActivity(formData: FormData) {
     const imageFile = formData.get("image") as File
     const additionalImageFiles = formData.getAll("additional_images") as File[]
 
+    if (additionalImageFiles.length > 10) {
+        return { error: "Maksimal 10 foto tambahan diperbolehkan" }
+    }
+
     let image_url = null
     let additional_images: string[] = []
 
@@ -44,6 +48,7 @@ export async function addActivity(formData: FormData) {
             }
         } catch (error) {
             console.error("Error uploading additional images:", error)
+            return { error: "Gagal mengupload foto tambahan" }
         }
     }
 
@@ -102,6 +107,10 @@ export async function updateActivity(id: string, formData: FormData) {
     const additionalImageFiles = formData.getAll("additional_images") as File[]
     const keptImages = formData.getAll("kept_images") as string[]
 
+    if (keptImages.length + additionalImageFiles.length > 10) {
+        return { error: "Maksimal 10 foto tambahan diperbolehkan" }
+    }
+
     let image_url = existingActivity.image_url
     // Start with the images the user chose to keep
     let additional_images: string[] = keptImages
@@ -129,6 +138,7 @@ export async function updateActivity(id: string, formData: FormData) {
             }
         } catch (error) {
             console.error("Error uploading additional images:", error)
+            return { error: "Gagal mengupload foto tambahan" }
         }
     }
 

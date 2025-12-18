@@ -47,6 +47,17 @@ export function ActivityForm({ initialData, action, buttonText = "Tambah Aktifit
     const handleAdditionalImagesSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
             const files = Array.from(e.target.files)
+
+            // Check if adding these files would exceed the limit
+            const currentTotal = existingImages.length + newFiles.length
+            if (currentTotal + files.length > 10) {
+                toast.error("Maksimal 10 foto tambahan")
+                if (fileInputRef.current) {
+                    fileInputRef.current.value = ''
+                }
+                return
+            }
+
             const newPreviews: string[] = []
 
             files.forEach(file => {
@@ -126,12 +137,12 @@ export function ActivityForm({ initialData, action, buttonText = "Tambah Aktifit
                             fill
                             className="object-cover"
                         />
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center">
+                        <div className="absolute inset-0 bg-black/20 md:bg-black/0 md:group-hover:bg-black/20 transition-all flex items-center justify-center">
                             <Button
                                 type="button"
                                 variant="secondary"
                                 size="sm"
-                                className="opacity-0 group-hover:opacity-100 transition-opacity translate-y-2 group-hover:translate-y-0"
+                                className="bg-white/90 hover:bg-white text-gray-900 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all translate-y-0 md:translate-y-2 md:group-hover:translate-y-0 shadow-lg backdrop-blur-sm"
                             >
                                 <ImageIcon className="mr-2 h-4 w-4" />
                                 Ganti Cover
@@ -224,17 +235,21 @@ export function ActivityForm({ initialData, action, buttonText = "Tambah Aktifit
                 {/* Additional Images Gallery */}
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                        <h3 className="text-lg font-bold text-gray-800">Galeri Foto</h3>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => fileInputRef.current?.click()}
-                            className="rounded-full"
-                        >
-                            <Plus className="h-4 w-4 mr-2" />
-                            Tambah Foto
-                        </Button>
+                        <h3 className="text-lg font-bold text-gray-800">
+                            Galeri Foto <span className="text-sm font-normal text-gray-500 ml-2">({existingImages.length + newFiles.length}/10)</span>
+                        </h3>
+                        {existingImages.length + newFiles.length < 10 && (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => fileInputRef.current?.click()}
+                                className="rounded-full"
+                            >
+                                <Plus className="h-4 w-4 mr-2" />
+                                Tambah Foto
+                            </Button>
+                        )}
                         <input
                             ref={fileInputRef}
                             type="file"
@@ -258,7 +273,7 @@ export function ActivityForm({ initialData, action, buttonText = "Tambah Aktifit
                                 <Button
                                     size="icon"
                                     variant="destructive"
-                                    className="absolute top-2 right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                    className="absolute top-2 right-2 h-6 w-6 rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                                     onClick={() => removeExistingImage(i)}
                                     type="button"
                                 >
@@ -277,7 +292,7 @@ export function ActivityForm({ initialData, action, buttonText = "Tambah Aktifit
                                 <Button
                                     size="icon"
                                     variant="destructive"
-                                    className="absolute top-2 right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                    className="absolute top-2 right-2 h-6 w-6 rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                                     onClick={() => removeNewFile(i)}
                                     type="button"
                                 >
@@ -292,6 +307,11 @@ export function ActivityForm({ initialData, action, buttonText = "Tambah Aktifit
                             >
                                 <ImageIcon className="h-8 w-8 mb-2 opacity-50" />
                                 <span className="text-sm">Belum ada foto tambahan</span>
+                            </div>
+                        )}
+                        {existingImages.length + newFiles.length >= 10 && (
+                            <div className="col-span-full py-4 text-center text-sm text-yellow-600 bg-yellow-50 rounded-xl">
+                                Maksimal 10 foto tercapai
                             </div>
                         )}
                     </div>
