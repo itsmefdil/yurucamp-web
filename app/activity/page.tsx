@@ -80,30 +80,7 @@ export default function ActivitiesPage() {
             </div>
 
             <main className="flex-1 container mx-auto px-4 -mt-6 relative z-20 pb-24">
-                {loading ? (
-                    <div className="space-y-4">
-                        {[1, 2, 3].map((i) => (
-                            <div key={i} className="bg-white rounded-xl p-4 shadow-sm space-y-4">
-                                <div className="flex items-center gap-3">
-                                    <Skeleton className="h-10 w-10 rounded-full" />
-                                    <div className="space-y-2">
-                                        <Skeleton className="h-4 w-[120px]" />
-                                        <Skeleton className="h-3 w-[80px]" />
-                                    </div>
-                                </div>
-                                <Skeleton className="h-4 w-full" />
-                                <Skeleton className="h-[250px] w-full rounded-md" />
-                                <div className="flex justify-between pt-2">
-                                    <Skeleton className="h-8 w-20" />
-                                    <Skeleton className="h-8 w-20" />
-                                    <Skeleton className="h-8 w-20" />
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <ActivityFeed initialActivities={activities} currentUser={user} />
-                )}
+                <ActivityFeed initialActivities={activities} currentUser={user} isLoading={loading} />
             </main>
             <Footer />
         </div>

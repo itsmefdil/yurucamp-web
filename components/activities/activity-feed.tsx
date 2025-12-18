@@ -15,12 +15,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Activity } from "@/types/activity"
 import { User } from "@supabase/supabase-js"
 
+import { Skeleton } from "@/components/ui/skeleton"
+
 interface ActivityFeedProps {
     initialActivities: Activity[]
     currentUser: User | null
+    isLoading?: boolean
 }
 
-export function ActivityFeed({ initialActivities, currentUser }: ActivityFeedProps) {
+export function ActivityFeed({ initialActivities, currentUser, isLoading = false }: ActivityFeedProps) {
     const [searchQuery, setSearchQuery] = useState("")
 
     const filteredActivities = initialActivities.filter(activity =>
@@ -49,7 +52,24 @@ export function ActivityFeed({ initialActivities, currentUser }: ActivityFeedPro
                 </div>
             </div>
 
-            {filteredActivities.length === 0 ? (
+            {isLoading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {[1, 2, 3, 4, 5, 6].map((i) => (
+                        <div key={i} className="space-y-4 bg-white p-4 rounded-[2rem] shadow-sm border border-gray-100">
+                            <Skeleton className="aspect-[4/3] w-full rounded-2xl" />
+                            <div className="space-y-2">
+                                <Skeleton className="h-6 w-3/4" />
+                                <Skeleton className="h-4 w-full" />
+                                <Skeleton className="h-4 w-2/3" />
+                            </div>
+                            <div className="flex justify-between pt-2">
+                                <Skeleton className="h-10 w-10 rounded-full" />
+                                <Skeleton className="h-10 w-10 rounded-full" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ) : filteredActivities.length === 0 ? (
                 <div className="text-center py-24 bg-white rounded-3xl shadow-sm border border-dashed border-gray-200">
                     <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
                         <Search className="h-8 w-8 text-gray-400" />

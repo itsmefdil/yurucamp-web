@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Home, Mountain, Tent, Calendar, PlayCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { motion } from "framer-motion"
+
 
 export function BottomNav() {
     const pathname = usePathname()
@@ -32,14 +32,8 @@ export function BottomNav() {
                             )}
                         >
                             {isActive && (
-                                <motion.div
-                                    layoutId="active-nav-pill"
+                                <div
                                     className="absolute inset-0 bg-primary/10 rounded-xl"
-                                    transition={{
-                                        type: "spring",
-                                        stiffness: 300,
-                                        damping: 30
-                                    }}
                                 />
                             )}
 
