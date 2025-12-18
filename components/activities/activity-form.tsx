@@ -107,6 +107,10 @@ export function ActivityForm({ initialData, action, buttonText = "Tambah Aktifit
                 toast.success("Berhasil disimpan!")
             }
         } catch (error) {
+            if (error instanceof Error && error.message === "NEXT_REDIRECT") {
+                // Ignore redirect error
+                return
+            }
             console.error("Error submitting form:", error)
             toast.error("Terjadi kesalahan")
         } finally {
