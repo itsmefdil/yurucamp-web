@@ -96,6 +96,10 @@ export function EditCampAreaForm({ initialData, action, buttonText = "Simpan Per
                 toast.success("Camp Area berhasil disimpan!")
             }
         } catch (error) {
+            if (error instanceof Error && error.message === "NEXT_REDIRECT") {
+                // Ignore redirect error
+                return
+            }
             console.error("Error submitting form:", error)
             toast.error("Terjadi kesalahan saat menyimpan")
         } finally {
