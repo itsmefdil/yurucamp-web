@@ -52,13 +52,20 @@ export async function createCampArea(formData: FormData) {
     if (additionalImageFiles && additionalImageFiles.length > 0) {
         try {
             console.log("Uploading additional images...")
-            const uploadPromises = additionalImageFiles
-                .filter(file => file.size > 0)
-                .map(file => uploadImage(file, "camp_areas"))
+            // Upload sequentially to avoid hitting limits or timeouts
+            const filesToUpload = additionalImageFiles.filter(file => file.size > 0)
 
-            if (uploadPromises.length > 0) {
-                additional_images = await Promise.all(uploadPromises)
-                console.log("Additional images uploaded:", additional_images)
+            for (const file of filesToUpload) {
+                try {
+                    const url = await uploadImage(file, "camp_areas")
+                    if (url) {
+                        additional_images.push(url)
+                    }
+                } catch (err) {
+                    console.error("Failed to upload one of the additional images:", err)
+                    // Abort if one fails to ensure consistency
+                    throw err
+                }
             }
         } catch (error) {
             console.error("Error uploading additional images:", error)
@@ -158,13 +165,20 @@ export async function updateCampArea(id: string, formData: FormData) {
     // Handle additional images upload
     if (additionalImageFiles && additionalImageFiles.length > 0) {
         try {
-            const uploadPromises = additionalImageFiles
-                .filter(file => file.size > 0)
-                .map(file => uploadImage(file, "camp_areas"))
+            // Upload sequentially to avoid hitting limits or timeouts
+            const filesToUpload = additionalImageFiles.filter(file => file.size > 0)
 
-            if (uploadPromises.length > 0) {
-                const newImages = await Promise.all(uploadPromises)
-                additional_images = [...additional_images, ...newImages]
+            for (const file of filesToUpload) {
+                try {
+                    const url = await uploadImage(file, "camp_areas")
+                    if (url) {
+                        additional_images.push(url)
+                    }
+                } catch (err) {
+                    console.error("Failed to upload one of the additional images:", err)
+                    // Abort if one fails to ensure consistency
+                    throw err
+                }
             }
         } catch (error) {
             console.error("Error uploading additional images:", error)
