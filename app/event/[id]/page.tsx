@@ -10,6 +10,7 @@ import { createClient } from "@/lib/supabase/client"
 import { notFound, useParams } from "next/navigation"
 import { JoinEventButton } from "@/components/events/join-event-button"
 import { ParticipantsModal } from "@/components/events/participants-modal"
+import { DeleteEventButton } from "@/components/events/delete-event-button"
 import { useEffect, useState } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
 
@@ -136,9 +137,6 @@ export default function EventDetailPage() {
                                     <Button variant="secondary" size="icon" className="rounded-full bg-white/80 backdrop-blur-sm hover:bg-white text-gray-700 shadow-sm">
                                         <Share2 className="h-5 w-5" />
                                     </Button>
-                                    <Button variant="secondary" size="icon" className="rounded-full bg-white/80 backdrop-blur-sm hover:bg-white text-red-500 shadow-sm">
-                                        <Heart className="h-5 w-5" />
-                                    </Button>
                                 </div>
                             </div>
 
@@ -197,11 +195,14 @@ export default function EventDetailPage() {
 
                                 <div className="hidden md:flex gap-4">
                                     {isOrganizer ? (
-                                        <Button size="lg" className="flex-1 rounded-full text-lg py-6 shadow-lg" asChild>
-                                            <Link href={`/event/${event.id}/edit`}>
-                                                Edit Acara
-                                            </Link>
-                                        </Button>
+                                        <>
+                                            <Button size="lg" className="flex-1 rounded-full text-lg py-6 shadow-lg" asChild>
+                                                <Link href={`/event/${event.id}/edit`}>
+                                                    Edit Acara
+                                                </Link>
+                                            </Button>
+                                            <DeleteEventButton id={event.id} />
+                                        </>
                                     ) : (
                                         <JoinEventButton
                                             eventId={event.id}

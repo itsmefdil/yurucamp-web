@@ -14,11 +14,12 @@ export async function uploadImage(file: File, folder?: string): Promise<string> 
         cloudinary.uploader.upload_stream(
             {
                 resource_type: 'auto',
-                folder: folder,
+                folder: process.env.CLOUDINARY_PATH_PREFIX ? `${process.env.CLOUDINARY_PATH_PREFIX}/${folder}` : folder,
                 transformation: [
                     { width: 1920, crop: 'scale' },
                     { quality: 'auto', fetch_format: 'auto' }
-                ]
+                ],
+                timeout: 120000 // 2 minutes
             },
             (error, result) => {
                 if (error) {
@@ -76,8 +77,9 @@ export function getPublicIdFromUrl(url: string): string | null {
 
 export async function getRandomImages(count: number = 5, folder: string = 'camp_areas'): Promise<string[]> {
     try {
+        const searchFolder = process.env.CLOUDINARY_PATH_PREFIX ? `${process.env.CLOUDINARY_PATH_PREFIX}/${folder}` : folder;
         const result = await cloudinary.search
-            .expression(`folder:${folder} AND resource_type:image`)
+            .expression(`folder:${searchFolder} AND resource_type:image`)
             .sort_by('created_at', 'desc')
             .max_results(count * 3) // Fetch more to allow for better randomization
             .execute();
@@ -94,5 +96,21 @@ export async function getRandomImages(count: number = 5, folder: string = 'camp_
     } catch (error) {
         console.error("Error fetching random images from Cloudinary:", error);
         return [];
+    }
+}
+
+export async function createFolder(folderName: string): Promise<any> {
+    try {
+        const folderPath = process.env.CLOUDINARY_PATH_PREFIX ? `${process.env.CLOUDINARY_PATH_PREFIX}/${folderName}` : folderName;
+        console.log(`Attempting to create folder: ${folderPath}`);
+
+        // Cloudinary create_folder documentation: https://cloudinary.com/documentation/admin_api#create_folder
+        const result = await cloudinary.api.create_folder(folderPath);
+        console.log("Folder created:", result);
+        return result;
+    } catch (error) {
+        console.error("Error creating folder in Cloudinary:", error);
+        // It might fail if it already exists, which is fine
+        return null;
     }
 }

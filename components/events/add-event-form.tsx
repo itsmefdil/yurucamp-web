@@ -9,24 +9,48 @@ import { useState, useTransition, useRef } from "react"
 import { addEvent } from "@/app/actions/events"
 import { toast } from "sonner"
 import Image from "next/image"
+import imageCompression from "browser-image-compression"
 
 export function AddEventForm() {
     const [selectedImage, setSelectedImage] = useState<string | null>(null)
+    const [compressedFile, setCompressedFile] = useState<File | null>(null)
     const [isPending, startTransition] = useTransition()
     const coverInputRef = useRef<HTMLInputElement>(null)
 
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (file) {
-            const reader = new FileReader()
-            reader.onloadend = () => {
-                setSelectedImage(reader.result as string)
+            try {
+                // Determine max size (smaller for mobile)
+                const isMobile = window.innerWidth <= 768
+                const options = {
+                    maxSizeMB: isMobile ? 1 : 2, // 1MB for mobile, 2MB for desktop
+                    maxWidthOrHeight: 1920,
+                    useWebWorker: true,
+                    initialQuality: 0.8
+                }
+
+                const compressed = await imageCompression(file, options)
+                setCompressedFile(compressed)
+
+                // Create preview URL
+                const reader = new FileReader()
+                reader.onloadend = () => {
+                    setSelectedImage(reader.result as string)
+                }
+                reader.readAsDataURL(compressed)
+            } catch (error) {
+                console.error("Compression error:", error)
+                toast.error("Gagal memproses gambar. Silakan coba lagi.")
             }
-            reader.readAsDataURL(file)
         }
     }
 
     const handleSubmit = async (formData: FormData) => {
+        if (compressedFile) {
+            formData.set("image", compressedFile)
+        }
+
         startTransition(async () => {
             const result = await addEvent(formData)
             if (result?.error) {
