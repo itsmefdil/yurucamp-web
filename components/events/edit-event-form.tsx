@@ -9,6 +9,7 @@ import { useState, useTransition, useRef } from "react"
 import { updateEvent, deleteEvent } from "@/app/actions/events"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
+import imageCompression from "browser-image-compression"
 import {
     AlertDialog,
     AlertDialogAction,
@@ -27,23 +28,45 @@ interface EditEventFormProps {
 
 export function EditEventForm({ event }: EditEventFormProps) {
     const [selectedImage, setSelectedImage] = useState<string | null>(event.image_url)
+    const [compressedFile, setCompressedFile] = useState<File | null>(null)
     const [isPending, startTransition] = useTransition()
     const [isDeleting, startDeleteTransition] = useTransition()
     const coverInputRef = useRef<HTMLInputElement>(null)
     const router = useRouter()
 
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (file) {
-            const reader = new FileReader()
-            reader.onloadend = () => {
-                setSelectedImage(reader.result as string)
+            try {
+                // Determine max size (smaller for mobile)
+                const isMobile = window.innerWidth <= 768
+                const options = {
+                    maxSizeMB: isMobile ? 1 : 2, // 1MB for mobile, 2MB for desktop
+                    maxWidthOrHeight: 1920,
+                    useWebWorker: true,
+                    initialQuality: 0.8
+                }
+
+                const compressed = await imageCompression(file, options)
+                setCompressedFile(compressed)
+
+                const reader = new FileReader()
+                reader.onloadend = () => {
+                    setSelectedImage(reader.result as string)
+                }
+                reader.readAsDataURL(compressed)
+            } catch (error) {
+                console.error("Compression error:", error)
+                toast.error("Gagal memproses gambar. Silakan coba lagi.")
             }
-            reader.readAsDataURL(file)
         }
     }
 
     const handleSubmit = async (formData: FormData) => {
+        if (compressedFile) {
+            formData.set("image", compressedFile)
+        }
+
         startTransition(async () => {
             const result = await updateEvent(event.id, formData)
             if (result?.error) {

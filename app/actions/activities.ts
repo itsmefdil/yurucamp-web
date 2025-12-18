@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server"
 import { uploadImage, deleteImage, getPublicIdFromUrl } from "@/lib/cloudinary"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
+import { after } from "next/server"
 
 export async function addActivity(formData: FormData) {
     const supabase = await createClient()
@@ -201,33 +202,7 @@ export async function deleteActivity(activityId: string) {
         return { error: "You are not authorized to delete this activity" }
     }
 
-    // Delete images from Cloudinary
-    try {
-        // Delete cover image
-        if (activity.image_url) {
-            const publicId = getPublicIdFromUrl(activity.image_url)
-            if (publicId) {
-                await deleteImage(publicId)
-            }
-        }
-
-        // Delete additional images
-        if (activity.additional_images && Array.isArray(activity.additional_images)) {
-            await Promise.all(
-                activity.additional_images.map(async (url: string) => {
-                    const publicId = getPublicIdFromUrl(url)
-                    if (publicId) {
-                        await deleteImage(publicId)
-                    }
-                })
-            )
-        }
-    } catch (error) {
-        console.error("Error deleting images from Cloudinary:", error)
-        // Continue with database deletion even if image deletion fails
-    }
-
-    // Delete activity
+    // Delete activity from database first for instant feedback
     const { error: deleteError } = await supabase
         .from("activities")
         .delete()
@@ -237,7 +212,32 @@ export async function deleteActivity(activityId: string) {
         return { error: "Failed to delete activity" }
     }
 
+    // Schedule image deletion in background
+    after(async () => {
+        try {
+            // Delete cover image
+            if (activity.image_url) {
+                const publicId = getPublicIdFromUrl(activity.image_url)
+                if (publicId) {
+                    await deleteImage(publicId)
+                }
+            }
+
+            // Delete additional images
+            if (activity.additional_images && Array.isArray(activity.additional_images)) {
+                for (const url of activity.additional_images) {
+                    const publicId = getPublicIdFromUrl(url)
+                    if (publicId) {
+                        await deleteImage(publicId)
+                    }
+                }
+            }
+        } catch (error) {
+            console.error("Error deleting images from Cloudinary (background task):", error)
+        }
+    })
+
     revalidatePath("/activity")
     revalidatePath("/") // Also revalidate homepage since it shows latest activities
-    return { success: true }
+    redirect("/activity")
 }

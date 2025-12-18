@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server"
 import { uploadImage, deleteImage, getPublicIdFromUrl } from "@/lib/cloudinary"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
+import { after } from "next/server"
 
 export async function createCampArea(formData: FormData) {
     const supabase = await createClient()
@@ -19,6 +20,10 @@ export async function createCampArea(formData: FormData) {
     const price = formData.get("price") as string
     const imageFile = formData.get("image") as File
     const additionalImageFiles = formData.getAll("additional_images") as File[]
+
+    if (additionalImageFiles.length > 10) {
+        return { error: "Maksimal 10 foto tambahan diperbolehkan" }
+    }
 
     console.log("Form Data Received:")
     console.log("Name:", name)
@@ -69,7 +74,7 @@ export async function createCampArea(formData: FormData) {
             }
         } catch (error) {
             console.error("Error uploading additional images:", error)
-            // Continue even if some additional images fail
+            return { error: "Gagal mengupload foto tambahan" }
         }
     }
 
@@ -119,6 +124,10 @@ export async function updateCampArea(id: string, formData: FormData) {
     const imageFile = formData.get("image") as File
     const additionalImageFiles = formData.getAll("additional_images") as File[]
     const keptImages = formData.getAll("kept_images") as string[]
+
+    if (keptImages.length + additionalImageFiles.length > 10) {
+        return { error: "Maksimal 10 foto tambahan diperbolehkan" }
+    }
 
     // Get facilities from checkboxes
     const facilities: string[] = []
@@ -182,6 +191,7 @@ export async function updateCampArea(id: string, formData: FormData) {
             }
         } catch (error) {
             console.error("Error uploading additional images:", error)
+            return { error: "Gagal mengupload foto tambahan" }
         }
     }
 
@@ -238,25 +248,7 @@ export async function deleteCampArea(id: string) {
         return { error: "Unauthorized" }
     }
 
-    // Delete main image
-    if (campArea.image_url) {
-        const publicId = getPublicIdFromUrl(campArea.image_url)
-        if (publicId) {
-            await deleteImage(publicId)
-        }
-    }
-
-    // Delete additional images
-    if (campArea.additional_images && campArea.additional_images.length > 0) {
-        for (const img of campArea.additional_images) {
-            const publicId = getPublicIdFromUrl(img)
-            if (publicId) {
-                await deleteImage(publicId)
-            }
-        }
-    }
-
-    // Delete from database
+    // Delete from database first for instant feedback
     const { error } = await supabase
         .from("camp_areas")
         .delete()
@@ -266,6 +258,31 @@ export async function deleteCampArea(id: string) {
         console.error("Error deleting camp area:", error)
         return { error: error.message }
     }
+
+    // Schedule image deletion in background
+    after(async () => {
+        try {
+            // Delete main image
+            if (campArea.image_url) {
+                const publicId = getPublicIdFromUrl(campArea.image_url)
+                if (publicId) {
+                    await deleteImage(publicId)
+                }
+            }
+
+            // Delete additional images
+            if (campArea.additional_images && campArea.additional_images.length > 0) {
+                for (const img of campArea.additional_images) {
+                    const publicId = getPublicIdFromUrl(img)
+                    if (publicId) {
+                        await deleteImage(publicId)
+                    }
+                }
+            }
+        } catch (error) {
+            console.error("Error deleting images from Cloudinary (background task):", error)
+        }
+    })
 
     revalidatePath("/camp-area")
     redirect("/camp-area")

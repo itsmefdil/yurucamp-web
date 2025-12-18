@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server"
 import { uploadImage, deleteImage, getPublicIdFromUrl } from "@/lib/cloudinary"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
+import { after } from "next/server"
 
 export async function addEvent(formData: FormData) {
     const supabase = await createClient()
@@ -21,6 +22,10 @@ export async function addEvent(formData: FormData) {
     const price = Number(formData.get("price")) || 0
     const max_participants = Number(formData.get("max_participants")) || 0
     const imageFile = formData.get("image") as File
+
+    if (imageFile && imageFile.size > 5 * 1024 * 1024) {
+        return { error: "Ukuran gambar maksimal 5MB" }
+    }
 
     let image_url = null
 
@@ -88,6 +93,10 @@ export async function updateEvent(id: string, formData: FormData) {
     const max_participants = Number(formData.get("max_participants")) || 0
     const imageFile = formData.get("image") as File
 
+    if (imageFile && imageFile.size > 5 * 1024 * 1024) {
+        return { error: "Ukuran gambar maksimal 5MB" }
+    }
+
     let image_url = existingEvent.image_url
 
     // Handle cover image update
@@ -145,19 +154,7 @@ export async function deleteEvent(eventId: string) {
         return { error: "You are not authorized to delete this event" }
     }
 
-    // Delete image from Cloudinary
-    try {
-        if (event.image_url) {
-            const publicId = getPublicIdFromUrl(event.image_url)
-            if (publicId) {
-                await deleteImage(publicId)
-            }
-        }
-    } catch (error) {
-        console.error("Error deleting image from Cloudinary:", error)
-    }
-
-    // Delete event
+    // Delete event from DB first for instant feedback
     const { error: deleteError } = await supabase
         .from("events")
         .delete()
@@ -167,9 +164,23 @@ export async function deleteEvent(eventId: string) {
         return { error: "Failed to delete event" }
     }
 
+    // Schedule image deletion in background
+    after(async () => {
+        try {
+            if (event.image_url) {
+                const publicId = getPublicIdFromUrl(event.image_url)
+                if (publicId) {
+                    await deleteImage(publicId)
+                }
+            }
+        } catch (error) {
+            console.error("Error deleting image from Cloudinary (background task):", error)
+        }
+    })
+
     revalidatePath("/event")
     revalidatePath("/")
-    return { success: true }
+    redirect("/event")
 }
 
 export async function joinEvent(eventId: string) {
