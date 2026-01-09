@@ -1,0 +1,43 @@
+{
+    "name": "yurucamp-backend",
+    "version": "1.0.0",
+    "description": "Backend for Yurucamp",
+    "main": "api/index.ts",
+    "scripts": {
+        "start": "node dist/api/index.js",
+        "dev": "tsx watch src/server.ts",
+        "build": "tsc",
+        "generate": "drizzle-kit generate",
+        "migrate": "drizzle-kit migrate",
+        "seed": "tsx src/scripts/seed.ts",
+        "delete-data": "tsx src/scripts/delete-data.ts",
+        "bun:dev": "bun --watch src/server.ts",
+        "bun:start": "bun dist/api/index.js",
+        "bun:seed": "bun src/scripts/seed.ts",
+        "bun:delete-data": "bun src/scripts/delete-data.ts"
+    },
+    "dependencies": {
+        "@types/passport": "^1.0.17",
+        "@types/passport-google-oauth20": "^2.0.17",
+        "cloudinary": "^2.0.3",
+        "cors": "^2.8.5",
+        "dotenv": "^16.4.5",
+        "drizzle-orm": "^0.30.10",
+        "express": "^5.2.1",
+        "jsonwebtoken": "^9.0.2",
+        "multer": "1.4.5-lts.1",
+        "passport": "^0.7.0",
+        "passport-google-oauth20": "^2.0.0",
+        "postgres": "^3.4.4"
+    },
+    "devDependencies": {
+        "@types/cors": "^2.8.17",
+        "@types/express": "^4.17.21",
+        "@types/jsonwebtoken": "^9.0.6",
+        "@types/multer": "^1.4.11",
+        "@types/node": "^20.12.7",
+        "drizzle-kit": "^0.21.2",
+        "tsx": "^4.7.2",
+        "typescript": "^5.4.5"
+    }
+}

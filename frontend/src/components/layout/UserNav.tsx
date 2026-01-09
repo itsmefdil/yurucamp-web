@@ -1,0 +1,95 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Button } from '../ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '../ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { User as UserIcon, Settings, LogOut, ChevronDown, Info } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import type { User } from '../../types';
+
+interface UserNavProps {
+    user: User;
+}
+
+export function UserNav({ user }: UserNavProps) {
+    const { logout } = useAuth();
+
+    const name = user.fullName || 'User';
+    const avatarUrl = user.avatarUrl;
+
+    const initials = name !== 'User'
+        ? name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()
+        : user.email?.[0].toUpperCase() ?? "U";
+
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-12 w-auto rounded-full p-1 pr-4 hover:bg-gray-100 transition-all duration-200 group">
+                    <div className="flex items-center gap-3 text-left">
+                        <Avatar className="h-10 w-10 border-2 border-white shadow-sm">
+                            <AvatarImage src={avatarUrl} alt={name} className="object-cover" />
+                            <AvatarFallback>{initials}</AvatarFallback>
+                        </Avatar>
+
+                        <div className="hidden lg:flex flex-col">
+                            <span className="text-sm font-bold text-gray-700 group-hover:text-primary transition-colors line-clamp-1 max-w-[100px] lg:max-w-[150px]">
+                                {name}
+                            </span>
+                            <span className="text-xs text-gray-500 line-clamp-1 max-w-[100px] lg:max-w-[150px]">
+                                {user.email}
+                            </span>
+                        </div>
+
+                        <ChevronDown className="hidden lg:block w-4 h-4 text-gray-400" />
+                    </div>
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">
+                            {name}
+                        </p>
+                        <p className="text-xs leading-none text-muted-foreground">
+                            {user.email}
+                        </p>
+                    </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                    <Link to="/dashboard" className="cursor-pointer">
+                        <UserIcon className="mr-2 h-4 w-4" />
+                        <span>Dashboard</span>
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="cursor-pointer">
+                    <Link to="/dashboard/settings" className="flex items-center w-full">
+                        <Settings className="mr-2 h-4 w-4" />
+                        <span>Pengaturan</span>
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="cursor-pointer">
+                    <Link to="/about" className="flex items-center w-full">
+                        <Info className="mr-2 h-4 w-4" />
+                        <span>Tentang</span>
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                    className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
+                    onClick={logout}
+                >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Keluar</span>
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
+}

@@ -1,0 +1,451 @@
+import React from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { Button } from '../components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
+import { Navbar } from '../components/layout/Navbar';
+import { Footer } from '../components/layout/Footer';
+import { Heart, MessageCircle, Share2, MapPin, Calendar, ArrowLeft, Edit, Trash2 } from 'lucide-react';
+import api from '../lib/api';
+import type { Activity, Comment } from '../types';
+import { useAuth } from '../contexts/AuthContext';
+import { formatDate, formatDateTime } from '../lib/utils';
+import { toast } from 'sonner';
+import { useState } from 'react';
+import { Textarea } from '../components/ui/textarea';
+
+export default function ActivityDetail() {
+    const { id } = useParams<{ id: string }>();
+    const { user } = useAuth();
+    const navigate = useNavigate();
+    const queryClient = useQueryClient();
+    const [commentText, setCommentText] = useState('');
+
+    // Fetch activity detail
+    const { data: activity, isLoading } = useQuery({
+        queryKey: ['activity', id],
+        queryFn: async () => {
+            const response = await api.get(`/activities/${id}`);
+            return response.data as Activity;
+        },
+        enabled: !!id,
+    });
+
+    // Fetch interactions (likes & comments)
+    const { data: interactions } = useQuery({
+        queryKey: ['interactions', 'activity', id],
+        queryFn: async () => {
+            const response = await api.get(`/interactions/activity/${id}`);
+            return response.data;
+        },
+        enabled: !!id,
+    });
+
+    // Fetch other activities
+    const { data: otherActivities } = useQuery({
+        queryKey: ['activities', 'others', id],
+        queryFn: async () => {
+            const response = await api.get('/activities');
+            const all = response.data as Activity[];
+            return all.filter(a => a.id !== id).slice(0, 5);
+        },
+        enabled: !!id,
+    });
+
+    // Like mutation
+    const likeMutation = useMutation({
+        mutationFn: async () => {
+            await api.post('/interactions/like', {
+                activity_id: id,
+            });
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['interactions', 'activity', id] });
+            toast.success(interactions?.isLiked ? 'Like dihapus' : 'Activity disukai!');
+        },
+        onError: () => {
+            toast.error('Gagal menyukai activity');
+        },
+    });
+
+    // Comment mutation
+    const commentMutation = useMutation({
+        mutationFn: async (content: string) => {
+            await api.post('/interactions/comment', {
+                activity_id: id,
+                content,
+            });
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['interactions', 'activity', id] });
+            setCommentText('');
+            toast.success('Komentar ditambahkan!');
+        },
+        onError: () => {
+            toast.error('Gagal menambahkan komentar');
+        },
+    });
+
+    // Delete comment mutation
+    const deleteCommentMutation = useMutation({
+        mutationFn: async (commentId: string) => {
+            await api.delete(`/interactions/comment/${commentId}`);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['interactions', 'activity', id] });
+            toast.success('Komentar dihapus');
+        },
+        onError: () => {
+            toast.error('Gagal menghapus komentar');
+        },
+    });
+
+    // Delete activity mutation
+    const deleteActivityMutation = useMutation({
+        mutationFn: async () => {
+            await api.delete(`/activities/${id}`);
+        },
+        onSuccess: () => {
+            toast.success('Activity berhasil dihapus');
+            navigate('/activities');
+        },
+        onError: () => {
+            toast.error('Gagal menghapus activity');
+        },
+    });
+
+    const handleLike = () => {
+        if (!user) {
+            toast.error('Silakan login terlebih dahulu');
+            navigate('/login');
+            return;
+        }
+        likeMutation.mutate();
+    };
+
+    const handleComment = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!user) {
+            toast.error('Silakan login terlebih dahulu');
+            navigate('/login');
+            return;
+        }
+        if (!commentText.trim()) return;
+        commentMutation.mutate(commentText);
+    };
+
+    const handleDeleteActivity = () => {
+        if (confirm('Apakah Anda yakin ingin menghapus activity ini?')) {
+            deleteActivityMutation.mutate();
+        }
+    };
+
+    const handleShare = () => {
+        if (navigator.share) {
+            navigator.share({
+                title: activity?.title,
+                url: window.location.href,
+            });
+        } else {
+            navigator.clipboard.writeText(window.location.href);
+            toast.success('Link disalin ke clipboard!');
+        }
+    };
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
+        );
+    }
+
+    if (!activity) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <h2 className="text-2xl font-bold mb-4">Activity tidak ditemukan</h2>
+                    <Button asChild>
+                        <Link to="/activities">Kembali ke Activities</Link>
+                    </Button>
+                </div>
+            </div>
+        );
+    }
+
+    const isOwner = user?.id === activity.userId;
+
+    return (
+        <div className="min-h-screen flex flex-col bg-[#f8f9fa]">
+            <Navbar />
+            <main className="flex-1 pb-24 md:pb-12">
+                <div className="container mx-auto px-4 pt-24 md:pt-32">
+                    {/* Hero Image */}
+                    <div className="relative h-[45vh] md:h-[60vh] w-full bg-gray-900 rounded-3xl overflow-hidden shadow-2xl">
+                        {activity.imageUrl ? (
+                            <img
+                                src={activity.imageUrl}
+                                alt={activity.title}
+                                className="w-full h-full object-cover opacity-90"
+                            />
+                        ) : (
+                            <div className="w-full h-full bg-gray-800 flex items-center justify-center text-gray-500">
+                                <span className="text-4xl font-bold opacity-30">No Image</span>
+                            </div>
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10" />
+
+                        <div className="absolute top-6 left-6 z-20">
+                            <Button variant="outline" size="icon" className="rounded-full bg-white/10 border-white/20 text-white hover:bg-white/20 backdrop-blur-md" asChild>
+                                <Link to="/activities">
+                                    <ArrowLeft className="h-5 w-5" />
+                                </Link>
+                            </Button>
+                        </div>
+
+                        <div className="absolute top-6 right-6 z-20 flex gap-2">
+                            {isOwner && (
+                                <>
+                                    <Button variant="secondary" size="icon" className="rounded-full bg-white hover:bg-gray-100 text-gray-900 shadow-lg border-none transition-all hover:scale-105" asChild>
+                                        <Link to={`/dashboard/edit-activity/${activity.id}`}>
+                                            <Edit className="h-5 w-5" />
+                                        </Link>
+                                    </Button>
+                                    <Button
+                                        variant="destructive"
+                                        size="icon"
+                                        className="rounded-full shadow-lg"
+                                        onClick={handleDeleteActivity}
+                                        disabled={deleteActivityMutation.isPending}
+                                    >
+                                        <Trash2 className="h-5 w-5" />
+                                    </Button>
+                                </>
+                            )}
+                        </div>
+
+                        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 z-20">
+                            <div className="max-w-4xl">
+                                <div className="flex flex-wrap items-center gap-2 md:gap-3 text-white/90 mb-3 md:mb-4 text-sm md:text-base font-medium">
+                                    {activity.category && (
+                                        <span className="bg-primary/90 backdrop-blur-sm px-3 md:px-4 py-1.5 rounded-full text-white text-[10px] md:text-sm font-bold uppercase tracking-wider shadow-lg">
+                                            {activity.category}
+                                        </span>
+                                    )}
+                                    {activity.date && (
+                                        <span className="flex items-center gap-1.5 bg-black/30 backdrop-blur-sm px-2 md:px-3 py-1 rounded-full border border-white/10 text-xs md:text-base">
+                                            <Calendar className="h-3 w-3 md:h-4 md:w-4 text-yellow-400" />
+                                            {formatDate(activity.date)}
+                                        </span>
+                                    )}
+                                    {activity.location && (
+                                        <span className="flex items-center gap-1.5 bg-black/30 backdrop-blur-sm px-2 md:px-3 py-1 rounded-full border border-white/10 text-xs md:text-base">
+                                            <MapPin className="h-3 w-3 md:h-4 md:w-4 text-red-400" />
+                                            {activity.location}
+                                        </span>
+                                    )}
+                                </div>
+
+                                <h1 className="text-2xl md:text-5xl lg:text-6xl font-black text-white mb-4 md:mb-6 drop-shadow-xl leading-tight tracking-tight">
+                                    {activity.title}
+                                </h1>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="container mx-auto px-4 mt-8 relative z-30">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        {/* Main Content */}
+                        <div className="lg:col-span-8 space-y-8">
+                            <Card className="border-none shadow-xl rounded-3xl overflow-hidden bg-white ring-1 ring-black/5">
+                                <CardContent className="p-5 md:p-10 space-y-6">
+                                    <div
+                                        className="prose md:prose-lg max-w-none text-gray-600 leading-loose"
+                                        dangerouslySetInnerHTML={{ __html: activity.description || "Tidak ada deskripsi." }}
+                                    />
+                                </CardContent>
+                                <div className="px-6 md:px-10 py-6 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className={`gap-2 rounded-full transition-all duration-300 group ${interactions?.isLiked ? 'text-red-600 bg-red-50 border-red-200' : 'hover:text-red-600 hover:bg-red-50 hover:border-red-200'
+                                                }`}
+                                            onClick={handleLike}
+                                            disabled={likeMutation.isPending}
+                                        >
+                                            <Heart className={`h-5 w-5 group-hover:scale-110 transition-transform ${interactions?.isLiked ? 'fill-current' : ''}`} />
+                                            <span className="font-medium">{interactions?.likeCount || 0}</span>
+                                        </Button>
+                                        <Button variant="outline" size="sm" className="hover:text-blue-600 hover:bg-blue-50 hover:border-blue-200 gap-2 rounded-full transition-all duration-300 group" asChild>
+                                            <a href="#comments">
+                                                <MessageCircle className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                                                <span className="font-medium">Komentar</span>
+                                            </a>
+                                        </Button>
+                                    </div>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="gap-2 rounded-full"
+                                        onClick={handleShare}
+                                    >
+                                        <Share2 className="h-4 w-4" />
+                                        Bagikan
+                                    </Button>
+                                </div>
+                            </Card>
+
+                            {/* Additional Images Gallery */}
+                            {activity.additionalImages && activity.additionalImages.length > 0 && (
+                                <Card className="border-none shadow-xl rounded-3xl overflow-hidden bg-white">
+                                    <CardHeader className="p-6">
+                                        <CardTitle className="text-2xl font-bold">Galeri Foto</CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="p-6 pt-0">
+                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                            {activity.additionalImages.map((img, idx) => (
+                                                <div key={idx} className="relative aspect-square rounded-xl overflow-hidden group cursor-pointer">
+                                                    <img
+                                                        src={img}
+                                                        alt={`Gallery ${idx + 1}`}
+                                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            )}
+
+                            {/* Comments Section */}
+                            <Card id="comments" className="border-none shadow-xl rounded-3xl overflow-hidden bg-white">
+                                <CardHeader className="p-6 border-b">
+                                    <CardTitle className="text-2xl font-bold">
+                                        Komentar ({interactions?.comments?.length || 0})
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="p-6 space-y-6">
+                                    {/* Comment Form */}
+                                    {user ? (
+                                        <form onSubmit={handleComment} className="space-y-4">
+                                            <Textarea
+                                                placeholder="Tulis komentar..."
+                                                value={commentText}
+                                                onChange={(e) => setCommentText(e.target.value)}
+                                                className="min-h-[100px]"
+                                            />
+                                            <Button
+                                                type="submit"
+                                                disabled={!commentText.trim() || commentMutation.isPending}
+                                                className="rounded-full"
+                                            >
+                                                {commentMutation.isPending ? 'Mengirim...' : 'Kirim Komentar'}
+                                            </Button>
+                                        </form>
+                                    ) : (
+                                        <div className="text-center py-8 bg-gray-50 rounded-xl">
+                                            <p className="text-gray-600 mb-4">Silakan login untuk berkomentar</p>
+                                            <Button asChild>
+                                                <Link to="/login">Login</Link>
+                                            </Button>
+                                        </div>
+                                    )}
+
+                                    {/* Comments List */}
+                                    <div className="space-y-4">
+                                        {interactions?.comments && interactions.comments.length > 0 ? (
+                                            interactions.comments.map((comment: Comment) => (
+                                                <div key={comment.id} className="flex gap-4 p-4 bg-gray-50 rounded-xl">
+                                                    <Avatar className="h-10 w-10">
+                                                        <AvatarImage src={comment.user?.avatarUrl} />
+                                                        <AvatarFallback className="bg-primary text-white">
+                                                            {comment.user?.fullName?.[0] || 'U'}
+                                                        </AvatarFallback>
+                                                    </Avatar>
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center justify-between mb-1">
+                                                            <span className="font-bold text-gray-900">
+                                                                {comment.user?.fullName || 'Pengguna'}
+                                                            </span>
+                                                            {user?.id === comment.userId && (
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                                                    onClick={() => deleteCommentMutation.mutate(comment.id)}
+                                                                >
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </Button>
+                                                            )}
+                                                        </div>
+                                                        <p className="text-sm text-gray-500 mb-2">
+                                                            {formatDateTime(comment.createdAt)}
+                                                        </p>
+                                                        <p className="text-gray-700">{comment.content}</p>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="text-center py-8 text-gray-500">
+                                                <MessageCircle className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                                                <p>Belum ada komentar</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+
+                        {/* Sidebar */}
+                        <div className="lg:col-span-4 space-y-6">
+                            <Card className="border-none shadow-lg bg-white rounded-3xl p-6 ring-1 ring-black/5">
+                                <CardHeader className="p-0 mb-6 border-b border-gray-100 pb-4">
+                                    <CardTitle className="text-xl font-bold flex items-center gap-2">
+                                        <MapPin className="h-5 w-5 text-primary" />
+                                        Aktifitas Lainnya
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="p-0 space-y-4">
+                                    {otherActivities && otherActivities.length > 0 ? (
+                                        otherActivities.map((item) => (
+                                            <Link to={`/activities/${item.id}`} key={item.id} className="flex gap-4 group p-2 hover:bg-gray-50 rounded-xl transition-all duration-300">
+                                                <div className="relative w-20 h-20 rounded-xl overflow-hidden shrink-0">
+                                                    <img
+                                                        src={item.imageUrl || "/placeholder.jpg"}
+                                                        alt={item.title}
+                                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                                    />
+                                                </div>
+                                                <div className="flex-1 py-1">
+                                                    <h4 className="font-bold text-gray-800 group-hover:text-primary transition-colors line-clamp-2 leading-tight mb-1">
+                                                        {item.title}
+                                                    </h4>
+                                                    <div className="flex items-center gap-2 text-xs text-gray-400 mb-1">
+                                                        <Calendar className="h-3 w-3" />
+                                                        {item.date ? formatDate(item.date) : "-"}
+                                                    </div>
+                                                    <div className="flex items-center gap-1 text-xs text-gray-500">
+                                                        <MapPin className="h-3 w-3 text-red-300" />
+                                                        <span className="truncate max-w-[120px]">{item.location || "Lokasi"}</span>
+                                                    </div>
+                                                </div>
+                                            </Link>
+                                        ))
+                                    ) : (
+                                        <div className="text-center py-8">
+                                            <p className="text-sm text-muted-foreground italic">Belum ada aktifitas lain.</p>
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </div>
+                </div>
+            </main>
+            <Footer />
+        </div>
+    );
+}
