@@ -25,7 +25,7 @@ export async function uploadImage(file: Express.Multer.File, folder?: string): P
                 resource_type: 'auto',
                 folder: process.env.CLOUDINARY_PATH_PREFIX ? `${process.env.CLOUDINARY_PATH_PREFIX}/${folder}` : folder,
                 transformation: [
-                    { width: 1920, crop: 'scale' },
+                    { width: 800, crop: 'scale' },
                     { quality: 'auto', fetch_format: 'auto' }
                 ],
                 timeout: 120000 // 2 minutes

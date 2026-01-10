@@ -1,16 +1,20 @@
 import express from 'express';
 import cors from 'cors';
+import morgan from 'morgan';
 import activityRouter from './routes/activities';
 import campAreasRouter from './routes/campAreas';
 import eventsRouter from './routes/events';
 import authRouter from './routes/auth';
 import interactionsRouter from './routes/interactions';
 import utilsRouter from './routes/utils';
+import categoriesRouter from './routes/categories';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
 const app = express();
+
+app.use(morgan('dev'));
 
 // Configure CORS
 app.use(cors({
@@ -28,6 +32,7 @@ app.use('/events', eventsRouter);
 app.use('/auth', authRouter);
 app.use('/interactions', interactionsRouter);
 app.use('/utils', utilsRouter);
+app.use('/categories', categoriesRouter);
 
 // Health check
 app.get('/', (req, res) => {

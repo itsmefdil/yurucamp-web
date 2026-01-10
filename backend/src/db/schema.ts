@@ -17,7 +17,7 @@ export const activities = pgTable('activities', {
     id: uuid('id').defaultRandom().primaryKey().notNull(),
     title: text('title').notNull(),
     description: text('description'),
-    category: text('category'),
+    categoryId: uuid('category_id').references(() => categories.id),
     date: date('date'),
     location: text('location'),
     imageUrl: text('image_url'),
@@ -76,5 +76,11 @@ export const eventParticipants = pgTable('event_participants', {
     id: uuid('id').defaultRandom().primaryKey().notNull(),
     eventId: uuid('event_id').references(() => events.id, { onDelete: 'cascade' }).notNull(),
     userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(), // References users
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+});
+
+export const categories = pgTable('categories', {
+    id: uuid('id').defaultRandom().primaryKey().notNull(),
+    name: text('name').notNull().unique(),
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 });

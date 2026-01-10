@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
@@ -6,14 +6,25 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
-import { Heart, MessageCircle, Share2, MapPin, Calendar, ArrowLeft, Edit, Trash2 } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Heart, MessageCircle, Share2, Trash2, Edit, X, ChevronLeft, ChevronRight, Download } from 'lucide-react';
 import api from '../lib/api';
 import type { Activity, Comment } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { formatDate, formatDateTime } from '../lib/utils';
 import { toast } from 'sonner';
-import { useState } from 'react';
 import { Textarea } from '../components/ui/textarea';
+import { Dialog, DialogContent, DialogTitle } from '../components/ui/dialog';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '../components/ui/alert-dialog';
+import { EditActivityModal } from '../components/activities/EditActivityModal';
 
 export default function ActivityDetail() {
     const { id } = useParams<{ id: string }>();
@@ -21,6 +32,9 @@ export default function ActivityDetail() {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const [commentText, setCommentText] = useState('');
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [isEditOpen, setIsEditOpen] = useState(false);
 
     // Fetch activity detail
     const { data: activity, isLoading } = useQuery({
@@ -57,7 +71,7 @@ export default function ActivityDetail() {
     const likeMutation = useMutation({
         mutationFn: async () => {
             await api.post('/interactions/like', {
-                activity_id: id,
+                activityId: id,
             });
         },
         onSuccess: () => {
@@ -73,7 +87,7 @@ export default function ActivityDetail() {
     const commentMutation = useMutation({
         mutationFn: async (content: string) => {
             await api.post('/interactions/comment', {
-                activity_id: id,
+                activityId: id,
                 content,
             });
         },
@@ -136,9 +150,12 @@ export default function ActivityDetail() {
     };
 
     const handleDeleteActivity = () => {
-        if (confirm('Apakah Anda yakin ingin menghapus activity ini?')) {
-            deleteActivityMutation.mutate();
-        }
+        setShowDeleteDialog(true);
+    };
+
+    const confirmDeleteActivity = () => {
+        deleteActivityMutation.mutate();
+        setShowDeleteDialog(false);
     };
 
     const handleShare = () => {
@@ -150,6 +167,30 @@ export default function ActivityDetail() {
         } else {
             navigator.clipboard.writeText(window.location.href);
             toast.success('Link disalin ke clipboard!');
+        }
+    };
+
+    const handleDownload = async (e: React.MouseEvent, imageUrl: string) => {
+        e.stopPropagation();
+        try {
+            toast.loading('Mengunduh foto...');
+            const response = await fetch(imageUrl);
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            const filename = imageUrl.split('/').pop() || 'download.jpg';
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+            toast.dismiss();
+            toast.success('Foto berhasil diunduh');
+        } catch (error) {
+            console.error('Download failed:', error);
+            toast.dismiss();
+            toast.error('Gagal mengunduh foto');
         }
     };
 
@@ -207,10 +248,8 @@ export default function ActivityDetail() {
                         <div className="absolute top-6 right-6 z-20 flex gap-2">
                             {isOwner && (
                                 <>
-                                    <Button variant="secondary" size="icon" className="rounded-full bg-white hover:bg-gray-100 text-gray-900 shadow-lg border-none transition-all hover:scale-105" asChild>
-                                        <Link to={`/dashboard/edit-activity/${activity.id}`}>
-                                            <Edit className="h-5 w-5" />
-                                        </Link>
+                                    <Button variant="secondary" size="icon" className="rounded-full bg-white hover:bg-gray-100 text-gray-900 shadow-lg border-none transition-all hover:scale-105" onClick={() => setIsEditOpen(true)}>
+                                        <Edit className="h-5 w-5" />
                                     </Button>
                                     <Button
                                         variant="destructive"
@@ -261,10 +300,9 @@ export default function ActivityDetail() {
                         <div className="lg:col-span-8 space-y-8">
                             <Card className="border-none shadow-xl rounded-3xl overflow-hidden bg-white ring-1 ring-black/5">
                                 <CardContent className="p-5 md:p-10 space-y-6">
-                                    <div
-                                        className="prose md:prose-lg max-w-none text-gray-600 leading-loose"
-                                        dangerouslySetInnerHTML={{ __html: activity.description || "Tidak ada deskripsi." }}
-                                    />
+                                    <div className="prose md:prose-lg max-w-none text-gray-600 leading-loose whitespace-pre-wrap">
+                                        {activity.description || "Tidak ada deskripsi."}
+                                    </div>
                                 </CardContent>
                                 <div className="px-6 md:px-10 py-6 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between">
                                     <div className="flex items-center gap-4">
@@ -307,12 +345,26 @@ export default function ActivityDetail() {
                                     <CardContent className="p-6 pt-0">
                                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                                             {activity.additionalImages.map((img, idx) => (
-                                                <div key={idx} className="relative aspect-square rounded-xl overflow-hidden group cursor-pointer">
+                                                <div
+                                                    key={idx}
+                                                    className="relative aspect-square rounded-xl overflow-hidden group cursor-pointer"
+                                                    onClick={() => setSelectedImage(img)}
+                                                >
                                                     <img
                                                         src={img}
                                                         alt={`Gallery ${idx + 1}`}
                                                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                                     />
+                                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors">
+                                                        <Button
+                                                            size="icon"
+                                                            variant="secondary"
+                                                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity rounded-full bg-white/90 hover:bg-white shadow-sm h-8 w-8"
+                                                            onClick={(e) => handleDownload(e, img)}
+                                                        >
+                                                            <Download className="h-4 w-4 text-gray-700" />
+                                                        </Button>
+                                                    </div>
                                                 </div>
                                             ))}
                                         </div>
@@ -446,6 +498,60 @@ export default function ActivityDetail() {
                 </div>
             </main>
             <Footer />
+
+            {/* Delete Confirmation Modal */}
+            <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Hapus Aktivitas</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Apakah Anda yakin ingin menghapus aktivitas ini? Semua foto yang terkait juga akan dihapus secara permanen.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Batal</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={confirmDeleteActivity}
+                            className="bg-red-600 hover:bg-red-700 text-white"
+                            disabled={deleteActivityMutation.isPending}
+                        >
+                            {deleteActivityMutation.isPending ? 'Menghapus...' : 'Hapus'}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
+                <DialogContent aria-describedby={undefined} showCloseButton={false} className="max-w-4xl p-0 bg-transparent border-none shadow-none text-white place-items-center flex justify-center items-center">
+                    <DialogTitle className="sr-only">Perbesar Gambar</DialogTitle>
+                    <div className="relative w-full h-full flex flex-col items-center">
+                        {selectedImage && (
+                            <img
+                                src={selectedImage}
+                                alt="Enlarged"
+                                className="max-h-[85vh] w-auto object-contain rounded-md shadow-2xl"
+                            />
+                        )}
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute top-2 right-2 md:-right-12 md:top-0 text-white bg-black/50 hover:bg-black/70 rounded-full z-50 transition-colors backdrop-blur-sm"
+                            onClick={() => setSelectedImage(null)}
+                        >
+                            <span className="sr-only">Close</span>
+                            <X className="h-6 w-6" />
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {activity && (
+                <EditActivityModal
+                    open={isEditOpen}
+                    onOpenChange={setIsEditOpen}
+                    activity={activity}
+                />
+            )}
         </div>
     );
 }

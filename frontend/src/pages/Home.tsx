@@ -204,11 +204,13 @@ export default function Home() {
                                         <CardFooter className="p-5 pt-0 mt-auto">
                                             <div className="flex items-center gap-3 w-full bg-orange-50/50 p-2 rounded-2xl">
                                                 <Avatar className="h-8 w-8 border-2 border-white shadow-sm">
-                                                    <AvatarImage src={""} />
-                                                    <AvatarFallback className="text-xs bg-orange-200 text-orange-700 font-bold">U</AvatarFallback>
+                                                    <AvatarImage src={activity.user?.avatarUrl || undefined} />
+                                                    <AvatarFallback className="text-xs bg-orange-200 text-orange-700 font-bold">
+                                                        {activity.user?.fullName?.charAt(0).toUpperCase() || 'U'}
+                                                    </AvatarFallback>
                                                 </Avatar>
                                                 <span className="text-sm font-semibold text-gray-600 truncate flex-1">
-                                                    Pengguna
+                                                    {activity.user?.fullName || 'Pengguna'}
                                                 </span>
                                             </div>
                                         </CardFooter>

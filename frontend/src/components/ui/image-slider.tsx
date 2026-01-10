@@ -1,8 +1,4 @@
-import React from 'react';
-"use client"
-
 import { useState, useEffect, useCallback } from "react"
-import Image from "next/image"
 import { ChevronLeft, ChevronRight, X, Maximize2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "../../lib/utils"
@@ -54,19 +50,17 @@ export function ImageSlider({ images, className }: ImageSliderProps) {
                 onClick={() => setIsLightboxOpen(true)}
             >
                 {/* Blurred Background */}
-                <Image
+                <img
                     src={images[currentIndex]}
                     alt={`Slide ${currentIndex + 1} Background`}
-                    fill
-                    className="object-cover blur-xl opacity-50 scale-110"
+                    className="absolute inset-0 w-full h-full object-cover blur-xl opacity-50 scale-110"
                 />
 
                 {/* Main Image */}
-                <Image
+                <img
                     src={images[currentIndex]}
                     alt={`Slide ${currentIndex + 1}`}
-                    fill
-                    className="object-contain relative z-10 transition-transform duration-500 group-hover:scale-[1.02]"
+                    className="absolute inset-0 w-full h-full object-contain relative z-10 transition-transform duration-500 group-hover:scale-[1.02]"
                 />
 
                 {/* Overlay with count and expand icon */}
@@ -120,11 +114,10 @@ export function ImageSlider({ images, className }: ImageSliderProps) {
                             )}
                             onClick={() => goToSlide(index)}
                         >
-                            <Image
+                            <img
                                 src={image}
                                 alt={`Thumbnail ${index + 1}`}
-                                fill
-                                className="object-cover"
+                                className="w-full h-full object-cover"
                             />
                         </button>
                     ))}
@@ -150,12 +143,10 @@ export function ImageSlider({ images, className }: ImageSliderProps) {
 
                     <div className="relative w-full h-full max-w-7xl max-h-[90vh] p-4 flex items-center justify-center">
                         <div className="relative w-full h-full">
-                            <Image
+                            <img
                                 src={images[currentIndex]}
                                 alt={`Full Slide ${currentIndex + 1}`}
-                                fill
-                                className="object-contain"
-                                priority
+                                className="w-full h-full object-contain"
                             />
                         </div>
                     </div>

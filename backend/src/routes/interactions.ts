@@ -45,6 +45,41 @@ router.get('/video/:videoId', async (req: Request, res: Response) => {
     }
 });
 
+// GET interactions for an activity
+router.get('/activity/:activityId', async (req: Request, res: Response) => {
+    try {
+        const { activityId } = req.params;
+
+        const comments = await db.select({
+            id: activityComments.id,
+            content: activityComments.content,
+            createdAt: activityComments.createdAt,
+            userId: activityComments.userId,
+            user: {
+                fullName: users.fullName,
+                avatarUrl: users.avatarUrl
+            }
+        })
+            .from(activityComments)
+            .leftJoin(users, eq(activityComments.userId, users.id))
+            .where(eq(activityComments.activityId, activityId))
+            .orderBy(desc(activityComments.createdAt));
+
+        const likes = await db.select({ count: sql<number>`count(*)` })
+            .from(activityLikes)
+            .where(eq(activityLikes.activityId, activityId));
+
+        res.json({
+            comments,
+            likeCount: likes[0]?.count || 0
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Failed to fetch interactions' });
+    }
+});
+
 // POST toggle like
 router.post('/like', authenticate, async (req: Request, res: Response) => {
     try {

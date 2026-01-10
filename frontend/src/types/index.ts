@@ -13,13 +13,18 @@ export interface Activity {
     id: string;
     title: string;
     description?: string;
-    category?: string;
+    categoryId?: string;
     date?: string;
     location?: string;
     imageUrl?: string;
     additionalImages?: string[];
     userId: string;
     createdAt: string;
+    user?: User;
+    category?: {
+        id: string;
+        name: string;
+    } | string;
 }
 
 export interface CampArea {
@@ -72,3 +77,10 @@ export interface VideoInteractions {
     comments: Comment[];
     likeCount: number;
 }
+
+export interface Category {
+    id: string;
+    name: string;
+    createdAt: string;
+}
+

@@ -4,7 +4,7 @@ import { db } from '../db';
 import { campAreas } from '../db/schema';
 import { authenticate } from '../middleware/auth';
 import { uploadImage, deleteImage, getPublicIdFromUrl } from '../lib/cloudinary';
-import { eq } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -12,7 +12,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 // GET all camp areas
 router.get('/', async (req: Request, res: Response) => {
     try {
-        const result = await db.select().from(campAreas).orderBy(campAreas.createdAt);
+        const result = await db.select().from(campAreas).orderBy(desc(campAreas.createdAt));
         res.json(result);
     } catch (error) {
         console.error(error);

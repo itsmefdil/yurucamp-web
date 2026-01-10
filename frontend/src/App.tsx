@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './contexts/AuthContext';
 import { Toaster } from 'sonner';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { BottomNav } from './components/layout/BottomNav';
 
 // Pages
 import Home from './pages/Home';
@@ -20,6 +21,8 @@ import EventDetail from './pages/EventDetail';
 import Watch from './pages/Watch';
 import WatchSeason from './pages/WatchSeason';
 import Dashboard from './pages/dashboard/Dashboard';
+import AddActivity from './pages/dashboard/AddActivity';
+import EditActivity from './pages/dashboard/EditActivity';
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -60,8 +63,25 @@ function App() {
                                 </ProtectedRoute>
                             }
                         />
+                        <Route
+                            path="/dashboard/add-activity"
+                            element={
+                                <ProtectedRoute>
+                                    <AddActivity />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/dashboard/edit-activity/:id"
+                            element={
+                                <ProtectedRoute>
+                                    <EditActivity />
+                                </ProtectedRoute>
+                            }
+                        />
                     </Routes>
                     <Toaster position="top-right" />
+                    <BottomNav />
                 </BrowserRouter>
             </AuthProvider>
         </QueryClientProvider>

@@ -1,10 +1,10 @@
 import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import { db } from '../db';
-import { activities } from '../db/schema';
+import { activities, users } from '../db/schema';
 import { authenticate } from '../middleware/auth';
 import { uploadImage, deleteImage, getPublicIdFromUrl } from '../lib/cloudinary';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, desc } from 'drizzle-orm';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -12,7 +12,27 @@ const upload = multer({ storage: multer.memoryStorage() });
 // GET all activities
 router.get('/', async (req: Request, res: Response) => {
     try {
-        const result = await db.select().from(activities).orderBy(activities.createdAt);
+        const result = await db.select({
+            id: activities.id,
+            title: activities.title,
+            description: activities.description,
+            categoryId: activities.categoryId,
+            date: activities.date,
+            location: activities.location,
+            imageUrl: activities.imageUrl,
+            additionalImages: activities.additionalImages,
+            userId: activities.userId,
+            createdAt: activities.createdAt,
+            user: {
+                id: users.id,
+                fullName: users.fullName,
+                avatarUrl: users.avatarUrl,
+            }
+        })
+            .from(activities)
+            .leftJoin(users, eq(activities.userId, users.id))
+            .orderBy(desc(activities.createdAt));
+
         res.json(result);
     } catch (error) {
         console.error(error);
@@ -44,11 +64,11 @@ router.post('/', authenticate, upload.fields([{ name: 'image', maxCount: 1 }, { 
         const user = req.user;
         const userId = user.sub || user.id;
 
-        const { title, description, category, date, location } = req.body;
-        const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+        const { title, description, categoryId, date, location } = req.body;
+        const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
 
-        const imageFile = files['image']?.[0];
-        const additionalImageFiles = files['additional_images'] || [];
+        const imageFile = files?.['image']?.[0];
+        const additionalFiles = files?.['additional_images'] || [];
 
         let image_url = null;
         const additional_images: string[] = [];
@@ -59,7 +79,7 @@ router.post('/', authenticate, upload.fields([{ name: 'image', maxCount: 1 }, { 
         }
 
         // Parallel upload for additional images
-        const uploadPromises = additionalImageFiles.map(file => uploadImage(file, 'activities'));
+        const uploadPromises = additionalFiles.map(file => uploadImage(file, 'activities')); // Used new variable name here
         const uploadedUrls = await Promise.all(uploadPromises);
         uploadedUrls.forEach(url => {
             if (url) additional_images.push(url);
@@ -68,7 +88,7 @@ router.post('/', authenticate, upload.fields([{ name: 'image', maxCount: 1 }, { 
         const newActivity = await db.insert(activities).values({
             title,
             description,
-            category,
+            categoryId,
             date,
             location,
             imageUrl: image_url,
@@ -91,12 +111,33 @@ router.put('/:id', authenticate, upload.fields([{ name: 'image', maxCount: 1 }, 
         const user = req.user;
         const userId = user.sub || user.id;
 
-        const { title, description, category, date, location, kept_images } = req.body;
-        const keptImagesList = Array.isArray(kept_images) ? kept_images : (kept_images ? [kept_images] : []);
+        const { title, description, categoryId, date, location, kept_images } = req.body;
 
-        const files = req.files as { [fieldname: string]: Express.Multer.File[] };
-        const imageFile = files['image']?.[0];
-        const additionalImageFiles = files['additional_images'] || [];
+        // Debug: log all received files
+        console.log('req.files:', req.files);
+        console.log('req.body keys:', Object.keys(req.body));
+
+        // Parse kept_images - it might be a JSON string or already an array
+        let keptImagesList: string[] = [];
+        if (kept_images) {
+            if (typeof kept_images === 'string') {
+                try {
+                    const parsed = JSON.parse(kept_images);
+                    // Flatten in case it's a nested array
+                    keptImagesList = Array.isArray(parsed) ? parsed.flat(Infinity).filter((x: unknown): x is string => typeof x === 'string') : [kept_images];
+                } catch {
+                    keptImagesList = [kept_images];
+                }
+            } else if (Array.isArray(kept_images)) {
+                // Flatten in case it's a nested array
+                keptImagesList = kept_images.flat(Infinity).filter((x: unknown): x is string => typeof x === 'string');
+            }
+        }
+
+        const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
+
+        const imageFile = files?.['image']?.[0];
+        const additionalFiles = files?.['additional_images'] || [];
 
         // Verify ownership
         const existingActivity = await db.select().from(activities).where(eq(activities.id, id)).limit(1);
@@ -110,7 +151,7 @@ router.put('/:id', authenticate, upload.fields([{ name: 'image', maxCount: 1 }, 
         }
 
         let image_url = existingActivity[0].imageUrl;
-        let additional_images = [...keptImagesList];
+        const additional_images: string[] = [];
 
         if (imageFile) {
             const url = await uploadImage(imageFile, 'activities');
@@ -118,20 +159,38 @@ router.put('/:id', authenticate, upload.fields([{ name: 'image', maxCount: 1 }, 
         }
 
         // Parallel upload for additional images
-        const uploadPromises = additionalImageFiles.map(file => uploadImage(file, 'activities'));
+        console.log('Additional files received:', additionalFiles.length, additionalFiles.map((f: Express.Multer.File) => f.originalname));
+        const uploadPromises = additionalFiles.map((file: Express.Multer.File) => uploadImage(file, 'activities'));
         const uploadedUrls = await Promise.all(uploadPromises);
-        uploadedUrls.forEach(url => {
+        console.log('Uploaded additional URLs:', uploadedUrls);
+        uploadedUrls.forEach((url: string | null) => {
             if (url) additional_images.push(url);
         });
+
+        // Combine kept images with newly uploaded images
+        const allAdditionalImages = [...keptImagesList, ...additional_images];
+
+        // Find images that were removed (exist in database but not in kept list)
+        const existingImages = existingActivity[0].additionalImages || [];
+        const removedImages = existingImages.filter((img: string) => !keptImagesList.includes(img));
+
+        // Delete removed images from Cloudinary
+        for (const imageUrl of removedImages) {
+            const publicId = getPublicIdFromUrl(imageUrl);
+            if (publicId) {
+                console.log('Deleting removed image from Cloudinary:', publicId);
+                await deleteImage(publicId);
+            }
+        }
 
         const updatedActivity = await db.update(activities).set({
             title,
             description,
-            category,
+            categoryId,
             date,
             location,
             imageUrl: image_url,
-            additionalImages: additional_images,
+            additionalImages: allAdditionalImages,
         }).where(eq(activities.id, id)).returning();
 
         res.json(updatedActivity[0]);

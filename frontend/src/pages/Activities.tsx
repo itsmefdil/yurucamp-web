@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/button';
@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Footer } from '../components/layout/Footer';
 import { Navbar } from '../components/layout/Navbar';
 import { Plus, MapPin, Calendar, Tent } from 'lucide-react';
+import { AddActivityModal } from '../components/activities/AddActivityModal';
 import api from '../lib/api';
 import type { Activity } from '../types';
 import { useAuth } from '../contexts/AuthContext';
@@ -15,6 +16,7 @@ import { formatDate } from '../lib/utils';
 
 export default function Activities() {
     const { user } = useAuth();
+    const [isAddActivityOpen, setIsAddActivityOpen] = useState(false);
 
     const { data: activities, isLoading } = useQuery({
         queryKey: ['activities'],
@@ -45,10 +47,12 @@ export default function Activities() {
                             </p>
                             <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
                                 {user ? (
-                                    <Button size="lg" className="rounded-2xl bg-orange-500 text-white hover:bg-orange-600 font-bold text-base px-8 shadow-lg hover:shadow-orange-200 hover:scale-105 transition-all" asChild>
-                                        <Link to="/dashboard/add-activity">
-                                            <Plus className="mr-2 h-5 w-5" /> Buat Aktifitas Baru
-                                        </Link>
+                                    <Button
+                                        size="lg"
+                                        className="rounded-2xl bg-orange-500 text-white hover:bg-orange-600 font-bold text-base px-8 shadow-lg hover:shadow-orange-200 hover:scale-105 transition-all"
+                                        onClick={() => setIsAddActivityOpen(true)}
+                                    >
+                                        <Plus className="mr-2 h-5 w-5" /> Buat Aktifitas Baru
                                     </Button>
                                 ) : (
                                     <Button size="lg" className="rounded-2xl bg-orange-500 text-white hover:bg-orange-600 font-bold text-base px-8 shadow-lg" asChild>
@@ -103,7 +107,7 @@ export default function Activities() {
                                         {activity.category && (
                                             <div className="absolute top-3 right-3">
                                                 <Badge className="bg-primary/90 text-white text-xs font-bold">
-                                                    {activity.category}
+                                                    {typeof activity.category === 'string' ? activity.category : activity.category?.name}
                                                 </Badge>
                                             </div>
                                         )}
@@ -122,11 +126,13 @@ export default function Activities() {
                                     <CardFooter className="p-5 pt-0 mt-auto">
                                         <div className="flex items-center gap-3 w-full bg-orange-50/50 p-2 rounded-2xl">
                                             <Avatar className="h-8 w-8 border-2 border-white shadow-sm">
-                                                <AvatarImage src={""} />
-                                                <AvatarFallback className="text-xs bg-orange-200 text-orange-700 font-bold">U</AvatarFallback>
+                                                <AvatarImage src={activity.user?.avatarUrl || undefined} />
+                                                <AvatarFallback className="text-xs bg-orange-200 text-orange-700 font-bold">
+                                                    {activity.user?.fullName?.charAt(0).toUpperCase() || 'U'}
+                                                </AvatarFallback>
                                             </Avatar>
                                             <span className="text-sm font-semibold text-gray-600 truncate flex-1">
-                                                Pengguna
+                                                {activity.user?.fullName || 'Pengguna'}
                                             </span>
                                         </div>
                                     </CardFooter>
@@ -143,6 +149,7 @@ export default function Activities() {
             </main>
 
             <Footer />
+            <AddActivityModal open={isAddActivityOpen} onOpenChange={setIsAddActivityOpen} />
         </div>
     );
 }

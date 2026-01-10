@@ -4,7 +4,7 @@ import { db } from '../db';
 import { events, eventParticipants } from '../db/schema';
 import { authenticate } from '../middleware/auth';
 import { uploadImage, deleteImage, getPublicIdFromUrl } from '../lib/cloudinary';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, desc } from 'drizzle-orm';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -12,7 +12,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 // GET all events
 router.get('/', async (req: Request, res: Response) => {
     try {
-        const result = await db.select().from(events).orderBy(events.dateStart);
+        const result = await db.select().from(events).orderBy(desc(events.createdAt));
         res.json(result);
     } catch (error) {
         console.error(error);
