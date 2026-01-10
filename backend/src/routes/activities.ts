@@ -116,7 +116,10 @@ router.put('/:id', authenticate, upload.none(), async (req: Request, res: Respon
         const previousAdditionalImages = existingActivity[0].additionalImages || [];
         const removedAdditionalImages = previousAdditionalImages.filter((img: string) => !keptImagesList.includes(img));
 
-        console.log("Cleanup: Removing images from Cloudinary:", removedAdditionalImages);
+        console.log("Cleanup: Identifying removals for Cloudinary:", removedAdditionalImages);
+
+        // Collect deletion promises
+        const deletionPromises: Promise<any>[] = [];
 
         // Delete removed additional images
         for (const url of removedAdditionalImages) {
@@ -125,8 +128,8 @@ router.put('/:id', authenticate, upload.none(), async (req: Request, res: Respon
 
             const publicId = getPublicIdFromUrl(url);
             if (publicId) {
-                console.log("Cleanup: Deleting additional image:", publicId);
-                deleteImage(publicId).catch(err => console.error("Error deleting image:", publicId, err));
+                console.log("Cleanup: Queuing deletion for gallery image:", publicId);
+                deletionPromises.push(deleteImage(publicId).catch(err => console.error("Error deleting gallery image:", publicId, err)));
             }
         }
 
@@ -138,9 +141,14 @@ router.put('/:id', authenticate, upload.none(), async (req: Request, res: Respon
         if (oldCover && isCoverReplaced && !allAdditionalImages.includes(oldCover)) {
             const publicId = getPublicIdFromUrl(oldCover);
             if (publicId) {
-                console.log("Cleanup: Deleting old cover image:", publicId);
-                deleteImage(publicId).catch(err => console.error("Error deleting old cover:", publicId, err));
+                console.log("Cleanup: Queuing deletion for old cover image:", publicId);
+                deletionPromises.push(deleteImage(publicId).catch(err => console.error("Error deleting old cover:", publicId, err)));
             }
+        }
+
+        // CRITICAL for Vercel: We must await all external calls before finishing the request
+        if (deletionPromises.length > 0) {
+            await Promise.all(deletionPromises);
         }
 
         const updatedActivity = await db.update(activities).set({
@@ -181,27 +189,35 @@ router.delete('/:id', authenticate, async (req: Request, res: Response) => {
 
         await db.delete(activities).where(eq(activities.id, id));
 
-        // Background image deletion (fire and forget)
-        (async () => {
+        // Background image deletion - In Serverless (Vercel), we MUST await this
+        try {
             console.log("Cleanup: Activity deleted, cleaning up images...");
+            const deletionPromises: Promise<any>[] = [];
+
             if (existingActivity[0].imageUrl) {
                 const publicId = getPublicIdFromUrl(existingActivity[0].imageUrl);
                 if (publicId) {
-                    console.log("Cleanup: Deleting cover image:", publicId);
-                    await deleteImage(publicId).catch(err => console.error("Error deleting cover:", publicId, err));
+                    console.log("Cleanup: Queuing deletion for cover image:", publicId);
+                    deletionPromises.push(deleteImage(publicId));
                 }
             }
             if (existingActivity[0].additionalImages) {
-                console.log(`Cleanup: Deleting ${existingActivity[0].additionalImages.length} additional images...`);
+                console.log(`Cleanup: Queuing deletion for ${existingActivity[0].additionalImages.length} additional images...`);
                 for (const url of existingActivity[0].additionalImages!) {
                     const publicId = getPublicIdFromUrl(url);
                     if (publicId) {
-                        console.log("Cleanup: Deleting gallery image:", publicId);
-                        await deleteImage(publicId).catch(err => console.error("Error deleting image:", publicId, err));
+                        console.log("Cleanup: Queuing deletion for gallery image:", publicId);
+                        deletionPromises.push(deleteImage(publicId));
                     }
                 }
             }
-        })().catch(err => console.error("Background image deletion failed", err));
+
+            if (deletionPromises.length > 0) {
+                await Promise.all(deletionPromises);
+            }
+        } catch (err) {
+            console.error("Image deletion cleanup failed during activity deletion:", err);
+        }
 
         res.json({ message: 'Activity deleted successfully' });
 
