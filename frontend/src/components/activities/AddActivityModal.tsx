@@ -20,6 +20,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '../../components/ui/avatar'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../../components/ui/dialog';
 import api from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
+import imageCompression from 'browser-image-compression';
 
 const activitySchema = z.object({
     title: z.string().min(3, "Judul minimal 3 karakter"),
@@ -67,33 +68,49 @@ export function AddActivityModal({ open, onOpenChange }: AddActivityModalProps) 
         enabled: open, // Only fetch when modal is open
     });
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
         let isFirstFile = !imageFile && !imagePreview;
 
-        files.forEach((file, index) => {
-            if (file.size > 5 * 1024 * 1024) {
-                toast.error(`File ${file.name} terlalu besar (max 5MB)`);
-                return;
+        const options = {
+            maxSizeMB: 1,
+            maxWidthOrHeight: 1920,
+            useWebWorker: true,
+        };
+
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+
+            // Check original size warning (optional, since we will compress)
+            if (file.size > 20 * 1024 * 1024) {
+                toast.error(`File ${file.name} terlalu besar (>20MB)`);
+                continue;
             }
 
-            const reader = new FileReader();
+            try {
+                const compressedFile = await imageCompression(file, options);
+                const reader = new FileReader();
 
-            if (isFirstFile && index === 0) {
-                setImageFile(file);
-                reader.onloadend = () => setImagePreview(reader.result as string);
-                reader.readAsDataURL(file);
-            } else {
-                const totalAdditional = additionalFiles.length + (isFirstFile ? index : index + 1);
-                if (totalAdditional <= 10) {
-                    setAdditionalFiles(prev => [...prev, file]);
-                    reader.onloadend = () => setAdditionalPreviews(prev => [...prev, reader.result as string]);
-                    reader.readAsDataURL(file);
+                if (isFirstFile && i === 0) {
+                    setImageFile(compressedFile);
+                    reader.onloadend = () => setImagePreview(reader.result as string);
+                    reader.readAsDataURL(compressedFile);
                 } else {
-                    toast.error("Maksimal 10 foto tambahan");
+                    const totalAdditional = additionalFiles.length + (isFirstFile ? i : i + 1);
+                    if (totalAdditional <= 10) {
+                        setAdditionalFiles(prev => [...prev, compressedFile]);
+                        reader.onloadend = () => setAdditionalPreviews(prev => [...prev, reader.result as string]);
+                        reader.readAsDataURL(compressedFile);
+                    } else {
+                        toast.error("Maksimal 10 foto tambahan");
+                        break;
+                    }
                 }
+            } catch (error) {
+                console.error("Compression error:", error);
+                toast.error(`Gagal memproses gambar ${file.name}`);
             }
-        });
+        }
         e.target.value = '';
     };
 

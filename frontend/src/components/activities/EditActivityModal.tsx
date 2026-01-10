@@ -21,6 +21,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../componen
 import api from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
 import type { Activity } from '../../types';
+import imageCompression from 'browser-image-compression';
 
 const activitySchema = z.object({
     title: z.string().min(3, "Judul minimal 3 karakter"),
@@ -94,22 +95,35 @@ export function EditActivityModal({ open, onOpenChange, activity }: EditActivity
         }
     }, [activity, open, form]);
 
-    const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleCoverChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            if (file.size > 5 * 1024 * 1024) {
-                toast.error("Ukuran file maksimal 5MB");
+            if (file.size > 20 * 1024 * 1024) {
+                toast.error("Ukuran file maksimal 20MB");
                 return;
             }
-            setImageFile(file);
-            const reader = new FileReader();
-            reader.onloadend = () => setImagePreview(reader.result as string);
-            reader.readAsDataURL(file);
+
+            const options = {
+                maxSizeMB: 1,
+                maxWidthOrHeight: 1920,
+                useWebWorker: true,
+            };
+
+            try {
+                const compressedFile = await imageCompression(file, options);
+                setImageFile(compressedFile);
+                const reader = new FileReader();
+                reader.onloadend = () => setImagePreview(reader.result as string);
+                reader.readAsDataURL(compressedFile);
+            } catch (error) {
+                console.error("Compression error:", error);
+                toast.error("Gagal memproses gambar cover");
+            }
         }
         e.target.value = '';
     };
 
-    const handleAdditionalImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleAdditionalImagesChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
 
         const totalImages = existingImages.length + additionalFiles.length + files.length;
@@ -118,16 +132,30 @@ export function EditActivityModal({ open, onOpenChange, activity }: EditActivity
             return;
         }
 
-        files.forEach(file => {
-            if (file.size > 5 * 1024 * 1024) {
-                toast.error(`File ${file.name} terlalu besar (max 5MB)`);
-                return;
+        const options = {
+            maxSizeMB: 1,
+            maxWidthOrHeight: 1920,
+            useWebWorker: true,
+        };
+
+        for (const file of files) {
+            if (file.size > 20 * 1024 * 1024) {
+                toast.error(`File ${file.name} terlalu besar (>20MB)`);
+                continue;
             }
-            const reader = new FileReader();
-            setAdditionalFiles(prev => [...prev, file]);
-            reader.onloadend = () => setAdditionalPreviews(prev => [...prev, reader.result as string]);
-            reader.readAsDataURL(file);
-        });
+
+            try {
+                const compressedFile = await imageCompression(file, options);
+                const reader = new FileReader();
+
+                setAdditionalFiles(prev => [...prev, compressedFile]);
+                reader.onloadend = () => setAdditionalPreviews(prev => [...prev, reader.result as string]);
+                reader.readAsDataURL(compressedFile);
+            } catch (error) {
+                console.error("Compression error:", error);
+                toast.error(`Gagal memproses gambar ${file.name}`);
+            }
+        }
         e.target.value = '';
     };
 
