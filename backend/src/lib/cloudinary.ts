@@ -62,14 +62,25 @@ export async function deleteImage(publicId: string): Promise<void> {
 
 export function getPublicIdFromUrl(url: string): string | null {
     try {
-        // Remove query parameters if present
+        // Cloudinary URL format: 
+        // https://res.cloudinary.com/[cloud_name]/[resource_type]/[type]/[transformations]/v[version]/[public_id].[extension]
+
+        // Remove query parameters
         const urlWithoutQuery = url.split('?')[0];
-        const regex = /\/v\d+\/(.+?)(\.[a-zA-Z0-9]+)?$/;
-        const match = urlWithoutQuery.match(regex);
-        if (match && match[1]) {
-            return match[1];
-        }
-        return null;
+
+        // Parts of the path after 'upload/' (typical for our usage)
+        const parts = urlWithoutQuery.split('/upload/');
+        if (parts.length < 2) return null;
+
+        const publicIdPath = parts[1];
+        // Remove version if present (v12345678)
+        const pathNoVersion = publicIdPath.replace(/^v\d+\//, '');
+
+        // Remove extension
+        const lastDotIndex = pathNoVersion.lastIndexOf('.');
+        if (lastDotIndex === -1) return pathNoVersion;
+
+        return pathNoVersion.substring(0, lastDotIndex);
     } catch (error) {
         console.error("Error extracting public ID:", error);
         return null;

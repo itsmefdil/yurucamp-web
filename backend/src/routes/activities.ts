@@ -112,36 +112,35 @@ router.put('/:id', authenticate, upload.none(), async (req: Request, res: Respon
 
         const allAdditionalImages = [...keptImagesList, ...additionalImagesList];
 
-        // Find images that were removed (exist in database but not in kept list)
-        // Note: Client handles upload, but deletion of old images is still good practice if we can track them.
-        // The keptImagesList contains URLs that the user wants to keep.
-        // We should compare existingActivity[0].additionalImages with keptImagesList.
-
+        // Identify removed additional images
         const previousAdditionalImages = existingActivity[0].additionalImages || [];
         const removedAdditionalImages = previousAdditionalImages.filter((img: string) => !keptImagesList.includes(img));
 
-        // Also check if cover image changed and needs deletion (if old cover is not used as cover anymore). 
-        // NOTE: The client logic sends 'imageUrl' as the new cover URL.
-        // If existingActivity[0].imageUrl is different from new imageUrl, AND it's not in additionalImages either, we could delete it.
-        // But simplify for now: just delete removed additional images.
-        // And if cover changed, delete old cover if it's not reused? For now let's just delete removed additional images.
+        console.log("Cleanup: Removing images from Cloudinary:", removedAdditionalImages);
 
-        // Delete removed images from Cloudinary
+        // Delete removed additional images
         for (const url of removedAdditionalImages) {
+            // CRITICAL: Don't delete if it's currently being set as the NEW cover
+            if (url === imageUrl) continue;
+
             const publicId = getPublicIdFromUrl(url);
             if (publicId) {
-                // Background delete
-                deleteImage(publicId).catch(console.error);
+                console.log("Cleanup: Deleting additional image:", publicId);
+                deleteImage(publicId).catch(err => console.error("Error deleting image:", publicId, err));
             }
         }
 
-        // If cover image is updated, we might want to delete the old one if it's strictly replaced.
-        // But since we don't know if the old cover was moved to additional, or just gone, let's be careful.
-        // If the old cover URL is NOT in the new 'imageUrl' AND NOT in 'allAdditionalImages', then it's truly gone.
+        // Delete old cover ONLY if it was actually replaced by a NEW one 
+        // AND it's not being moved to the additional images gallery
         const oldCover = existingActivity[0].imageUrl;
-        if (oldCover && oldCover !== imageUrl && !allAdditionalImages.includes(oldCover)) {
+        const isCoverReplaced = imageUrl && imageUrl !== oldCover;
+
+        if (oldCover && isCoverReplaced && !allAdditionalImages.includes(oldCover)) {
             const publicId = getPublicIdFromUrl(oldCover);
-            if (publicId) deleteImage(publicId).catch(console.error);
+            if (publicId) {
+                console.log("Cleanup: Deleting old cover image:", publicId);
+                deleteImage(publicId).catch(err => console.error("Error deleting old cover:", publicId, err));
+            }
         }
 
         const updatedActivity = await db.update(activities).set({
@@ -184,14 +183,22 @@ router.delete('/:id', authenticate, async (req: Request, res: Response) => {
 
         // Background image deletion (fire and forget)
         (async () => {
+            console.log("Cleanup: Activity deleted, cleaning up images...");
             if (existingActivity[0].imageUrl) {
                 const publicId = getPublicIdFromUrl(existingActivity[0].imageUrl);
-                if (publicId) await deleteImage(publicId);
+                if (publicId) {
+                    console.log("Cleanup: Deleting cover image:", publicId);
+                    await deleteImage(publicId).catch(err => console.error("Error deleting cover:", publicId, err));
+                }
             }
             if (existingActivity[0].additionalImages) {
+                console.log(`Cleanup: Deleting ${existingActivity[0].additionalImages.length} additional images...`);
                 for (const url of existingActivity[0].additionalImages!) {
                     const publicId = getPublicIdFromUrl(url);
-                    if (publicId) await deleteImage(publicId);
+                    if (publicId) {
+                        console.log("Cleanup: Deleting gallery image:", publicId);
+                        await deleteImage(publicId).catch(err => console.error("Error deleting image:", publicId, err));
+                    }
                 }
             }
         })().catch(err => console.error("Background image deletion failed", err));
