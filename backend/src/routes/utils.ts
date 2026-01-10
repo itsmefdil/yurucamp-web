@@ -16,4 +16,24 @@ router.get('/hero-images', (req: Request, res: Response) => {
     res.json(specificImages.slice(0, count));
 });
 
+import { v2 as cloudinary } from 'cloudinary';
+
+// ... existing code ...
+
+router.get('/cloudinary-signature', (req: Request, res: Response) => {
+    const timestamp = Math.round((new Date()).getTime() / 1000);
+    const signature = cloudinary.utils.api_sign_request({
+        timestamp: timestamp,
+        folder: process.env.CLOUDINARY_PATH_PREFIX || 'yurucamp', // Use env or default
+    }, process.env.CLOUDINARY_API_SECRET as string);
+
+    res.json({
+        signature,
+        timestamp,
+        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+        api_key: process.env.CLOUDINARY_API_KEY,
+        folder: process.env.CLOUDINARY_PATH_PREFIX || 'yurucamp'
+    });
+});
+
 export default router;

@@ -21,7 +21,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../componen
 import api from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
 import type { Activity } from '../../types';
-import imageCompression from 'browser-image-compression';
 
 const activitySchema = z.object({
     title: z.string().min(3, "Judul minimal 3 karakter"),
@@ -98,27 +97,14 @@ export function EditActivityModal({ open, onOpenChange, activity }: EditActivity
     const handleCoverChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            if (file.size > 20 * 1024 * 1024) {
-                toast.error("Ukuran file maksimal 20MB");
+            if (file.size > 10 * 1024 * 1024) {
+                toast.error("Ukuran file maksimal 10MB");
                 return;
             }
-
-            const options = {
-                maxSizeMB: 1,
-                maxWidthOrHeight: 1920,
-                useWebWorker: true,
-            };
-
-            try {
-                const compressedFile = await imageCompression(file, options);
-                setImageFile(compressedFile);
-                const reader = new FileReader();
-                reader.onloadend = () => setImagePreview(reader.result as string);
-                reader.readAsDataURL(compressedFile);
-            } catch (error) {
-                console.error("Compression error:", error);
-                toast.error("Gagal memproses gambar cover");
-            }
+            setImageFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => setImagePreview(reader.result as string);
+            reader.readAsDataURL(file);
         }
         e.target.value = '';
     };
@@ -126,34 +112,21 @@ export function EditActivityModal({ open, onOpenChange, activity }: EditActivity
     const handleAdditionalImagesChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
 
-        const totalImages = existingImages.length + additionalFiles.length + files.length;
-        if (totalImages > 10) {
-            toast.error("Maksimal 10 foto tambahan total");
-            return;
-        }
-
-        const options = {
-            maxSizeMB: 1,
-            maxWidthOrHeight: 1920,
-            useWebWorker: true,
-        };
-
         for (const file of files) {
-            if (file.size > 20 * 1024 * 1024) {
-                toast.error(`File ${file.name} terlalu besar (>20MB)`);
+            if (file.size > 10 * 1024 * 1024) {
+                toast.error(`File ${file.name} terlalu besar (>10MB)`);
                 continue;
             }
 
-            try {
-                const compressedFile = await imageCompression(file, options);
+            const totalAdditional = existingImages.length + additionalFiles.length + 1;
+            if (totalAdditional <= 10) {
                 const reader = new FileReader();
-
-                setAdditionalFiles(prev => [...prev, compressedFile]);
+                setAdditionalFiles(prev => [...prev, file]);
                 reader.onloadend = () => setAdditionalPreviews(prev => [...prev, reader.result as string]);
-                reader.readAsDataURL(compressedFile);
-            } catch (error) {
-                console.error("Compression error:", error);
-                toast.error(`Gagal memproses gambar ${file.name}`);
+                reader.readAsDataURL(file);
+            } else {
+                toast.error("Maksimal 10 foto tambahan total");
+                break;
             }
         }
         e.target.value = '';
@@ -168,46 +141,69 @@ export function EditActivityModal({ open, onOpenChange, activity }: EditActivity
         setAdditionalPreviews(prev => prev.filter((_, i) => i !== index));
     };
 
+    const uploadToCloudinary = async (file: File) => {
+        const { data: signData } = await api.get('/utils/cloudinary-signature');
+
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("api_key", signData.api_key);
+        formData.append("timestamp", signData.timestamp.toString());
+        formData.append("signature", signData.signature);
+        formData.append("folder", signData.folder);
+
+        const response = await fetch(`https://api.cloudinary.com/v1_1/${signData.cloud_name}/image/upload`, {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error?.message || "Upload failed");
+        return data.secure_url;
+    };
+
     const onSubmit = async (data: ActivityFormValues) => {
         if (!activity) return;
 
         try {
             setIsSubmitting(true);
-            setUploadStatus('Menyiapkan data...');
+            setUploadStatus('Menyiapkan upload...');
 
-            const formData = new FormData();
-            formData.append('title', data.title);
-            formData.append('description', data.description);
-            formData.append('categoryId', data.categoryId);
-            formData.append('date', data.date);
-            formData.append('location', data.location);
-
+            let coverUrl = null;
             if (imageFile) {
                 setUploadStatus('Mengupload cover baru...');
-                formData.append('image', imageFile);
+                coverUrl = await uploadToCloudinary(imageFile);
             }
 
-            // Kept images
-            existingImages.forEach(url => {
-                formData.append('kept_images', url);
-            });
-
-            // New additional images
+            const newAdditionalUrls: string[] = [];
             if (additionalFiles.length > 0) {
                 setUploadStatus(`Mengupload ${additionalFiles.length} foto tambahan...`);
-                additionalFiles.forEach(file => {
-                    formData.append('additional_images', file);
-                });
+                // Upload in parallel
+                const uploadPromises = additionalFiles.map(file => uploadToCloudinary(file));
+                const results = await Promise.all(uploadPromises);
+                newAdditionalUrls.push(...results);
             }
 
             setUploadStatus('Menyimpan perubahan...');
-            await api.put(`/activities/${activity.id}`, formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-            });
+
+            // Prepare payload
+            const payload = {
+                title: data.title,
+                description: data.description,
+                categoryId: data.categoryId,
+                date: data.date,
+                location: data.location,
+                imageUrl: coverUrl, // If null, backend should ignore or we handle specifically
+                keptImages: existingImages, // Existing images
+                additionalImages: newAdditionalUrls // New uploaded images (URLs)
+            };
+
+            await api.put(`/activities/${activity.id}`, payload);
 
             setUploadStatus('Selesai!');
             toast.success("Aktifitas berhasil diperbarui!");
             queryClient.invalidateQueries({ queryKey: ['activity', activity.id] });
+
+            // Force refresh list too
             queryClient.invalidateQueries({ queryKey: ['activities'] });
 
             onOpenChange(false);

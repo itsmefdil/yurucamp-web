@@ -3,7 +3,7 @@ import multer from 'multer';
 import { db } from '../db';
 import { activities, users } from '../db/schema';
 import { authenticate } from '../middleware/auth';
-import { uploadImage, deleteImage, getPublicIdFromUrl } from '../lib/cloudinary';
+import { deleteImage, getPublicIdFromUrl } from '../lib/cloudinary';
 import { eq, and, desc } from 'drizzle-orm';
 
 const router = Router();
@@ -59,31 +59,12 @@ router.get('/:id', async (req: Request, res: Response) => {
 });
 
 // POST create activity
-router.post('/', authenticate, upload.fields([{ name: 'image', maxCount: 1 }, { name: 'additional_images', maxCount: 10 }]), async (req: Request, res: Response) => {
+router.post('/', authenticate, upload.none(), async (req: Request, res: Response) => {
     try {
         const user = req.user;
         const userId = user.sub || user.id;
 
-        const { title, description, categoryId, date, location } = req.body;
-        const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
-
-        const imageFile = files?.['image']?.[0];
-        const additionalFiles = files?.['additional_images'] || [];
-
-        let image_url = null;
-        const additional_images: string[] = [];
-
-        if (imageFile) {
-            const url = await uploadImage(imageFile, 'activities');
-            if (url) image_url = url;
-        }
-
-        // Parallel upload for additional images
-        const uploadPromises = additionalFiles.map(file => uploadImage(file, 'activities')); // Used new variable name here
-        const uploadedUrls = await Promise.all(uploadPromises);
-        uploadedUrls.forEach(url => {
-            if (url) additional_images.push(url);
-        });
+        const { title, description, categoryId, date, location, imageUrl, additionalImages } = req.body;
 
         const newActivity = await db.insert(activities).values({
             title,
@@ -91,8 +72,8 @@ router.post('/', authenticate, upload.fields([{ name: 'image', maxCount: 1 }, { 
             categoryId,
             date,
             location,
-            imageUrl: image_url,
-            additionalImages: additional_images,
+            imageUrl: imageUrl || null,
+            additionalImages: additionalImages || [],
             userId: userId,
         }).returning();
 
@@ -105,82 +86,62 @@ router.post('/', authenticate, upload.fields([{ name: 'image', maxCount: 1 }, { 
 });
 
 // PUT update activity
-router.put('/:id', authenticate, upload.fields([{ name: 'image', maxCount: 1 }, { name: 'additional_images', maxCount: 10 }]), async (req: Request, res: Response) => {
+router.put('/:id', authenticate, upload.none(), async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
         const user = req.user;
         const userId = user.sub || user.id;
 
-        const { title, description, categoryId, date, location, kept_images } = req.body;
-
-        // Debug: log all received files
-        console.log('req.files:', req.files);
-        console.log('req.body keys:', Object.keys(req.body));
-
-        // Parse kept_images - it might be a JSON string or already an array
-        let keptImagesList: string[] = [];
-        if (kept_images) {
-            if (typeof kept_images === 'string') {
-                try {
-                    const parsed = JSON.parse(kept_images);
-                    // Flatten in case it's a nested array
-                    keptImagesList = Array.isArray(parsed) ? parsed.flat(Infinity).filter((x: unknown): x is string => typeof x === 'string') : [kept_images];
-                } catch {
-                    keptImagesList = [kept_images];
-                }
-            } else if (Array.isArray(kept_images)) {
-                // Flatten in case it's a nested array
-                keptImagesList = kept_images.flat(Infinity).filter((x: unknown): x is string => typeof x === 'string');
-            }
-        }
-
-        const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
-
-        const imageFile = files?.['image']?.[0];
-        const additionalFiles = files?.['additional_images'] || [];
+        const { title, description, categoryId, date, location, keptImages, additionalImages, imageUrl } = req.body;
 
         // Verify ownership
         const existingActivity = await db.select().from(activities).where(eq(activities.id, id)).limit(1);
         if (existingActivity.length === 0) {
             res.status(404).json({ error: 'Activity not found' });
-            return
+            return;
         }
         if (existingActivity[0].userId !== userId) {
             res.status(403).json({ error: 'Unauthorized' });
-            return
+            return;
         }
-
-        let image_url = existingActivity[0].imageUrl;
-        const additional_images: string[] = [];
-
-        if (imageFile) {
-            const url = await uploadImage(imageFile, 'activities');
-            if (url) image_url = url;
-        }
-
-        // Parallel upload for additional images
-        console.log('Additional files received:', additionalFiles.length, additionalFiles.map((f: Express.Multer.File) => f.originalname));
-        const uploadPromises = additionalFiles.map((file: Express.Multer.File) => uploadImage(file, 'activities'));
-        const uploadedUrls = await Promise.all(uploadPromises);
-        console.log('Uploaded additional URLs:', uploadedUrls);
-        uploadedUrls.forEach((url: string | null) => {
-            if (url) additional_images.push(url);
-        });
 
         // Combine kept images with newly uploaded images
-        const allAdditionalImages = [...keptImagesList, ...additional_images];
+        // keptImages and additionalImages are arrays of strings (URLs) sent from client
+        const keptImagesList = Array.isArray(keptImages) ? keptImages : (keptImages ? [keptImages] : []);
+        const additionalImagesList = Array.isArray(additionalImages) ? additionalImages : (additionalImages ? [additionalImages] : []);
+
+        const allAdditionalImages = [...keptImagesList, ...additionalImagesList];
 
         // Find images that were removed (exist in database but not in kept list)
-        const existingImages = existingActivity[0].additionalImages || [];
-        const removedImages = existingImages.filter((img: string) => !keptImagesList.includes(img));
+        // Note: Client handles upload, but deletion of old images is still good practice if we can track them.
+        // The keptImagesList contains URLs that the user wants to keep.
+        // We should compare existingActivity[0].additionalImages with keptImagesList.
+
+        const previousAdditionalImages = existingActivity[0].additionalImages || [];
+        const removedAdditionalImages = previousAdditionalImages.filter((img: string) => !keptImagesList.includes(img));
+
+        // Also check if cover image changed and needs deletion (if old cover is not used as cover anymore). 
+        // NOTE: The client logic sends 'imageUrl' as the new cover URL.
+        // If existingActivity[0].imageUrl is different from new imageUrl, AND it's not in additionalImages either, we could delete it.
+        // But simplify for now: just delete removed additional images.
+        // And if cover changed, delete old cover if it's not reused? For now let's just delete removed additional images.
 
         // Delete removed images from Cloudinary
-        for (const imageUrl of removedImages) {
-            const publicId = getPublicIdFromUrl(imageUrl);
+        for (const url of removedAdditionalImages) {
+            const publicId = getPublicIdFromUrl(url);
             if (publicId) {
-                console.log('Deleting removed image from Cloudinary:', publicId);
-                await deleteImage(publicId);
+                // Background delete
+                deleteImage(publicId).catch(console.error);
             }
+        }
+
+        // If cover image is updated, we might want to delete the old one if it's strictly replaced.
+        // But since we don't know if the old cover was moved to additional, or just gone, let's be careful.
+        // If the old cover URL is NOT in the new 'imageUrl' AND NOT in 'allAdditionalImages', then it's truly gone.
+        const oldCover = existingActivity[0].imageUrl;
+        if (oldCover && oldCover !== imageUrl && !allAdditionalImages.includes(oldCover)) {
+            const publicId = getPublicIdFromUrl(oldCover);
+            if (publicId) deleteImage(publicId).catch(console.error);
         }
 
         const updatedActivity = await db.update(activities).set({
@@ -189,7 +150,7 @@ router.put('/:id', authenticate, upload.fields([{ name: 'image', maxCount: 1 }, 
             categoryId,
             date,
             location,
-            imageUrl: image_url,
+            imageUrl: imageUrl || existingActivity[0].imageUrl, // Use new URL or fallback (though client should send current if no change)
             additionalImages: allAdditionalImages,
         }).where(eq(activities.id, id)).returning();
 
