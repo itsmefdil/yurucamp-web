@@ -23,6 +23,8 @@ import WatchSeason from './pages/WatchSeason';
 import Dashboard from './pages/dashboard/Dashboard';
 import AddActivity from './pages/dashboard/AddActivity';
 import EditActivity from './pages/dashboard/EditActivity';
+import GearListDashboard from './pages/GearLists/GearListDashboard';
+import GearListDetail from './pages/GearLists/GearListDetail';
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -79,6 +81,17 @@ function App() {
                                 </ProtectedRoute>
                             }
                         />
+                        <Route
+                            path="/gear-lists"
+                            element={
+                                <ProtectedRoute>
+                                    <GearListDashboard />
+                                </ProtectedRoute>
+                            }
+                        />
+
+                        {/* Public Gear List View (for shared lists) */}
+                        <Route path="/gear-lists/:id" element={<GearListDetail />} />
                     </Routes>
                     <Toaster position="top-right" />
                     <BottomNav />

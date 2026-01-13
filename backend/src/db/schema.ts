@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, timestamp, date, numeric, integer, primaryKey } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, timestamp, date, numeric, integer, primaryKey, boolean } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
 // Renamed from profiles to users
@@ -83,4 +83,34 @@ export const categories = pgTable('categories', {
     id: uuid('id').defaultRandom().primaryKey().notNull(),
     name: text('name').notNull().unique(),
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+});
+
+export const gearLists = pgTable('gear_lists', {
+    id: uuid('id').defaultRandom().primaryKey().notNull(),
+    userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+    name: text('name').notNull(),
+    description: text('description'),
+    isPublic: boolean('is_public').default(false).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+});
+
+export const gearCategories = pgTable('gear_categories', {
+    id: uuid('id').defaultRandom().primaryKey().notNull(),
+    gearListId: uuid('gear_list_id').references(() => gearLists.id, { onDelete: 'cascade' }).notNull(),
+    name: text('name').notNull(),
+    sortOrder: integer('sort_order').default(0).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+});
+
+export const gearItems = pgTable('gear_items', {
+    id: uuid('id').defaultRandom().primaryKey().notNull(),
+    categoryId: uuid('category_id').references(() => gearCategories.id, { onDelete: 'cascade' }).notNull(),
+    name: text('name').notNull(),
+    description: text('description'),
+    weight: numeric('weight').default('0'),
+    quantity: integer('quantity').default(1).notNull(),
+    sortOrder: integer('sort_order').default(0).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 });

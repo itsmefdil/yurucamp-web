@@ -10,7 +10,7 @@ import {
     DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { User as UserIcon, Settings, LogOut, ChevronDown, Info } from 'lucide-react';
+import { User as UserIcon, Settings, LogOut, ChevronDown, Info, Backpack } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import type { User } from '../../types';
 
@@ -67,6 +67,12 @@ export function UserNav({ user }: UserNavProps) {
                     <Link to="/dashboard" className="cursor-pointer">
                         <UserIcon className="mr-2 h-4 w-4" />
                         <span>Dashboard</span>
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                    <Link to="/gear-lists" className="cursor-pointer">
+                        <Backpack className="mr-2 h-4 w-4" />
+                        <span>Gear List</span>
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild className="cursor-pointer">
