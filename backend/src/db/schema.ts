@@ -11,6 +11,8 @@ export const users = pgTable('users', {
     avatarUrl: text('avatar_url'),
     bio: text('bio'),
     phone: text('phone'),
+    exp: integer('exp').default(0).notNull(),
+    level: integer('level').default(1).notNull(),
 });
 
 export const activities = pgTable('activities', {

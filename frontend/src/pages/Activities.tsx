@@ -125,15 +125,29 @@ export default function Activities() {
                                     </CardHeader>
                                     <CardFooter className="p-5 pt-0 mt-auto">
                                         <div className="flex items-center gap-3 w-full bg-orange-50/50 p-2 rounded-2xl">
-                                            <Avatar className="h-8 w-8 border-2 border-white shadow-sm">
-                                                <AvatarImage src={activity.user?.avatarUrl || undefined} />
-                                                <AvatarFallback className="text-xs bg-orange-200 text-orange-700 font-bold">
-                                                    {activity.user?.fullName?.charAt(0).toUpperCase() || 'U'}
-                                                </AvatarFallback>
-                                            </Avatar>
-                                            <span className="text-sm font-semibold text-gray-600 truncate flex-1">
-                                                {activity.user?.fullName || 'Pengguna'}
-                                            </span>
+                                            <div className="relative">
+                                                <Avatar className="h-8 w-8 border-2 border-white shadow-sm">
+                                                    <AvatarImage src={activity.user?.avatarUrl || undefined} />
+                                                    <AvatarFallback className="text-xs bg-orange-200 text-orange-700 font-bold">
+                                                        {activity.user?.fullName?.charAt(0).toUpperCase() || 'U'}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                {activity.user?.level && (
+                                                    <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-primary text-[8px] font-bold text-white flex items-center justify-center border border-white">
+                                                        {activity.user.level}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="flex flex-col min-w-0 flex-1">
+                                                <span className="text-sm font-semibold text-gray-600 truncate">
+                                                    {activity.user?.fullName || 'Pengguna'}
+                                                </span>
+                                                {activity.user?.levelName && (
+                                                    <span className="text-[10px] text-gray-400 truncate">
+                                                        {activity.user.levelName}
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
                                     </CardFooter>
                                 </Card>

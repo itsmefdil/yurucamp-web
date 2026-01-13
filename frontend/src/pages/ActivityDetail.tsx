@@ -453,6 +453,41 @@ export default function ActivityDetail() {
 
                         {/* Sidebar */}
                         <div className="lg:col-span-4 space-y-6">
+                            {/* Author Card */}
+                            {activity.user && (
+                                <Card className="border-none shadow-lg bg-white rounded-3xl p-6 ring-1 ring-black/5">
+                                    <CardHeader className="p-0 mb-4">
+                                        <CardTitle className="text-lg font-bold">Dibuat Oleh</CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="p-0">
+                                        <div className="flex items-center gap-4">
+                                            <div className="relative">
+                                                <Avatar className="h-14 w-14 border-2 border-white shadow-md">
+                                                    <AvatarImage src={activity.user.avatarUrl} />
+                                                    <AvatarFallback className="bg-primary text-white text-xl font-bold">
+                                                        {activity.user.fullName?.[0] || 'U'}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                {activity.user.level && (
+                                                    <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-gradient-to-r from-primary to-primary/80 text-[10px] font-bold text-white flex items-center justify-center border-2 border-white shadow">
+                                                        {activity.user.level}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <h4 className="font-bold text-gray-900 truncate">{activity.user.fullName || 'Pengguna'}</h4>
+                                                {activity.user.levelName && (
+                                                    <p className="text-sm text-primary font-medium">{activity.user.levelName}</p>
+                                                )}
+                                                {activity.user.exp !== undefined && (
+                                                    <p className="text-xs text-gray-400">{activity.user.exp} EXP</p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            )}
+
                             <Card className="border-none shadow-lg bg-white rounded-3xl p-6 ring-1 ring-black/5">
                                 <CardHeader className="p-0 mb-6 border-b border-gray-100 pb-4">
                                     <CardTitle className="text-xl font-bold flex items-center gap-2">

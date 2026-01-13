@@ -7,6 +7,11 @@ export interface User {
     phone?: string;
     googleId?: string;
     updatedAt?: string;
+    // EXP System
+    exp?: number;
+    level?: number;
+    levelName?: string;
+    expToNextLevel?: number;
 }
 
 export interface Activity {

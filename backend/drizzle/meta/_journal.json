@@ -36,6 +36,13 @@
       "when": 1768332481211,
       "tag": "0004_milky_ink",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1768335330268,
+      "tag": "0005_milky_black_widow",
+      "breakpoints": true
     }
   ]
 }

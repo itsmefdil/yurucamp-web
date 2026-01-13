@@ -5,6 +5,7 @@ import { campAreas } from '../db/schema';
 import { authenticate } from '../middleware/auth';
 import { uploadImage, deleteImage, getPublicIdFromUrl } from '../lib/cloudinary';
 import { eq, desc } from 'drizzle-orm';
+import { awardExp } from '../utils/exp';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -81,6 +82,9 @@ router.post('/', authenticate, upload.fields([{ name: 'image', maxCount: 1 }, { 
             additionalImages: additional_images,
             userId: userId,
         }).returning();
+
+        // Award EXP for posting camp area
+        await awardExp(userId, 1);
 
         res.status(201).json(newCampArea[0]);
 

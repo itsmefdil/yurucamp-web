@@ -5,6 +5,7 @@ import { activities, users } from '../db/schema';
 import { authenticate } from '../middleware/auth';
 import { deleteImage, getPublicIdFromUrl } from '../lib/cloudinary';
 import { eq, and, desc } from 'drizzle-orm';
+import { awardExp } from '../utils/exp';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -12,6 +13,8 @@ const upload = multer({ storage: multer.memoryStorage() });
 // GET all activities
 router.get('/', async (req: Request, res: Response) => {
     try {
+        const { getLevelName } = await import('../utils/exp');
+
         const result = await db.select({
             id: activities.id,
             title: activities.title,
@@ -27,13 +30,24 @@ router.get('/', async (req: Request, res: Response) => {
                 id: users.id,
                 fullName: users.fullName,
                 avatarUrl: users.avatarUrl,
+                level: users.level,
+                exp: users.exp,
             }
         })
             .from(activities)
             .leftJoin(users, eq(activities.userId, users.id))
             .orderBy(desc(activities.createdAt));
 
-        res.json(result);
+        // Add levelName to each user
+        const enrichedResult = result.map(activity => ({
+            ...activity,
+            user: activity.user ? {
+                ...activity.user,
+                levelName: getLevelName(activity.user.level || 1)
+            } : null
+        }));
+
+        res.json(enrichedResult);
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Failed to fetch activities' });
@@ -44,14 +58,47 @@ router.get('/', async (req: Request, res: Response) => {
 router.get('/:id', async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const result = await db.select().from(activities).where(eq(activities.id, id)).limit(1);
+        const { getLevelName } = await import('../utils/exp');
+
+        const result = await db.select({
+            id: activities.id,
+            title: activities.title,
+            description: activities.description,
+            categoryId: activities.categoryId,
+            date: activities.date,
+            location: activities.location,
+            imageUrl: activities.imageUrl,
+            additionalImages: activities.additionalImages,
+            userId: activities.userId,
+            createdAt: activities.createdAt,
+            user: {
+                id: users.id,
+                fullName: users.fullName,
+                avatarUrl: users.avatarUrl,
+                level: users.level,
+                exp: users.exp,
+            }
+        })
+            .from(activities)
+            .leftJoin(users, eq(activities.userId, users.id))
+            .where(eq(activities.id, id))
+            .limit(1);
 
         if (result.length === 0) {
             res.status(404).json({ error: 'Activity not found' });
             return;
         }
 
-        res.json(result[0]);
+        // Add levelName to user
+        const activity = {
+            ...result[0],
+            user: result[0].user ? {
+                ...result[0].user,
+                levelName: getLevelName(result[0].user.level || 1)
+            } : null
+        };
+
+        res.json(activity);
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Failed to fetch activity' });
@@ -76,6 +123,9 @@ router.post('/', authenticate, upload.none(), async (req: Request, res: Response
             additionalImages: additionalImages || [],
             userId: userId,
         }).returning();
+
+        // Award EXP for posting activity
+        await awardExp(userId, 1);
 
         res.status(201).json(newActivity[0]);
 

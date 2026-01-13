@@ -5,6 +5,7 @@ import { events, eventParticipants } from '../db/schema';
 import { authenticate } from '../middleware/auth';
 import { uploadImage, deleteImage, getPublicIdFromUrl } from '../lib/cloudinary';
 import { eq, and, desc } from 'drizzle-orm';
+import { awardExp } from '../utils/exp';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -173,6 +174,9 @@ router.post('/:id/join', authenticate, async (req: Request, res: Response) => {
             eventId: id,
             userId: userId,
         });
+
+        // Award EXP for joining event
+        await awardExp(userId, 1);
 
         res.json({ success: true });
 

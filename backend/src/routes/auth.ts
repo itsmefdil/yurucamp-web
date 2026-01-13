@@ -116,7 +116,16 @@ router.get('/me', authenticate, async (req: Request, res: Response) => {
             res.status(404).json({ error: 'User not found' });
             return
         }
-        res.json(currentUser[0]);
+
+        // Add level info
+        const { getUserExpInfo } = await import('../utils/exp');
+        const expInfo = await getUserExpInfo(userId);
+
+        res.json({
+            ...currentUser[0],
+            levelName: expInfo.levelName,
+            expToNextLevel: expInfo.expToNextLevel
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Failed to fetch user' });
