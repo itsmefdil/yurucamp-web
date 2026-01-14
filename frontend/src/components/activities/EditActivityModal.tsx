@@ -150,6 +150,7 @@ export function EditActivityModal({ open, onOpenChange, activity }: EditActivity
         formData.append("timestamp", signData.timestamp.toString());
         formData.append("signature", signData.signature);
         formData.append("folder", signData.folder);
+        formData.append("transformation", signData.transformation);
 
         const response = await fetch(`https://api.cloudinary.com/v1_1/${signData.cloud_name}/image/upload`, {
             method: "POST",

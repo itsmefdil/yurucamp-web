@@ -23,13 +23,17 @@ import { v2 as cloudinary } from 'cloudinary';
 router.get('/cloudinary-signature', (req: Request, res: Response) => {
     const timestamp = Math.round((new Date()).getTime() / 1000);
     const subfolder = req.query.folder as string || 'activities';
+    console.log(`[Cloudinary] Generating signature for folder: ${subfolder}`);
     const folderPath = process.env.CLOUDINARY_PATH_PREFIX
         ? `${process.env.CLOUDINARY_PATH_PREFIX}/${subfolder}`
         : subfolder;
 
+    const transformation = 'w_800,c_limit,q_auto';
+
     const signature = cloudinary.utils.api_sign_request({
         timestamp: timestamp,
         folder: folderPath,
+        transformation: transformation,
     }, process.env.CLOUDINARY_API_SECRET as string);
 
     res.json({
@@ -37,7 +41,8 @@ router.get('/cloudinary-signature', (req: Request, res: Response) => {
         timestamp,
         cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
         api_key: process.env.CLOUDINARY_API_KEY,
-        folder: folderPath
+        folder: folderPath,
+        transformation: transformation
     });
 });
 

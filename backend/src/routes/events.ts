@@ -244,9 +244,18 @@ router.delete('/:id', authenticate, async (req: Request, res: Response) => {
 
         await db.delete(events).where(eq(events.id, id));
 
-        if (existingEvent[0].imageUrl) {
-            const publicId = getPublicIdFromUrl(existingEvent[0].imageUrl);
-            if (publicId) await deleteImage(publicId);
+        // Background image deletion - In Serverless (Vercel), we MUST await this
+        try {
+            console.log("Cleanup: Event deleted, cleaning up images...");
+            if (existingEvent[0].imageUrl) {
+                const publicId = getPublicIdFromUrl(existingEvent[0].imageUrl);
+                if (publicId) {
+                    console.log("Cleanup: Queuing deletion for cover image:", publicId);
+                    await deleteImage(publicId);
+                }
+            }
+        } catch (err) {
+            console.error("Image deletion cleanup failed during event deletion:", err);
         }
 
         res.json({ message: 'Event deleted successfully' });

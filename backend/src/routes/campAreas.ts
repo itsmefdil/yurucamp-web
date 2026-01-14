@@ -281,19 +281,35 @@ router.delete('/:id', authenticate, async (req: Request, res: Response) => {
 
         await db.delete(campAreas).where(eq(campAreas.id, id));
 
-        // Background delete images
-        (async () => {
+        // Background image deletion - In Serverless (Vercel), we MUST await this
+        try {
+            console.log("Cleanup: Camp Area deleted, cleaning up images...");
+            const deletionPromises: Promise<any>[] = [];
+
             if (existingCampArea[0].imageUrl) {
                 const publicId = getPublicIdFromUrl(existingCampArea[0].imageUrl);
-                if (publicId) await deleteImage(publicId);
-            }
-            if (existingCampArea[0].additionalImages) {
-                for (const url of existingCampArea[0].additionalImages!) {
-                    const publicId = getPublicIdFromUrl(url);
-                    if (publicId) await deleteImage(publicId);
+                if (publicId) {
+                    console.log("Cleanup: Queuing deletion for cover image:", publicId);
+                    deletionPromises.push(deleteImage(publicId));
                 }
             }
-        })().catch(err => console.error("Background deletion error", err));
+            if (existingCampArea[0].additionalImages) {
+                console.log(`Cleanup: Queuing deletion for ${existingCampArea[0].additionalImages.length} additional images...`);
+                for (const url of existingCampArea[0].additionalImages!) {
+                    const publicId = getPublicIdFromUrl(url);
+                    if (publicId) {
+                        console.log("Cleanup: Queuing deletion for gallery image:", publicId);
+                        deletionPromises.push(deleteImage(publicId));
+                    }
+                }
+            }
+
+            if (deletionPromises.length > 0) {
+                await Promise.all(deletionPromises);
+            }
+        } catch (err) {
+            console.error("Image deletion cleanup failed during camp area deletion:", err);
+        }
 
         res.json({ message: 'Camp area deleted successfully' });
 

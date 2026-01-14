@@ -162,7 +162,7 @@ export default function EventDetail() {
                         </Button>
 
                         <div className="flex gap-2">
-                            {isOrganizer && !isPast && (
+                            {isOrganizer && (
                                 <>
                                     <Button
                                         variant="secondary"

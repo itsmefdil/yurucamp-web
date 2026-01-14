@@ -5,10 +5,12 @@ import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
-import { Calendar, MapPin, Edit, Ticket, Plus, Mountain, LogOut } from 'lucide-react';
+import { Calendar, MapPin, Edit, Ticket, Plus, Mountain, LogOut, Trash2 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useAuth } from '../../contexts/AuthContext';
 import type { User, Activity, Event } from '../../types';
+import { EditEventModal } from '../events/EditEventModal';
+import { DeleteEventDialog } from '../events/DeleteEventDialog';
 
 interface DashboardViewProps {
     profile: User | null;
@@ -20,6 +22,9 @@ interface DashboardViewProps {
 export function DashboardView({ profile, activities, joinedEvents, createdEvents }: DashboardViewProps) {
     const [activeTab, setActiveTab] = useState("activities");
     const { logout } = useAuth();
+
+    const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+    const [deletingEvent, setDeletingEvent] = useState<Event | null>(null);
 
     return (
         <div className="max-w-4xl mx-auto space-y-8">
@@ -332,7 +337,22 @@ export function DashboardView({ profile, activities, joinedEvents, createdEvents
                                                     <Button variant="outline" size="sm" className="flex-1 rounded-full text-xs font-bold hover:bg-green-50 hover:text-green-600 hover:border-green-200" asChild>
                                                         <Link to={`/events/${event.id}`}>Lihat</Link>
                                                     </Button>
-
+                                                    <Button
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        className="rounded-full text-xs font-bold gap-1 hover:bg-green-50 hover:text-green-600"
+                                                        onClick={() => setEditingEvent(event)}
+                                                    >
+                                                        <Edit className="h-3 w-3" /> Edit
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        className="rounded-full text-xs font-bold gap-1 text-red-500 hover:bg-red-50 hover:text-red-600"
+                                                        onClick={() => setDeletingEvent(event)}
+                                                    >
+                                                        <Trash2 className="h-3 w-3" /> Hapus
+                                                    </Button>
                                                 </div>
                                             </CardContent>
                                         </Card>
@@ -343,6 +363,18 @@ export function DashboardView({ profile, activities, joinedEvents, createdEvents
                     )}
                 </div>
             </div>
+
+            {/* Modals */}
+            <EditEventModal
+                open={!!editingEvent}
+                onOpenChange={(open) => !open && setEditingEvent(null)}
+                event={editingEvent}
+            />
+            <DeleteEventDialog
+                open={!!deletingEvent}
+                onOpenChange={(open) => !open && setDeletingEvent(null)}
+                event={deletingEvent}
+            />
         </div>
     );
 }
