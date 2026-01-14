@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import { db } from '../db';
-import { events, eventParticipants } from '../db/schema';
+import { events, eventParticipants, users } from '../db/schema';
 import { authenticate } from '../middleware/auth';
 import { uploadImage, deleteImage, getPublicIdFromUrl } from '../lib/cloudinary';
 import { eq, and, desc } from 'drizzle-orm';
@@ -21,17 +21,56 @@ router.get('/', async (req: Request, res: Response) => {
     }
 });
 
-// GET single event
+// GET single event with organizer info
 router.get('/:id', async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const result = await db.select().from(events).where(eq(events.id, id)).limit(1);
+        const result = await db.select({
+            id: events.id,
+            title: events.title,
+            description: events.description,
+            location: events.location,
+            dateStart: events.dateStart,
+            dateEnd: events.dateEnd,
+            imageUrl: events.imageUrl,
+            price: events.price,
+            maxParticipants: events.maxParticipants,
+            organizerId: events.organizerId,
+            createdAt: events.createdAt,
+            updatedAt: events.updatedAt,
+            organizer: {
+                id: users.id,
+                fullName: users.fullName,
+                avatarUrl: users.avatarUrl,
+                level: users.level,
+                exp: users.exp,
+            }
+        })
+            .from(events)
+            .leftJoin(users, eq(events.organizerId, users.id))
+            .where(eq(events.id, id))
+            .limit(1);
 
         if (result.length === 0) {
             res.status(404).json({ error: 'Event not found' });
             return
         }
-        res.json(result[0]);
+        // Fetch participants
+        const participantsList = await db.select({
+            id: users.id,
+            fullName: users.fullName,
+            avatarUrl: users.avatarUrl,
+            level: users.level,
+            exp: users.exp,
+        })
+            .from(eventParticipants)
+            .innerJoin(users, eq(eventParticipants.userId, users.id))
+            .where(eq(eventParticipants.eventId, id));
+
+        res.json({
+            ...result[0],
+            participants: participantsList
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Failed to fetch event' });
@@ -44,10 +83,10 @@ router.post('/', authenticate, upload.single('image'), async (req: Request, res:
         const user = req.user;
         const userId = user.sub || user.id;
 
-        const { title, description, location, date_start, date_end, price, max_participants } = req.body;
+        const { title, description, location, date_start, date_end, price, max_participants, imageUrl } = req.body;
         const imageFile = req.file;
 
-        let image_url = null;
+        let image_url = imageUrl || null; // Accept imageUrl from JSON body (client-side upload)
         if (imageFile) {
             image_url = await uploadImage(imageFile, 'events');
         }
@@ -79,7 +118,7 @@ router.put('/:id', authenticate, upload.single('image'), async (req: Request, re
         const user = req.user;
         const userId = user.sub || user.id;
 
-        const { title, description, location, date_start, date_end, price, max_participants } = req.body;
+        const { title, description, location, date_start, date_end, price, max_participants, imageUrl } = req.body;
         const imageFile = req.file;
 
         // Verify ownership
@@ -94,12 +133,22 @@ router.put('/:id', authenticate, upload.single('image'), async (req: Request, re
         }
 
         let image_url = existingEvent[0].imageUrl;
+
+        // Handle new image from file upload
         if (imageFile) {
             if (existingEvent[0].imageUrl) {
                 const publicId = getPublicIdFromUrl(existingEvent[0].imageUrl);
                 if (publicId) await deleteImage(publicId);
             }
             image_url = await uploadImage(imageFile, 'events');
+        }
+        // Handle new image from client-side upload (imageUrl from body)
+        else if (imageUrl) {
+            if (existingEvent[0].imageUrl && existingEvent[0].imageUrl !== imageUrl) {
+                const publicId = getPublicIdFromUrl(existingEvent[0].imageUrl);
+                if (publicId) await deleteImage(publicId);
+            }
+            image_url = imageUrl;
         }
 
         const updatedEvent = await db.update(events).set({

@@ -64,6 +64,8 @@ export interface Event {
     price?: string;
     maxParticipants?: number;
     organizerId?: string;
+    organizer?: User;
+    participants?: User[];
     createdAt: string;
     updatedAt: string;
 }

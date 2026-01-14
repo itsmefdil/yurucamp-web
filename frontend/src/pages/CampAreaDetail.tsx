@@ -369,6 +369,34 @@ export default function CampAreaDetail() {
                                     </CardContent>
                                 </Card>
                             )}
+
+                            {/* Owner Actions */}
+                            {isOwner && (
+                                <Card className="border-none shadow-lg bg-white rounded-3xl p-6 ring-1 ring-black/5">
+                                    <CardHeader className="p-0 mb-4">
+                                        <CardTitle className="text-lg font-bold text-gray-700">Kelola Camp Area</CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="p-0 space-y-3">
+                                        <Button
+                                            variant="secondary"
+                                            className="w-full justify-start h-12 text-base font-medium rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-900"
+                                            onClick={() => setIsEditModalOpen(true)}
+                                        >
+                                            <Edit className="mr-3 h-5 w-5 text-gray-500" />
+                                            Edit Informasi
+                                        </Button>
+                                        <Button
+                                            variant="destructive"
+                                            className="w-full justify-start h-12 text-base font-medium rounded-xl bg-red-50 hover:bg-red-100 text-red-600 border border-red-100"
+                                            onClick={handleDeleteCampArea}
+                                            disabled={deleteCampAreaMutation.isPending}
+                                        >
+                                            <Trash2 className="mr-3 h-5 w-5" />
+                                            Hapus Camp Area
+                                        </Button>
+                                    </CardContent>
+                                </Card>
+                            )}
                         </div>
                     </div>
                 </div>
