@@ -43,6 +43,14 @@ export interface CampArea {
     facilities?: string[];
     userId: string;
     createdAt: string;
+    user?: {
+        id: string;
+        fullName?: string;
+        avatarUrl?: string;
+        level?: number;
+        exp?: number;
+        levelName?: string;
+    };
 }
 
 export interface Event {

@@ -1,11 +1,11 @@
 import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import { db } from '../db';
-import { campAreas } from '../db/schema';
+import { campAreas, users } from '../db/schema';
 import { authenticate } from '../middleware/auth';
 import { uploadImage, deleteImage, getPublicIdFromUrl } from '../lib/cloudinary';
 import { eq, desc } from 'drizzle-orm';
-import { awardExp } from '../utils/exp';
+import { awardExp, getLevelName } from '../utils/exp';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -13,8 +13,39 @@ const upload = multer({ storage: multer.memoryStorage() });
 // GET all camp areas
 router.get('/', async (req: Request, res: Response) => {
     try {
-        const result = await db.select().from(campAreas).orderBy(desc(campAreas.createdAt));
-        res.json(result);
+        const result = await db.select({
+            id: campAreas.id,
+            name: campAreas.name,
+            description: campAreas.description,
+            location: campAreas.location,
+            price: campAreas.price,
+            imageUrl: campAreas.imageUrl,
+            additionalImages: campAreas.additionalImages,
+            facilities: campAreas.facilities,
+            userId: campAreas.userId,
+            createdAt: campAreas.createdAt,
+            user: {
+                id: users.id,
+                fullName: users.fullName,
+                avatarUrl: users.avatarUrl,
+                level: users.level,
+                exp: users.exp,
+            }
+        })
+            .from(campAreas)
+            .leftJoin(users, eq(campAreas.userId, users.id))
+            .orderBy(desc(campAreas.createdAt));
+
+        // Add levelName to each user
+        const enrichedResult = result.map(campArea => ({
+            ...campArea,
+            user: campArea.user ? {
+                ...campArea.user,
+                levelName: getLevelName(campArea.user.level || 1)
+            } : null
+        }));
+
+        res.json(enrichedResult);
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Failed to fetch camp areas' });
@@ -25,13 +56,46 @@ router.get('/', async (req: Request, res: Response) => {
 router.get('/:id', async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const result = await db.select().from(campAreas).where(eq(campAreas.id, id)).limit(1);
+
+        const result = await db.select({
+            id: campAreas.id,
+            name: campAreas.name,
+            description: campAreas.description,
+            location: campAreas.location,
+            price: campAreas.price,
+            imageUrl: campAreas.imageUrl,
+            additionalImages: campAreas.additionalImages,
+            facilities: campAreas.facilities,
+            userId: campAreas.userId,
+            createdAt: campAreas.createdAt,
+            user: {
+                id: users.id,
+                fullName: users.fullName,
+                avatarUrl: users.avatarUrl,
+                level: users.level,
+                exp: users.exp,
+            }
+        })
+            .from(campAreas)
+            .leftJoin(users, eq(campAreas.userId, users.id))
+            .where(eq(campAreas.id, id))
+            .limit(1);
 
         if (result.length === 0) {
             res.status(404).json({ error: 'Camp area not found' });
             return
         }
-        res.json(result[0]);
+
+        // Add levelName to user
+        const campArea = {
+            ...result[0],
+            user: result[0].user ? {
+                ...result[0].user,
+                levelName: getLevelName(result[0].user.level || 1)
+            } : null
+        };
+
+        res.json(campArea);
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Failed to fetch camp area' });
@@ -44,33 +108,40 @@ router.post('/', authenticate, upload.fields([{ name: 'image', maxCount: 1 }, { 
         const user = req.user;
         const userId = user.sub || user.id;
 
-        const { name, description, location, price, wifi, parking, canteen, tent, info } = req.body;
+        const { name, description, location, price, wifi, parking, canteen, tent, info, imageUrl, additionalImages } = req.body;
 
-        // Parse facilities
+        // Parse facilities (support both 'on' and boolean true)
         const facilities: string[] = [];
-        if (wifi === 'on') facilities.push('Wifi');
-        if (parking === 'on') facilities.push('Parkir');
-        if (canteen === 'on') facilities.push('Kantin');
-        if (tent === 'on') facilities.push('Sewa Tenda');
-        if (info === 'on') facilities.push('Pusat Info');
-
-        const files = req.files as { [fieldname: string]: Express.Multer.File[] };
-        const imageFile = files['image']?.[0];
-        const additionalImageFiles = files['additional_images'] || [];
+        if (wifi === 'on' || wifi === true || wifi === 'true') facilities.push('Wifi');
+        if (parking === 'on' || parking === true || parking === 'true') facilities.push('Parkir');
+        if (canteen === 'on' || canteen === true || canteen === 'true') facilities.push('Kantin');
+        if (tent === 'on' || tent === true || tent === 'true') facilities.push('Sewa Tenda');
+        if (info === 'on' || info === true || info === 'true') facilities.push('Pusat Info');
 
         let image_url = null;
-        const additional_images: string[] = [];
+        let additional_images: string[] = [];
 
-        if (imageFile) {
-            const url = await uploadImage(imageFile, 'camp_areas');
-            if (url) image_url = url;
+        // Check if client-side uploaded URLs are provided (JSON mode)
+        if (imageUrl) {
+            image_url = imageUrl;
+            additional_images = Array.isArray(additionalImages) ? additionalImages : [];
+        } else {
+            // Server-side file upload mode
+            const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+            const imageFile = files?.['image']?.[0];
+            const additionalImageFiles = files?.['additional_images'] || [];
+
+            if (imageFile) {
+                const url = await uploadImage(imageFile, 'camp_areas');
+                if (url) image_url = url;
+            }
+
+            const uploadPromises = additionalImageFiles.map(file => uploadImage(file, 'camp_areas'));
+            const uploadedUrls = await Promise.all(uploadPromises);
+            uploadedUrls.forEach(url => {
+                if (url) additional_images.push(url);
+            });
         }
-
-        const uploadPromises = additionalImageFiles.map(file => uploadImage(file, 'camp_areas'));
-        const uploadedUrls = await Promise.all(uploadPromises);
-        uploadedUrls.forEach(url => {
-            if (url) additional_images.push(url);
-        });
 
         const newCampArea = await db.insert(campAreas).values({
             name,
@@ -101,21 +172,19 @@ router.put('/:id', authenticate, upload.fields([{ name: 'image', maxCount: 1 }, 
         const user = req.user;
         const userId = user.sub || user.id;
 
-        const { name, description, location, price, wifi, parking, canteen, tent, info, kept_images } = req.body;
+        const { name, description, location, price, wifi, parking, canteen, tent, info, kept_images, keptImages, imageUrl, additionalImages } = req.body;
 
-        // Parse facilities
+        // Parse facilities (support both 'on', 'true' and boolean true)
         const facilities: string[] = [];
-        if (wifi === 'on' || wifi === 'true') facilities.push('Wifi');
-        if (parking === 'on' || parking === 'true') facilities.push('Parkir');
-        if (canteen === 'on' || canteen === 'true') facilities.push('Kantin');
-        if (tent === 'on' || tent === 'true') facilities.push('Sewa Tenda');
-        if (info === 'on' || info === 'true') facilities.push('Pusat Info');
+        if (wifi === 'on' || wifi === true || wifi === 'true') facilities.push('Wifi');
+        if (parking === 'on' || parking === true || parking === 'true') facilities.push('Parkir');
+        if (canteen === 'on' || canteen === true || canteen === 'true') facilities.push('Kantin');
+        if (tent === 'on' || tent === true || tent === 'true') facilities.push('Sewa Tenda');
+        if (info === 'on' || info === true || info === 'true') facilities.push('Pusat Info');
 
-        const keptImagesList = Array.isArray(kept_images) ? kept_images : (kept_images ? [kept_images] : []);
-
-        const files = req.files as { [fieldname: string]: Express.Multer.File[] };
-        const imageFile = files['image']?.[0];
-        const additionalImageFiles = files['additional_images'] || [];
+        // Support both kept_images (form-data) and keptImages (JSON)
+        const keptImagesInput = keptImages || kept_images;
+        const keptImagesList = Array.isArray(keptImagesInput) ? keptImagesInput : (keptImagesInput ? [keptImagesInput] : []);
 
         // Verify ownership
         const existingCampArea = await db.select().from(campAreas).where(eq(campAreas.id, id)).limit(1);
@@ -131,13 +200,38 @@ router.put('/:id', authenticate, upload.fields([{ name: 'image', maxCount: 1 }, 
         let image_url = existingCampArea[0].imageUrl;
         let additional_images = [...keptImagesList];
 
-        if (imageFile) {
-            // Delete old image
-            if (existingCampArea[0].imageUrl) {
+        // Check if client-side uploaded URL is provided (JSON mode)
+        if (imageUrl) {
+            // Delete old image if new one is provided
+            if (existingCampArea[0].imageUrl && existingCampArea[0].imageUrl !== imageUrl) {
                 const publicId = getPublicIdFromUrl(existingCampArea[0].imageUrl);
                 if (publicId) await deleteImage(publicId);
             }
-            image_url = await uploadImage(imageFile, 'camp_areas');
+            image_url = imageUrl;
+
+            // Handle new additional images from client-side upload
+            const newAdditionalImages = Array.isArray(additionalImages) ? additionalImages : [];
+            additional_images = [...keptImagesList, ...newAdditionalImages];
+        } else {
+            // Server-side file upload mode
+            const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+            const imageFile = files?.['image']?.[0];
+            const additionalImageFiles = files?.['additional_images'] || [];
+
+            if (imageFile) {
+                // Delete old image
+                if (existingCampArea[0].imageUrl) {
+                    const publicId = getPublicIdFromUrl(existingCampArea[0].imageUrl);
+                    if (publicId) await deleteImage(publicId);
+                }
+                image_url = await uploadImage(imageFile, 'camp_areas');
+            }
+
+            const uploadPromises = additionalImageFiles.map(file => uploadImage(file, 'camp_areas'));
+            const uploadedUrls = await Promise.all(uploadPromises);
+            uploadedUrls.forEach(url => {
+                if (url) additional_images.push(url);
+            });
         }
 
         // Handle removed additional images
@@ -148,12 +242,6 @@ router.put('/:id', authenticate, upload.fields([{ name: 'image', maxCount: 1 }, 
                 if (publicId) await deleteImage(publicId);
             }
         }
-
-        const uploadPromises = additionalImageFiles.map(file => uploadImage(file, 'camp_areas'));
-        const uploadedUrls = await Promise.all(uploadPromises);
-        uploadedUrls.forEach(url => {
-            if (url) additional_images.push(url);
-        });
 
         const updatedCampArea = await db.update(campAreas).set({
             name,

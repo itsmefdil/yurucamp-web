@@ -1,21 +1,26 @@
-import React from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
-import { ArrowLeft, Edit, Trash2, MapPin, Wifi, Car, Coffee, Tent, Info, DollarSign } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, MapPin, Wifi, Car, Coffee, Tent, Info, DollarSign, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import api from '../lib/api';
 import type { CampArea } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'sonner';
+import { EditCampAreaModal } from '../components/campAreas/EditCampAreaModal';
+import { Dialog, DialogContent, DialogTitle } from '../components/ui/dialog';
 
 export default function CampAreaDetail() {
     const { id } = useParams<{ id: string }>();
     const { user } = useAuth();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+    const [touchStart, setTouchStart] = useState<number | null>(null);
 
     // Fetch camp area detail
     const { data: campArea, isLoading } = useQuery({
@@ -56,6 +61,55 @@ export default function CampAreaDetail() {
             case 'pusat info': return <Info className="h-5 w-5" />;
             default: return null;
         }
+    };
+
+    // Combine cover image + additional images for lightbox
+    const allImages = campArea ? [
+        campArea.imageUrl,
+        ...(campArea.additionalImages || [])
+    ].filter(Boolean) as string[] : [];
+
+    const openLightbox = (index: number) => setLightboxIndex(index);
+    const closeLightbox = () => setLightboxIndex(null);
+
+    const goToPrev = useCallback(() => {
+        if (lightboxIndex !== null && lightboxIndex > 0) {
+            setLightboxIndex(lightboxIndex - 1);
+        }
+    }, [lightboxIndex]);
+
+    const goToNext = useCallback(() => {
+        if (lightboxIndex !== null && lightboxIndex < allImages.length - 1) {
+            setLightboxIndex(lightboxIndex + 1);
+        }
+    }, [lightboxIndex, allImages.length]);
+
+    // Keyboard navigation
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (lightboxIndex === null) return;
+            if (e.key === 'ArrowLeft') goToPrev();
+            if (e.key === 'ArrowRight') goToNext();
+            if (e.key === 'Escape') closeLightbox();
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [lightboxIndex, goToPrev, goToNext]);
+
+    // Touch swipe handlers
+    const handleTouchStart = (e: React.TouchEvent) => {
+        setTouchStart(e.targetTouches[0].clientX);
+    };
+
+    const handleTouchEnd = (e: React.TouchEvent) => {
+        if (touchStart === null) return;
+        const touchEnd = e.changedTouches[0].clientX;
+        const diff = touchStart - touchEnd;
+        if (Math.abs(diff) > 50) {
+            if (diff > 0) goToNext();
+            else goToPrev();
+        }
+        setTouchStart(null);
     };
 
     if (isLoading) {
@@ -112,10 +166,13 @@ export default function CampAreaDetail() {
                         <div className="absolute top-6 right-6 z-20 flex gap-2">
                             {isOwner && (
                                 <>
-                                    <Button variant="secondary" size="icon" className="rounded-full bg-white hover:bg-gray-100 text-gray-900 shadow-lg border-none transition-all hover:scale-105" asChild>
-                                        <Link to={`/dashboard/edit-camp-area/${campArea.id}`}>
-                                            <Edit className="h-5 w-5" />
-                                        </Link>
+                                    <Button
+                                        variant="secondary"
+                                        size="icon"
+                                        className="rounded-full bg-white hover:bg-gray-100 text-gray-900 shadow-lg border-none transition-all hover:scale-105"
+                                        onClick={() => setIsEditModalOpen(true)}
+                                    >
+                                        <Edit className="h-5 w-5" />
                                     </Button>
                                     <Button
                                         variant="destructive"
@@ -187,21 +244,33 @@ export default function CampAreaDetail() {
                                 </CardContent>
                             </Card>
 
-                            {/* Additional Images Gallery */}
-                            {campArea.additionalImages && campArea.additionalImages.length > 0 && (
+                            {/* Gallery - All Photos including Cover */}
+                            {allImages.length > 0 && (
                                 <Card className="border-none shadow-xl rounded-3xl overflow-hidden bg-white">
                                     <CardHeader className="p-6">
-                                        <CardTitle className="text-2xl font-bold">Galeri Foto</CardTitle>
+                                        <CardTitle className="text-2xl font-bold">Galeri Foto ({allImages.length})</CardTitle>
                                     </CardHeader>
                                     <CardContent className="p-6 pt-0">
                                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                            {campArea.additionalImages.map((img, idx) => (
-                                                <div key={idx} className="relative aspect-square rounded-xl overflow-hidden group cursor-pointer">
+                                            {allImages.map((img, idx) => (
+                                                <div
+                                                    key={idx}
+                                                    className="relative aspect-square rounded-xl overflow-hidden group cursor-pointer"
+                                                    onClick={() => openLightbox(idx)}
+                                                >
                                                     <img
                                                         src={img}
-                                                        alt={`Gallery ${idx + 1}`}
+                                                        alt={idx === 0 ? 'Cover' : `Gallery ${idx}`}
                                                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                                     />
+                                                    {idx === 0 && (
+                                                        <span className="absolute top-2 left-2 bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                                            Cover
+                                                        </span>
+                                                    )}
+                                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                                                        <span className="opacity-0 group-hover:opacity-100 text-white text-sm font-medium transition-opacity">Perbesar</span>
+                                                    </div>
                                                 </div>
                                             ))}
                                         </div>
@@ -211,31 +280,169 @@ export default function CampAreaDetail() {
                         </div>
 
                         {/* Sidebar */}
-                        <div className="lg:col-span-4">
-                            <Card className="border-none shadow-lg bg-white rounded-3xl p-6 ring-1 ring-black/5 sticky top-24">
-                                <CardHeader className="p-0 mb-6">
-                                    <CardTitle className="text-xl font-bold">Informasi Booking</CardTitle>
+                        <div className="lg:col-span-4 space-y-6">
+                            {/* Created By Card */}
+                            {campArea.user && (
+                                <Card className="border-none shadow-lg bg-white rounded-3xl p-6 ring-1 ring-black/5">
+                                    <CardHeader className="p-0 mb-4">
+                                        <CardTitle className="text-lg font-bold text-gray-700">Dibuat Oleh</CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="p-0">
+                                        <div className="flex items-center gap-4">
+                                            <div className="relative">
+                                                <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-orange-200">
+                                                    {campArea.user.avatarUrl ? (
+                                                        <img
+                                                            src={campArea.user.avatarUrl}
+                                                            alt={campArea.user.fullName || 'User'}
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    ) : (
+                                                        <div className="w-full h-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-lg">
+                                                            {(campArea.user.fullName || 'U').charAt(0).toUpperCase()}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                {/* Level Badge */}
+                                                <div className="absolute -bottom-1 -right-1 bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-md">
+                                                    Lv.{campArea.user.level || 1}
+                                                </div>
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="font-bold text-gray-900">{campArea.user.fullName || 'Pengguna'}</p>
+                                                <p className="text-sm text-orange-600 font-medium">{campArea.user.levelName || 'Camper Pemula'}</p>
+                                                <p className="text-xs text-gray-500 mt-0.5">{campArea.user.exp || 0} EXP</p>
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            )}
+
+                            {/* Price Card */}
+                            <Card className="border-none shadow-lg bg-white rounded-3xl p-6 ring-1 ring-black/5">
+                                <CardHeader className="p-0 mb-4">
+                                    <CardTitle className="text-lg font-bold text-gray-700">Harga</CardTitle>
                                 </CardHeader>
-                                <CardContent className="p-0 space-y-4">
-                                    <div className="bg-orange-50 p-4 rounded-xl">
-                                        <p className="text-sm text-gray-600 mb-2">Harga per malam</p>
+                                <CardContent className="p-0">
+                                    <div className="bg-orange-50 p-4 rounded-xl text-center">
+                                        <p className="text-sm text-gray-600 mb-1">per malam</p>
                                         <p className="text-3xl font-black text-orange-600">
                                             Rp {campArea.price ? parseInt(campArea.price).toLocaleString('id-ID') : '-'}
                                         </p>
                                     </div>
-                                    <Button className="w-full rounded-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-6" size="lg">
-                                        Hubungi Pemilik
-                                    </Button>
-                                    <p className="text-xs text-center text-gray-500">
-                                        Silakan hubungi pemilik untuk informasi booking lebih lanjut
-                                    </p>
                                 </CardContent>
                             </Card>
+
+                            {/* Location Map Card */}
+                            {campArea.location && (
+                                <Card className="border-none shadow-lg bg-white rounded-3xl overflow-hidden ring-1 ring-black/5 sticky top-24">
+                                    <CardHeader className="p-4 pb-2">
+                                        <CardTitle className="text-lg font-bold text-gray-700 flex items-center gap-2">
+                                            <MapPin className="h-5 w-5 text-red-500" />
+                                            Lokasi
+                                        </CardTitle>
+                                        <p className="text-sm text-gray-600 mt-1">{campArea.location}</p>
+                                    </CardHeader>
+                                    <CardContent className="p-0">
+                                        <div className="aspect-[4/3] w-full">
+                                            <iframe
+                                                width="100%"
+                                                height="100%"
+                                                style={{ border: 0 }}
+                                                loading="lazy"
+                                                allowFullScreen
+                                                referrerPolicy="no-referrer-when-downgrade"
+                                                src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(campArea.location)}`}
+                                            />
+                                        </div>
+                                        <div className="p-3">
+                                            <a
+                                                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(campArea.location)}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="flex items-center justify-center gap-2 w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-full font-semibold text-sm transition-colors"
+                                            >
+                                                <MapPin className="h-4 w-4" />
+                                                Buka di Google Maps
+                                            </a>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            )}
                         </div>
                     </div>
                 </div>
             </main>
             <Footer />
+
+            {campArea && (
+                <EditCampAreaModal
+                    open={isEditModalOpen}
+                    onOpenChange={setIsEditModalOpen}
+                    campArea={campArea}
+                />
+            )}
+
+            {/* Lightbox Modal */}
+            <Dialog open={lightboxIndex !== null} onOpenChange={(open) => !open && closeLightbox()}>
+                <DialogContent
+                    aria-describedby={undefined}
+                    showCloseButton={false}
+                    className="max-w-[95vw] md:max-w-4xl p-0 bg-black/95 border-none shadow-2xl overflow-hidden"
+                    onTouchStart={handleTouchStart}
+                    onTouchEnd={handleTouchEnd}
+                >
+                    <DialogTitle className="sr-only">Galeri Foto</DialogTitle>
+                    <div className="relative w-full h-[80vh] flex items-center justify-center">
+                        {lightboxIndex !== null && allImages[lightboxIndex] && (
+                            <img
+                                src={allImages[lightboxIndex]}
+                                alt={`Photo ${lightboxIndex + 1}`}
+                                className="max-w-full max-h-full object-contain"
+                            />
+                        )}
+
+                        {/* Close Button */}
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute top-4 right-4 text-white bg-black/50 hover:bg-black/70 rounded-full z-50"
+                            onClick={closeLightbox}
+                        >
+                            <X className="h-6 w-6" />
+                        </Button>
+
+                        {/* Previous Button */}
+                        {lightboxIndex !== null && lightboxIndex > 0 && (
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="absolute left-4 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/70 rounded-full h-12 w-12"
+                                onClick={goToPrev}
+                            >
+                                <ChevronLeft className="h-8 w-8" />
+                            </Button>
+                        )}
+
+                        {/* Next Button */}
+                        {lightboxIndex !== null && lightboxIndex < allImages.length - 1 && (
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="absolute right-4 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/70 rounded-full h-12 w-12"
+                                onClick={goToNext}
+                            >
+                                <ChevronRight className="h-8 w-8" />
+                            </Button>
+                        )}
+
+                        {/* Image Counter */}
+                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white bg-black/50 px-4 py-2 rounded-full text-sm font-medium">
+                            {lightboxIndex !== null ? lightboxIndex + 1 : 0} / {allImages.length}
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

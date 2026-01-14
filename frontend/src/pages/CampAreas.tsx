@@ -1,8 +1,8 @@
-import React from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/button';
-import { Card, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
+import { Card } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
@@ -10,9 +10,11 @@ import { Plus, MapPin, Tent, Wifi, Car, Coffee, Info } from 'lucide-react';
 import api from '../lib/api';
 import type { CampArea } from '../types';
 import { useAuth } from '../contexts/AuthContext';
+import { AddCampAreaModal } from '../components/campAreas/AddCampAreaModal';
 
 export default function CampAreas() {
     const { user } = useAuth();
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
     const { data: campAreas, isLoading } = useQuery({
         queryKey: ['camp-areas'],
@@ -54,10 +56,12 @@ export default function CampAreas() {
                             </p>
                             <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
                                 {user ? (
-                                    <Button size="lg" className="rounded-2xl bg-orange-500 text-white hover:bg-orange-600 font-bold text-base px-8 shadow-lg hover:shadow-orange-200 hover:scale-105 transition-all" asChild>
-                                        <Link to="/dashboard/add-camp-area">
-                                            <Plus className="mr-2 h-5 w-5" /> Tambah Camp Area
-                                        </Link>
+                                    <Button
+                                        size="lg"
+                                        className="rounded-2xl bg-orange-500 text-white hover:bg-orange-600 font-bold text-base px-8 shadow-lg hover:shadow-orange-200 hover:scale-105 transition-all"
+                                        onClick={() => setIsAddModalOpen(true)}
+                                    >
+                                        <Plus className="mr-2 h-5 w-5" /> Tambah Camp Area
                                     </Button>
                                 ) : (
                                     <Button size="lg" className="rounded-2xl bg-orange-500 text-white hover:bg-orange-600 font-bold text-base px-8 shadow-lg" asChild>
@@ -80,14 +84,15 @@ export default function CampAreas() {
                 {isLoading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {[1, 2, 3, 4, 5, 6].map((i) => (
-                            <Card key={i} className="overflow-hidden bg-white shadow-lg rounded-3xl animate-pulse">
-                                <div className="aspect-video bg-gray-200" />
-                                <CardHeader className="p-5">
-                                    <div className="h-6 bg-gray-200 rounded w-3/4" />
-                                </CardHeader>
-                                <CardFooter className="p-5">
-                                    <div className="h-10 bg-gray-200 rounded w-full" />
-                                </CardFooter>
+                            <Card key={i} className="overflow-hidden bg-white shadow-md rounded-2xl animate-pulse">
+                                <div className="aspect-[4/3] bg-gray-200" />
+                                <div className="p-4">
+                                    <div className="h-5 bg-gray-200 rounded w-3/4 mb-3" />
+                                    <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
+                                        <div className="w-7 h-7 rounded-full bg-gray-200" />
+                                        <div className="h-3 bg-gray-200 rounded w-24" />
+                                    </div>
+                                </div>
                             </Card>
                         ))}
                     </div>
@@ -95,53 +100,83 @@ export default function CampAreas() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {campAreas.map((campArea) => (
                             <Link key={campArea.id} to={`/camp-areas/${campArea.id}`} className="block group">
-                                <Card className="overflow-hidden bg-white group-hover:-translate-y-2 transition-all duration-300 h-full flex flex-col border-2 border-transparent hover:border-orange-200 shadow-lg hover:shadow-2xl rounded-3xl">
-                                    <div className="relative aspect-video bg-orange-50 overflow-hidden m-2 rounded-2xl">
+                                <Card className="overflow-hidden bg-white group-hover:-translate-y-1 transition-all duration-300 h-full flex flex-col border border-gray-100 hover:border-orange-200 shadow-md hover:shadow-xl rounded-2xl">
+                                    {/* Image Section */}
+                                    <div className="relative aspect-[4/3] bg-orange-50 overflow-hidden">
                                         <img
                                             src={campArea.imageUrl || "/camp.jpg"}
                                             alt={campArea.name}
-                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                         />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-60" />
-                                        <div className="absolute bottom-3 left-3 right-3 text-white">
-                                            <div className="flex items-center gap-1 text-xs font-bold bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-full w-fit">
-                                                <MapPin className="h-3 w-3" />
-                                                <span className="truncate max-w-[150px]">{campArea.location || "Lokasi tidak tersedia"}</span>
-                                            </div>
-                                        </div>
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+
+                                        {/* Price Badge */}
                                         {campArea.price && (
                                             <div className="absolute top-3 right-3">
-                                                <Badge className="bg-green-500/90 text-white text-xs font-bold">
+                                                <Badge className="bg-green-500 text-white text-xs font-bold shadow-lg">
                                                     Rp {parseInt(campArea.price).toLocaleString('id-ID')}
                                                 </Badge>
                                             </div>
                                         )}
-                                    </div>
-                                    <CardHeader className="p-5 pb-2">
-                                        <CardTitle className="line-clamp-2 text-xl font-bold text-gray-800 group-hover:text-orange-500 transition-colors leading-tight">
-                                            {campArea.name}
-                                        </CardTitle>
-                                        {campArea.facilities && campArea.facilities.length > 0 && (
-                                            <div className="flex flex-wrap gap-2 mt-3">
-                                                {campArea.facilities.slice(0, 4).map((facility, idx) => (
-                                                    <div key={idx} className="flex items-center gap-1 text-xs bg-orange-50 text-orange-600 px-2 py-1 rounded-full font-medium">
-                                                        {getFacilityIcon(facility)}
-                                                        <span>{facility}</span>
-                                                    </div>
-                                                ))}
-                                                {campArea.facilities.length > 4 && (
-                                                    <div className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full font-medium">
-                                                        +{campArea.facilities.length - 4} lainnya
+
+                                        {/* Bottom Overlay: Location + Facilities */}
+                                        <div className="absolute bottom-0 left-0 right-0 p-3">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-1.5 text-white text-xs font-medium bg-black/30 backdrop-blur-sm px-2.5 py-1 rounded-full">
+                                                    <MapPin className="h-3 w-3" />
+                                                    <span className="truncate max-w-[120px]">{campArea.location || "Lokasi"}</span>
+                                                </div>
+
+                                                {/* Facility Icons Only */}
+                                                {campArea.facilities && campArea.facilities.length > 0 && (
+                                                    <div className="flex items-center gap-1">
+                                                        {campArea.facilities.slice(0, 3).map((facility, idx) => (
+                                                            <div key={idx} className="bg-white/90 backdrop-blur-sm p-1.5 rounded-full text-orange-600" title={facility}>
+                                                                {getFacilityIcon(facility)}
+                                                            </div>
+                                                        ))}
+                                                        {campArea.facilities.length > 3 && (
+                                                            <div className="bg-white/80 text-gray-600 text-[10px] font-bold px-1.5 py-1 rounded-full">
+                                                                +{campArea.facilities.length - 3}
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 )}
                                             </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Content Section */}
+                                    <div className="p-4 flex-1 flex flex-col">
+                                        <h3 className="font-bold text-gray-800 group-hover:text-orange-500 transition-colors line-clamp-1 mb-2">
+                                            {campArea.name}
+                                        </h3>
+
+                                        {/* Creator Info - Compact */}
+                                        {campArea.user && (
+                                            <div className="flex items-center gap-2 mt-auto pt-3 border-t border-gray-100">
+                                                <div className="relative">
+                                                    <div className="w-7 h-7 rounded-full overflow-hidden bg-orange-100">
+                                                        {campArea.user.avatarUrl ? (
+                                                            <img
+                                                                src={campArea.user.avatarUrl}
+                                                                alt={campArea.user.fullName || 'User'}
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                        ) : (
+                                                            <div className="w-full h-full flex items-center justify-center text-orange-600 font-bold text-xs">
+                                                                {(campArea.user.fullName || 'U').charAt(0).toUpperCase()}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div className="absolute -bottom-0.5 -right-0.5 bg-orange-500 text-white text-[7px] font-bold w-3.5 h-3.5 flex items-center justify-center rounded-full">
+                                                        {campArea.user.level || 1}
+                                                    </div>
+                                                </div>
+                                                <span className="text-xs text-gray-600 truncate">{campArea.user.fullName || 'Pengguna'}</span>
+                                            </div>
                                         )}
-                                    </CardHeader>
-                                    <CardFooter className="p-5 pt-0 mt-auto">
-                                        <Button variant="outline" className="w-full rounded-full border-2 border-orange-200 hover:bg-orange-50 hover:border-orange-300 font-semibold">
-                                            Lihat Detail
-                                        </Button>
-                                    </CardFooter>
+                                    </div>
                                 </Card>
                             </Link>
                         ))}
@@ -155,6 +190,8 @@ export default function CampAreas() {
             </main>
 
             <Footer />
+
+            <AddCampAreaModal open={isAddModalOpen} onOpenChange={setIsAddModalOpen} />
         </div>
     );
 }
