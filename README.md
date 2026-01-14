@@ -1,36 +1,124 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🏕️ Yurucamp Indonesia : Unofficial Fanpage
 
-## Getting Started
+Welcome to the **Yurucamp Indonesia** project! This is a modern, full-stack web application designed for the camping community in Indonesia. It allows users to discover camping spots, join events, share activities, and connect with other outdoor enthusiasts.
 
-First, run the development server:
+![Campfire](frontend/public/campfire.svg)
 
+## 🚀 Features
+
+-   **Dashboard**: Manage your profile, view joined events, and organize your own activities.
+-   **Activities**: Share and explore camping stories and activities.
+-   **Events**: Find and join community camping events (Open Trip, Gathering, etc.).
+-   **Camp Areas**: Discover the best camping spots with detailed information and galleries.
+-   **Community**: Connect with other campers.
+-   **Auth**: Secure authentication with Google and Email.
+
+## 🛠️ Tech Stack
+
+This project is a **Monorepo** consisting of a Frontend and a Backend.
+
+### Frontend (`/frontend`)
+-   **Framework**: [React](https://react.dev/) with [Vite](https://vitejs.dev/)
+-   **Styling**: [Tailwind CSS](https://tailwindcss.com/) & [Shadcn UI](https://ui.shadcn.com/)
+-   **State/Data**: [TanStack Query](https://tanstack.com/query)
+-   **Icons**: [Lucide React](https://lucide.dev/)
+-   **Runtime**: [Bun](https://bun.sh/)
+
+### Backend (`/backend`)
+-   **Framework**: [Express.js](https://expressjs.com/)
+-   **Database**: [PostgreSQL](https://www.postgresql.org/)
+-   **ORM**: [Drizzle ORM](https://orm.drizzle.team/)
+-   **Runtime**: [Bun](https://bun.sh/) or Node.js
+
+## 🏁 Getting Started
+
+### Prerequisites
+-   [Bun](https://bun.sh/) (Recommended runtime)
+-   [Docker](https://www.docker.com/) (For local database)
+
+### Installation
+
+1.  **Clone the repository**
+    ```bash
+    git clone https://github.com/itsmefdil/yurucamp-web.git
+    cd yurucamp-web
+    ```
+
+2.  **Install Dependencies**
+    
+    Backend:
+    ```bash
+    cd backend
+    bun install
+    ```
+    
+    Frontend:
+    ```bash
+    cd ../frontend
+    bun install
+    ```
+
+3.  **Environment Setup**
+    
+    Create `.env` files in both `backend` and `frontend` directories based on `.env.example`.
+
+    **Backend (`backend/.env`):**
+    ```env
+    PORT=3000
+    DATABASE_URL=postgres://user:password@localhost:5432/yurucamp
+    JWT_SECRET=your_secret
+    # ... other config
+    ```
+
+    **Frontend (`frontend/.env`):**
+    ```env
+    VITE_API_URL=http://localhost:3000
+    ```
+
+4.  **Database Setup**
+    
+    Ensure your PostgreSQL database is running, then push the schema:
+    ```bash
+    cd backend
+    bun run migrate
+    # Optional: Seed data
+    bun run seed
+    ```
+
+### 🏃 Running Development
+
+Open two terminals used to run the frontend and backend concurrently.
+
+**Terminal 1 (Backend):**
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cd backend
+bun run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**Terminal 2 (Frontend):**
+```bash
+cd frontend
+bun run dev
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Visit `http://localhost:5173` to see the app!
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📦 Building for Production
 
-## Learn More
+**Frontend:**
+```bash
+cd frontend
+bun run build
+# Output in frontend/dist
+```
 
-To learn more about Next.js, take a look at the following resources:
+**Backend:**
+```bash
+cd backend
+bun run build
+# Output in backend/dist
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📄 License
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is an Unofficial Fanpage and is not affiliated with the official Yuru Camp franchise.

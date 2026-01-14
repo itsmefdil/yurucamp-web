@@ -1,0 +1,48 @@
+{
+  "version": "6",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1767981217086,
+      "tag": "0000_even_fat_cobra",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1768071899593,
+      "tag": "0001_puzzling_warhawk",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1768072084820,
+      "tag": "0002_clever_captain_america",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1768332108277,
+      "tag": "0003_furry_chat",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1768332481211,
+      "tag": "0004_milky_ink",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1768335330268,
+      "tag": "0005_milky_black_widow",
+      "breakpoints": true
+    }
+  ]
+}
