@@ -11,13 +11,11 @@ import api from '../lib/api';
 import type { Event } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { formatDate } from '../lib/utils';
-import { AddEventModal } from '../components/events/AddEventModal';
 
 type EventFilter = 'upcoming' | 'past';
 
 export default function Events() {
     const { user } = useAuth();
-    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [filter, setFilter] = useState<EventFilter>('upcoming');
 
     const { data: events, isLoading } = useQuery({
@@ -82,9 +80,11 @@ export default function Events() {
                                     <Button
                                         size="lg"
                                         className="rounded-2xl bg-orange-500 text-white hover:bg-orange-600 font-bold text-base px-8 shadow-lg hover:shadow-orange-200 hover:scale-105 transition-all"
-                                        onClick={() => setIsAddModalOpen(true)}
+                                        asChild
                                     >
-                                        <Plus className="mr-2 h-5 w-5" /> Buat Event Baru
+                                        <Link to="/events/add">
+                                            <Plus className="mr-2 h-5 w-5" /> Buat Event Baru
+                                        </Link>
                                     </Button>
                                 ) : (
                                     <Button size="lg" className="rounded-2xl bg-orange-500 text-white hover:bg-orange-600 font-bold text-base px-8 shadow-lg" asChild>
@@ -257,9 +257,6 @@ export default function Events() {
             </main>
 
             <Footer />
-
-            {/* Add Event Modal */}
-            <AddEventModal open={isAddModalOpen} onOpenChange={setIsAddModalOpen} />
         </div>
     );
 }
