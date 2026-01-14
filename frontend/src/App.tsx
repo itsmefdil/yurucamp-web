@@ -15,6 +15,8 @@ import Activities from './pages/Activities';
 import ActivityDetail from './pages/ActivityDetail';
 import CampAreas from './pages/CampAreas';
 import CampAreaDetail from './pages/CampAreaDetail';
+import AddCampArea from './pages/AddCampArea';
+import EditCampArea from './pages/EditCampArea';
 import Events from './pages/Events';
 import EventDetail from './pages/EventDetail';
 import AddEvent from './pages/AddEvent';
@@ -52,7 +54,17 @@ function App() {
                         <Route path="/activities" element={<Activities />} />
                         <Route path="/activities/:id" element={<ActivityDetail />} />
                         <Route path="/camp-areas" element={<CampAreas />} />
+                        <Route path="/camp-areas/add" element={
+                            <ProtectedRoute>
+                                <AddCampArea />
+                            </ProtectedRoute>
+                        } />
                         <Route path="/camp-areas/:id" element={<CampAreaDetail />} />
+                        <Route path="/camp-areas/:id/edit" element={
+                            <ProtectedRoute>
+                                <EditCampArea />
+                            </ProtectedRoute>
+                        } />
                         <Route path="/events" element={<Events />} />
                         <Route path="/events/add" element={
                             <ProtectedRoute>

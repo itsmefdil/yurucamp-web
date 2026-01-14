@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/button';
@@ -10,11 +9,10 @@ import { Plus, MapPin, Tent, Wifi, Car, Coffee, Info } from 'lucide-react';
 import api from '../lib/api';
 import type { CampArea } from '../types';
 import { useAuth } from '../contexts/AuthContext';
-import { AddCampAreaModal } from '../components/campAreas/AddCampAreaModal';
+
 
 export default function CampAreas() {
     const { user } = useAuth();
-    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
     const { data: campAreas, isLoading } = useQuery({
         queryKey: ['camp-areas'],
@@ -59,9 +57,11 @@ export default function CampAreas() {
                                     <Button
                                         size="lg"
                                         className="rounded-2xl bg-orange-500 text-white hover:bg-orange-600 font-bold text-base px-8 shadow-lg hover:shadow-orange-200 hover:scale-105 transition-all"
-                                        onClick={() => setIsAddModalOpen(true)}
+                                        asChild
                                     >
-                                        <Plus className="mr-2 h-5 w-5" /> Tambah Camp Area
+                                        <Link to="/camp-areas/add">
+                                            <Plus className="mr-2 h-5 w-5" /> Tambah Camp Area
+                                        </Link>
                                     </Button>
                                 ) : (
                                     <Button size="lg" className="rounded-2xl bg-orange-500 text-white hover:bg-orange-600 font-bold text-base px-8 shadow-lg" asChild>
@@ -191,7 +191,7 @@ export default function CampAreas() {
 
             <Footer />
 
-            <AddCampAreaModal open={isAddModalOpen} onOpenChange={setIsAddModalOpen} />
+
         </div>
     );
 }

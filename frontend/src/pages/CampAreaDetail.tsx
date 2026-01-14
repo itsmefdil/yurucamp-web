@@ -10,17 +10,16 @@ import api from '../lib/api';
 import type { CampArea } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'sonner';
-import { EditCampAreaModal } from '../components/campAreas/EditCampAreaModal';
 import { Dialog, DialogContent, DialogTitle } from '../components/ui/dialog';
 import ReactMarkdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
+
 
 export default function CampAreaDetail() {
     const { id } = useParams<{ id: string }>();
     const { user } = useAuth();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
     const [touchStart, setTouchStart] = useState<number | null>(null);
 
@@ -172,9 +171,11 @@ export default function CampAreaDetail() {
                                         variant="secondary"
                                         size="icon"
                                         className="rounded-full bg-white hover:bg-gray-100 text-gray-900 shadow-lg border-none transition-all hover:scale-105"
-                                        onClick={() => setIsEditModalOpen(true)}
+                                        asChild
                                     >
-                                        <Edit className="h-5 w-5" />
+                                        <Link to={`/camp-areas/${id}/edit`}>
+                                            <Edit className="h-5 w-5" />
+                                        </Link>
                                     </Button>
                                     <Button
                                         variant="destructive"
@@ -380,13 +381,7 @@ export default function CampAreaDetail() {
             </main>
             <Footer />
 
-            {campArea && (
-                <EditCampAreaModal
-                    open={isEditModalOpen}
-                    onOpenChange={setIsEditModalOpen}
-                    campArea={campArea}
-                />
-            )}
+
 
             {/* Lightbox Modal */}
             <Dialog open={lightboxIndex !== null} onOpenChange={(open) => !open && closeLightbox()}>
