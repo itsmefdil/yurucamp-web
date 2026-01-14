@@ -4,11 +4,13 @@ import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
 import { Footer } from '../components/layout/Footer';
-import { ArrowRight, MapPin, Calendar, Activity, Tent, MessageSquare, Flame, Camera } from 'lucide-react';
+import { ArrowRight, MapPin, Calendar, Activity, Tent, MessageSquare, Flame, Camera, Wifi, Car, Coffee, Info, DollarSign, Users } from 'lucide-react';
 import { Navbar } from '../components/layout/Navbar';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
+import { Badge } from '../components/ui/badge';
 import api from '../lib/api';
 import type { Activity as ActivityType, CampArea, Event } from '../types';
+import { formatDate } from '../lib/utils';
 
 export default function Home() {
     // Fetch activities
@@ -50,6 +52,17 @@ export default function Home() {
             }
         },
     });
+
+    const getFacilityIcon = (facility: string) => {
+        switch (facility.toLowerCase()) {
+            case 'wifi': return <Wifi className="h-4 w-4" />;
+            case 'parkir': return <Car className="h-4 w-4" />;
+            case 'kantin': return <Coffee className="h-4 w-4" />;
+            case 'sewa tenda': return <Tent className="h-4 w-4" />;
+            case 'pusat info': return <Info className="h-4 w-4" />;
+            default: return null;
+        }
+    };
 
     return (
         <>
@@ -181,10 +194,10 @@ export default function Home() {
                             </Button>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {activities?.slice(0, 6).map((activity) => (
+                            {activities?.slice(0, 3).map((activity) => (
                                 <Link key={activity.id} to={`/activities/${activity.id}`} className="block group">
-                                    <Card className="overflow-hidden bg-white group-hover:-translate-y-2 transition-all duration-300 h-full flex flex-col border-2 border-transparent hover:border-orange-200 shadow-lg hover:shadow-2xl rounded-[2rem]">
-                                        <div className="relative aspect-video bg-orange-50 overflow-hidden m-2 rounded-[1.5rem]">
+                                    <Card className="overflow-hidden bg-white group-hover:-translate-y-2 transition-all duration-300 h-full flex flex-col border-2 border-transparent hover:border-orange-200 shadow-lg hover:shadow-2xl rounded-3xl">
+                                        <div className="relative aspect-video bg-orange-50 overflow-hidden m-2 rounded-2xl">
                                             <img
                                                 src={activity.imageUrl || "/aktifitas.jpg"}
                                                 alt={activity.title}
@@ -194,24 +207,53 @@ export default function Home() {
                                             <div className="absolute bottom-3 left-3 right-3 text-white">
                                                 <div className="flex items-center gap-1 text-xs font-bold bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-full w-fit">
                                                     <MapPin className="h-3 w-3" />
-                                                    <span className="truncate max-w-[150px] inline-block align-bottom">{activity.location || "Lokasi tidak tersedia"}</span>
+                                                    <span className="truncate max-w-[150px]">{activity.location || "Lokasi tidak tersedia"}</span>
                                                 </div>
                                             </div>
+                                            {activity.category && (
+                                                <div className="absolute top-3 right-3">
+                                                    <Badge className="bg-primary/90 text-white text-xs font-bold">
+                                                        {typeof activity.category === 'string' ? activity.category : activity.category?.name}
+                                                    </Badge>
+                                                </div>
+                                            )}
                                         </div>
                                         <CardHeader className="p-5 pb-2">
-                                            <CardTitle className="line-clamp-2 text-xl font-bold text-gray-800 group-hover:text-orange-500 transition-colors leading-tight">{activity.title}</CardTitle>
+                                            <CardTitle className="line-clamp-2 text-xl font-bold text-gray-800 group-hover:text-orange-500 transition-colors leading-tight">
+                                                {activity.title}
+                                            </CardTitle>
+                                            {activity.date && (
+                                                <div className="flex items-center gap-2 text-sm text-gray-500 mt-2">
+                                                    <Calendar className="h-4 w-4" />
+                                                    <span>{formatDate(activity.date)}</span>
+                                                </div>
+                                            )}
                                         </CardHeader>
                                         <CardFooter className="p-5 pt-0 mt-auto">
                                             <div className="flex items-center gap-3 w-full bg-orange-50/50 p-2 rounded-2xl">
-                                                <Avatar className="h-8 w-8 border-2 border-white shadow-sm">
-                                                    <AvatarImage src={activity.user?.avatarUrl || undefined} />
-                                                    <AvatarFallback className="text-xs bg-orange-200 text-orange-700 font-bold">
-                                                        {activity.user?.fullName?.charAt(0).toUpperCase() || 'U'}
-                                                    </AvatarFallback>
-                                                </Avatar>
-                                                <span className="text-sm font-semibold text-gray-600 truncate flex-1">
-                                                    {activity.user?.fullName || 'Pengguna'}
-                                                </span>
+                                                <div className="relative">
+                                                    <Avatar className="h-8 w-8 border-2 border-white shadow-sm">
+                                                        <AvatarImage src={activity.user?.avatarUrl || undefined} />
+                                                        <AvatarFallback className="text-xs bg-orange-200 text-orange-700 font-bold">
+                                                            {activity.user?.fullName?.charAt(0).toUpperCase() || 'U'}
+                                                        </AvatarFallback>
+                                                    </Avatar>
+                                                    {activity.user?.level && (
+                                                        <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-primary text-[8px] font-bold text-white flex items-center justify-center border border-white">
+                                                            {activity.user.level}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="flex flex-col min-w-0 flex-1">
+                                                    <span className="text-sm font-semibold text-gray-600 truncate">
+                                                        {activity.user?.fullName || 'Pengguna'}
+                                                    </span>
+                                                    {activity.user?.levelName && (
+                                                        <span className="text-[10px] text-gray-400 truncate">
+                                                            {activity.user.levelName}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
                                         </CardFooter>
                                     </Card>
@@ -242,38 +284,83 @@ export default function Home() {
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                                 {campAreas?.slice(0, 3).map((campArea) => (
                                     <Link key={campArea.id} to={`/camp-areas/${campArea.id}`} className="block group">
-                                        <Card className="bg-white overflow-hidden group-hover:-translate-y-2 transition-all duration-300 border-2 border-gray-100 hover:border-orange-300 shadow-xl hover:shadow-2xl h-full flex flex-col rounded-[2rem]">
-                                            <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden m-2 rounded-[1.5rem]">
+                                        <Card className="overflow-hidden bg-white group-hover:-translate-y-1 transition-all duration-300 h-full flex flex-col border border-gray-100 hover:border-orange-200 shadow-md hover:shadow-xl rounded-2xl">
+                                            {/* Image Section */}
+                                            <div className="relative aspect-[4/3] bg-orange-50 overflow-hidden">
                                                 <img
-                                                    src={campArea.imageUrl || "/camp-placeholder.jpg"}
+                                                    src={campArea.imageUrl || "/camp.jpg"}
                                                     alt={campArea.name}
-                                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                                 />
-                                                <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-md px-4 py-1.5 rounded-full text-sm font-black text-orange-500 shadow-sm border border-orange-100">
-                                                    {campArea.price ? `Rp ${Number(campArea.price).toLocaleString('id-ID')}` : "Gratis"}
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+
+                                                {/* Price Badge */}
+                                                {campArea.price && (
+                                                    <div className="absolute top-3 right-3">
+                                                        <Badge className="bg-green-500 text-white text-xs font-bold shadow-lg">
+                                                            Rp {parseInt(campArea.price).toLocaleString('id-ID')}
+                                                        </Badge>
+                                                    </div>
+                                                )}
+
+                                                {/* Bottom Overlay: Location + Facilities */}
+                                                <div className="absolute bottom-0 left-0 right-0 p-3">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-1.5 text-white text-xs font-medium bg-black/30 backdrop-blur-sm px-2.5 py-1 rounded-full">
+                                                            <MapPin className="h-3 w-3" />
+                                                            <span className="truncate max-w-[120px]">{campArea.location || "Lokasi"}</span>
+                                                        </div>
+
+                                                        {/* Facility Icons Only */}
+                                                        {campArea.facilities && campArea.facilities.length > 0 && (
+                                                            <div className="flex items-center gap-1">
+                                                                {campArea.facilities.slice(0, 3).map((facility, idx) => (
+                                                                    <div key={idx} className="bg-white/90 backdrop-blur-sm p-1.5 rounded-full text-orange-600" title={facility}>
+                                                                        {getFacilityIcon(facility)}
+                                                                    </div>
+                                                                ))}
+                                                                {campArea.facilities.length > 3 && (
+                                                                    <div className="bg-white/80 text-gray-600 text-[10px] font-bold px-1.5 py-1 rounded-full">
+                                                                        +{campArea.facilities.length - 3}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <CardHeader className="px-6 pt-4 pb-2">
-                                                <CardTitle className="text-2xl font-black text-gray-800 group-hover:text-orange-500 transition-colors">{campArea.name}</CardTitle>
-                                            </CardHeader>
-                                            <CardContent className="px-6 flex-1">
-                                                <CardDescription className="flex items-center gap-2 text-sm font-medium text-gray-500 mb-4 bg-gray-50 w-fit px-3 py-1 rounded-full">
-                                                    <MapPin className="h-3.5 w-3.5 text-orange-400" /> {campArea.location || "Lokasi tidak tersedia"}
-                                                </CardDescription>
-                                                <p className="text-gray-600 line-clamp-2 leading-relaxed text-sm">
-                                                    {campArea.description || "Tidak ada deskripsi tersedia."}
-                                                </p>
-                                            </CardContent>
-                                            <CardFooter className="px-6 pb-6 pt-2 flex flex-col sm:flex-row justify-between items-center gap-4 mt-auto">
-                                                <div className="flex flex-wrap gap-2">
-                                                    {campArea.facilities && campArea.facilities.slice(0, 3).map((facility, idx) => (
-                                                        <span key={idx} className="text-[10px] font-bold uppercase tracking-wider bg-orange-50 border border-orange-100 px-2 py-1 rounded-lg text-orange-600">{facility}</span>
-                                                    ))}
-                                                    {campArea.facilities && campArea.facilities.length > 3 && (
-                                                        <span className="text-[10px] font-bold bg-gray-100 px-2 py-1 rounded-lg text-gray-500">+{campArea.facilities.length - 3}</span>
-                                                    )}
-                                                </div>
-                                            </CardFooter>
+
+                                            {/* Content Section */}
+                                            <div className="p-4 flex-1 flex flex-col">
+                                                <h3 className="font-bold text-gray-800 group-hover:text-orange-500 transition-colors line-clamp-1 mb-2">
+                                                    {campArea.name}
+                                                </h3>
+
+                                                {/* Creator Info - Compact */}
+                                                {campArea.user && (
+                                                    <div className="flex items-center gap-2 mt-auto pt-3 border-t border-gray-100">
+                                                        <div className="relative">
+                                                            <div className="w-7 h-7 rounded-full overflow-hidden bg-orange-100">
+                                                                {campArea.user.avatarUrl ? (
+                                                                    <img
+                                                                        src={campArea.user.avatarUrl}
+                                                                        alt={campArea.user.fullName || 'User'}
+                                                                        className="w-full h-full object-cover"
+                                                                    />
+                                                                ) : (
+                                                                    <div className="w-full h-full flex items-center justify-center text-orange-600 font-bold text-xs">
+                                                                        {(campArea.user.fullName || 'U').charAt(0).toUpperCase()}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <div className="absolute -bottom-0.5 -right-0.5 bg-orange-500 text-white text-[7px] font-bold w-3.5 h-3.5 flex items-center justify-center rounded-full">
+                                                                {campArea.user.level || 1}
+                                                            </div>
+                                                        </div>
+                                                        <span className="text-xs text-gray-600 truncate">{campArea.user.fullName || 'Pengguna'}</span>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </Card>
                                     </Link>
                                 ))}
@@ -302,45 +389,80 @@ export default function Home() {
                                 </Button>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                {events?.slice(0, 3).map((event) => (
-                                    <div key={event.id} className="group relative h-full">
-                                        <Link to={`/events/${event.id}`} className="block h-full">
-                                            {/* Decorative Card Offset */}
-                                            <div className="absolute inset-0 bg-orange-200/60 rounded-[2rem] transform translate-y-2 translate-x-2 group-hover:translate-x-3 group-hover:translate-y-3 transition-transform" />
+                                {events?.slice(0, 3).map((event) => {
+                                    const isPast = new Date(event.dateStart) < new Date();
+                                    return (
+                                        <Link key={event.id} to={`/events/${event.id}`} className="block group">
+                                            <Card className={`overflow-hidden bg-white group-hover:-translate-y-2 transition-all duration-300 h-full flex flex-col border-2 border-transparent hover:border-orange-200 shadow-lg hover:shadow-2xl rounded-3xl ${isPast ? 'opacity-80' : ''}`}>
+                                                <div className="relative aspect-video bg-orange-50 overflow-hidden m-2 rounded-2xl">
+                                                    <img
+                                                        src={event.imageUrl || "/event.jpg"}
+                                                        alt={event.title}
+                                                        className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 ${isPast ? 'grayscale-[30%]' : ''}`}
+                                                    />
+                                                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-60" />
 
-                                            <Card className="relative bg-[#FFFCF8] border-2 border-orange-100/50 shadow-sm rounded-[2rem] overflow-hidden hover:-translate-y-1 transition-transform duration-300 h-full flex flex-col">
-                                                <div className="relative h-56 bg-orange-50 overflow-hidden">
-                                                    <div className="absolute top-4 left-4 z-10">
-                                                        <div className="bg-white/90 backdrop-blur-sm border border-orange-100 text-orange-700 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm">
-                                                            <Calendar className="w-3.5 h-3.5" />
-                                                            {new Date(event.dateStart).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
+                                                    {/* Status Badge */}
+                                                    <div className="absolute top-3 left-3">
+                                                        {isPast ? (
+                                                            <Badge className="bg-gray-600/90 text-white text-xs font-bold">
+                                                                Selesai
+                                                            </Badge>
+                                                        ) : (
+                                                            <Badge className="bg-green-500/90 text-white text-xs font-bold">
+                                                                Akan Datang
+                                                            </Badge>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="absolute bottom-3 left-3 right-3 text-white">
+                                                        <div className="flex items-center gap-1 text-xs font-bold bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-full w-fit">
+                                                            <MapPin className="h-3 w-3" />
+                                                            <span className="truncate max-w-[150px]">{event.location || "Lokasi tidak tersedia"}</span>
                                                         </div>
                                                     </div>
-                                                    <img
-                                                        src={event.imageUrl || "/event-placeholder.jpg"}
-                                                        alt={event.title}
-                                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                                                    />
+                                                    {event.price && parseInt(event.price) > 0 && (
+                                                        <div className="absolute top-3 right-3">
+                                                            <Badge className="bg-green-500/90 text-white text-xs font-bold flex items-center gap-1">
+                                                                <DollarSign className="h-3 w-3" />
+                                                                Rp {parseInt(event.price).toLocaleString('id-ID')}
+                                                            </Badge>
+                                                        </div>
+                                                    )}
                                                 </div>
-
-                                                <CardContent className="flex-1 p-6 flex flex-col">
-                                                    <h3 className="text-xl font-black text-gray-800 mb-3 line-clamp-2 leading-tight group-hover:text-orange-500 transition-colors">
+                                                <CardHeader className="p-5 pb-2">
+                                                    <CardTitle className="line-clamp-2 text-xl font-bold text-gray-800 group-hover:text-orange-500 transition-colors leading-tight">
                                                         {event.title}
-                                                    </h3>
-
-                                                    <div className="flex items-start gap-2 text-gray-500 text-sm mb-6 flex-1">
-                                                        <MapPin className="w-4 h-4 mt-0.5 shrink-0 text-gray-400" />
-                                                        <span className="line-clamp-2">{event.location}</span>
+                                                    </CardTitle>
+                                                    <div className="flex flex-col gap-2 mt-3">
+                                                        {event.dateStart && (
+                                                            <div className="flex items-center gap-2 text-sm text-gray-600">
+                                                                <Calendar className="h-4 w-4 text-orange-500" />
+                                                                <span className="font-medium">
+                                                                    {formatDate(event.dateStart)}
+                                                                    {event.dateEnd && ` - ${formatDate(event.dateEnd)}`}
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                        {event.maxParticipants && (
+                                                            <div className="flex items-center gap-2 text-sm text-gray-600">
+                                                                <Users className="h-4 w-4 text-blue-500" />
+                                                                <span className="font-medium">
+                                                                    Max {event.maxParticipants} peserta
+                                                                </span>
+                                                            </div>
+                                                        )}
                                                     </div>
-
-                                                    <Button className="w-full rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-bold">
-                                                        Daftar Sekarang
+                                                </CardHeader>
+                                                <CardFooter className="p-5 pt-0 mt-auto">
+                                                    <Button variant="outline" className="w-full rounded-full border-2 border-orange-200 hover:bg-orange-50 hover:border-orange-300 font-semibold">
+                                                        Lihat Detail
                                                     </Button>
-                                                </CardContent>
+                                                </CardFooter>
                                             </Card>
                                         </Link>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                                 {(!events || events.length === 0) && (
                                     <div className="col-span-full text-center py-12 text-gray-500 bg-orange-50 rounded-[2rem] border-2 border-dashed border-orange-200">
                                         <Calendar className="h-12 w-12 text-orange-300 mx-auto mb-3" />

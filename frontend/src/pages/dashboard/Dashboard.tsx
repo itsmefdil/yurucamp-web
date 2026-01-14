@@ -5,7 +5,7 @@ import api from '../../lib/api';
 import { DashboardView } from '../../components/dashboard/DashboardView';
 import { Navbar } from '../../components/layout/Navbar';
 import { Footer } from '../../components/layout/Footer';
-import type { Activity, CampArea } from '../../types';
+import type { Activity, Event } from '../../types';
 
 export default function Dashboard() {
     const { user, loading: authLoading } = useAuth();
@@ -18,15 +18,23 @@ export default function Dashboard() {
         }
     });
 
-    const { data: campAreas, isLoading: campAreasLoading } = useQuery({
-        queryKey: ['campAreas'],
+    const { data: joinedEvents, isLoading: joinedEventsLoading } = useQuery({
+        queryKey: ['joined-events'],
         queryFn: async () => {
-            const response = await api.get('/camp-areas');
-            return response.data as CampArea[];
+            const response = await api.get('/events/joined');
+            return response.data as Event[];
         }
     });
 
-    if (authLoading || activitiesLoading || campAreasLoading) {
+    const { data: createdEvents, isLoading: createdEventsLoading } = useQuery({
+        queryKey: ['created-events'],
+        queryFn: async () => {
+            const response = await api.get('/events/created');
+            return response.data as Event[];
+        }
+    });
+
+    if (authLoading || activitiesLoading || joinedEventsLoading || createdEventsLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -39,7 +47,8 @@ export default function Dashboard() {
     }
 
     const myActivities = activities?.filter(a => a.userId === user.id) || [];
-    const myCampAreas = campAreas?.filter(c => c.userId === user.id) || [];
+    const myJoinedEvents = joinedEvents || [];
+    const myCreatedEvents = createdEvents || [];
 
     return (
         <div className="min-h-screen flex flex-col bg-[#fdfdfd]">
@@ -48,7 +57,8 @@ export default function Dashboard() {
                 <DashboardView
                     profile={user}
                     activities={myActivities}
-                    campAreas={myCampAreas}
+                    joinedEvents={myJoinedEvents}
+                    createdEvents={myCreatedEvents}
                 />
             </main>
             <Footer />

@@ -137,7 +137,7 @@ router.put('/profile', authenticate, upload.single('avatar'), async (req: Reques
     try {
         const user = req.user;
         const userId = user.sub;
-        const { fullName, email, bio, phone } = req.body;
+        const { fullName, email, bio, phone, avatarUrl: bodyAvatarUrl } = req.body;
         const avatarFile = req.file;
 
         const currentUser = await db.select().from(users).where(eq(users.id, userId)).limit(1);
@@ -148,15 +148,23 @@ router.put('/profile', authenticate, upload.single('avatar'), async (req: Reques
             return;
         }
 
-        let avatarUrl = currentUser[0]?.avatarUrl;
+        let newAvatarUrl = currentUser[0]?.avatarUrl;
 
+        // Handle file upload (server-side)
         if (avatarFile) {
             if (currentUser[0]?.avatarUrl) {
-                // Optional: Check if it's a cloudinary URL before trying to delete
                 const publicId = getPublicIdFromUrl(currentUser[0].avatarUrl);
                 if (publicId) await deleteImage(publicId);
             }
-            avatarUrl = await uploadImage(avatarFile, 'avatars');
+            newAvatarUrl = await uploadImage(avatarFile, 'avatars');
+        }
+        // Handle client-side upload (URL provided)
+        else if (bodyAvatarUrl) {
+            if (currentUser[0]?.avatarUrl && currentUser[0]?.avatarUrl !== bodyAvatarUrl) {
+                const publicId = getPublicIdFromUrl(currentUser[0].avatarUrl);
+                if (publicId) await deleteImage(publicId);
+            }
+            newAvatarUrl = bodyAvatarUrl;
         }
 
         const updateData: any = {
@@ -167,8 +175,8 @@ router.put('/profile', authenticate, upload.single('avatar'), async (req: Reques
             updatedAt: new Date().toISOString(),
         };
 
-        if (avatarUrl) {
-            updateData.avatarUrl = avatarUrl;
+        if (newAvatarUrl) {
+            updateData.avatarUrl = newAvatarUrl;
         }
 
         const updatedUser = await db.update(users)

@@ -21,6 +21,61 @@ router.get('/', async (req: Request, res: Response) => {
     }
 });
 
+// GET joined events
+router.get('/joined', authenticate, async (req: Request, res: Response) => {
+    try {
+        const user = req.user;
+        const userId = user.sub || user.id;
+
+        const joinedEvents = await db.select({
+            id: events.id,
+            title: events.title,
+            description: events.description,
+            location: events.location,
+            dateStart: events.dateStart,
+            dateEnd: events.dateEnd,
+            imageUrl: events.imageUrl,
+            price: events.price,
+            maxParticipants: events.maxParticipants,
+            organizerId: events.organizerId,
+            createdAt: events.createdAt,
+            updatedAt: events.updatedAt,
+            organizer: {
+                id: users.id,
+                fullName: users.fullName,
+                avatarUrl: users.avatarUrl,
+            }
+        })
+            .from(eventParticipants)
+            .innerJoin(events, eq(eventParticipants.eventId, events.id))
+            .leftJoin(users, eq(events.organizerId, users.id))
+            .where(eq(eventParticipants.userId, userId))
+            .orderBy(desc(events.dateStart));
+
+        res.json(joinedEvents);
+    } catch (error) {
+        console.error("Error fetching joined events:", error);
+        res.status(500).json({ error: 'Failed to fetch joined events' });
+    }
+});
+
+// GET user created events
+router.get('/created', authenticate, async (req: Request, res: Response) => {
+    try {
+        const user = req.user;
+        const userId = user.sub || user.id;
+
+        const result = await db.select().from(events)
+            .where(eq(events.organizerId, userId))
+            .orderBy(desc(events.createdAt));
+
+        res.json(result);
+    } catch (error) {
+        console.error("Error fetching created events:", error);
+        res.status(500).json({ error: 'Failed to fetch created events' });
+    }
+});
+
 // GET single event with organizer info
 router.get('/:id', async (req: Request, res: Response) => {
     try {

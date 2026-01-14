@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './contexts/AuthContext';
@@ -23,6 +22,7 @@ import WatchSeason from './pages/WatchSeason';
 import Dashboard from './pages/dashboard/Dashboard';
 import AddActivity from './pages/dashboard/AddActivity';
 import EditActivity from './pages/dashboard/EditActivity';
+import EditProfile from './pages/dashboard/EditProfile';
 import GearListDashboard from './pages/GearLists/GearListDashboard';
 import GearListDetail from './pages/GearLists/GearListDetail';
 
@@ -78,6 +78,14 @@ function App() {
                             element={
                                 <ProtectedRoute>
                                     <EditActivity />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/dashboard/pengaturan"
+                            element={
+                                <ProtectedRoute>
+                                    <EditProfile />
                                 </ProtectedRoute>
                             }
                         />

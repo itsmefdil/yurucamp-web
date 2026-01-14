@@ -96,7 +96,7 @@ export function EditEventModal({ open, onOpenChange, event }: EditEventModalProp
     };
 
     const uploadToCloudinary = async (file: File) => {
-        const { data: signData } = await api.get('/utils/cloudinary-signature');
+        const { data: signData } = await api.get('/utils/cloudinary-signature?folder=events');
 
         const formData = new FormData();
         formData.append("file", file);

@@ -6,6 +6,7 @@ export interface User {
     bio?: string;
     phone?: string;
     googleId?: string;
+    createdAt?: string;
     updatedAt?: string;
     // EXP System
     exp?: number;
