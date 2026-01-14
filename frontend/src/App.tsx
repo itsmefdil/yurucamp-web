@@ -17,6 +17,8 @@ import CampAreas from './pages/CampAreas';
 import CampAreaDetail from './pages/CampAreaDetail';
 import Events from './pages/Events';
 import EventDetail from './pages/EventDetail';
+import AddEvent from './pages/AddEvent';
+import EditEvent from './pages/EditEvent';
 import Watch from './pages/Watch';
 import WatchSeason from './pages/WatchSeason';
 import Dashboard from './pages/dashboard/Dashboard';
@@ -52,7 +54,17 @@ function App() {
                         <Route path="/camp-areas" element={<CampAreas />} />
                         <Route path="/camp-areas/:id" element={<CampAreaDetail />} />
                         <Route path="/events" element={<Events />} />
+                        <Route path="/events/add" element={
+                            <ProtectedRoute>
+                                <AddEvent />
+                            </ProtectedRoute>
+                        } />
                         <Route path="/events/:id" element={<EventDetail />} />
+                        <Route path="/events/:id/edit" element={
+                            <ProtectedRoute>
+                                <EditEvent />
+                            </ProtectedRoute>
+                        } />
                         <Route path="/watch" element={<Watch />} />
                         <Route path="/watch/:seasonId" element={<WatchSeason />} />
 
