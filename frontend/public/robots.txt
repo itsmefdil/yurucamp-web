@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://yurucamp.my.id/sitemap.xml

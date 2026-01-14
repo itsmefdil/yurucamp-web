@@ -9,6 +9,14 @@ export default defineConfig({
             '@': path.resolve(__dirname, './src'),
         },
     },
+    server: {
+        proxy: {
+            '/sitemap.xml': {
+                target: process.env.VITE_API_URL || 'http://localhost:3333',
+                changeOrigin: true,
+            },
+        },
+    },
     build: {
         outDir: 'dist',
         rollupOptions: {

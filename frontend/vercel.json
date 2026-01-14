@@ -3,6 +3,10 @@
         {
             "source": "/(.*)",
             "destination": "/index.html"
+        },
+        {
+            "source": "/sitemap.xml",
+            "destination": "https://api.yurucamp.id/sitemap.xml"
         }
     ]
 }

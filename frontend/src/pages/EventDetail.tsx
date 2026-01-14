@@ -14,6 +14,8 @@ import { toast } from 'sonner';
 import { EditEventModal } from '../components/events/EditEventModal';
 import { EventParticipantsModal } from '../components/events/EventParticipantsModal';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/avatar';
+import ReactMarkdown from 'react-markdown';
+import remarkBreaks from 'remark-breaks';
 
 export default function EventDetail() {
     const { id } = useParams<{ id: string }>();
@@ -267,10 +269,11 @@ export default function EventDetail() {
                                         <span className="w-1.5 h-6 bg-orange-500 rounded-full"></span>
                                         Tentang Event
                                     </h2>
-                                    <div
-                                        className="prose prose-lg max-w-none text-gray-600 leading-relaxed"
-                                        dangerouslySetInnerHTML={{ __html: event.description || "Tidak ada deskripsi." }}
-                                    />
+                                    <div className="prose prose-lg prose-orange max-w-none text-gray-600 leading-relaxed font-medium">
+                                        <ReactMarkdown remarkPlugins={[remarkBreaks]}>
+                                            {event.description || "Tidak ada deskripsi."}
+                                        </ReactMarkdown>
+                                    </div>
                                 </div>
 
                                 {/* Gear Checklist */}

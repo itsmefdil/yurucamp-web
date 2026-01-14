@@ -12,6 +12,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'sonner';
 import { EditCampAreaModal } from '../components/campAreas/EditCampAreaModal';
 import { Dialog, DialogContent, DialogTitle } from '../components/ui/dialog';
+import ReactMarkdown from 'react-markdown';
+import remarkBreaks from 'remark-breaks';
 
 export default function CampAreaDetail() {
     const { id } = useParams<{ id: string }>();
@@ -220,10 +222,11 @@ export default function CampAreaDetail() {
                                 <CardContent className="p-5 md:p-10 space-y-6">
                                     <div>
                                         <h2 className="text-2xl font-bold mb-4">Deskripsi</h2>
-                                        <div
-                                            className="prose md:prose-lg max-w-none text-gray-600 leading-loose"
-                                            dangerouslySetInnerHTML={{ __html: campArea.description || "Tidak ada deskripsi." }}
-                                        />
+                                        <div className="prose md:prose-lg prose-orange max-w-none text-gray-600 leading-relaxed">
+                                            <ReactMarkdown remarkPlugins={[remarkBreaks]}>
+                                                {campArea.description || "Tidak ada deskripsi."}
+                                            </ReactMarkdown>
+                                        </div>
                                     </div>
 
                                     {campArea.facilities && campArea.facilities.length > 0 && (
