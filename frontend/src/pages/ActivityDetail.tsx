@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
@@ -32,7 +32,8 @@ export default function ActivityDetail() {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const [commentText, setCommentText] = useState('');
-    const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+    const [touchStart, setTouchStart] = useState<number | null>(null);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
 
@@ -194,6 +195,55 @@ export default function ActivityDetail() {
         }
     };
 
+    // Combine cover + additional images for lightbox
+    const allImages = activity ? [
+        activity.imageUrl,
+        ...(activity.additionalImages || [])
+    ].filter(Boolean) as string[] : [];
+
+    const openLightbox = (index: number) => setLightboxIndex(index);
+    const closeLightbox = () => setLightboxIndex(null);
+
+    const goToPrev = useCallback(() => {
+        if (lightboxIndex !== null && lightboxIndex > 0) {
+            setLightboxIndex(lightboxIndex - 1);
+        }
+    }, [lightboxIndex]);
+
+    const goToNext = useCallback(() => {
+        if (lightboxIndex !== null && lightboxIndex < allImages.length - 1) {
+            setLightboxIndex(lightboxIndex + 1);
+        }
+    }, [lightboxIndex, allImages.length]);
+
+    // Keyboard navigation
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (lightboxIndex === null) return;
+            if (e.key === 'ArrowLeft') goToPrev();
+            if (e.key === 'ArrowRight') goToNext();
+            if (e.key === 'Escape') closeLightbox();
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [lightboxIndex, goToPrev, goToNext]);
+
+    // Touch swipe handlers
+    const handleTouchStart = (e: React.TouchEvent) => {
+        setTouchStart(e.targetTouches[0].clientX);
+    };
+
+    const handleTouchEnd = (e: React.TouchEvent) => {
+        if (touchStart === null) return;
+        const touchEnd = e.changedTouches[0].clientX;
+        const diff = touchStart - touchEnd;
+        if (Math.abs(diff) > 50) {
+            if (diff > 0) goToNext();
+            else goToPrev();
+        }
+        setTouchStart(null);
+    };
+
     if (isLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -336,26 +386,32 @@ export default function ActivityDetail() {
                                 </div>
                             </Card>
 
-                            {/* Additional Images Gallery */}
-                            {activity.additionalImages && activity.additionalImages.length > 0 && (
+                            {/* Gallery - All Photos including Cover */}
+                            {allImages.length > 0 && (
                                 <Card className="border-none shadow-xl rounded-3xl overflow-hidden bg-white">
                                     <CardHeader className="p-6">
-                                        <CardTitle className="text-2xl font-bold">Galeri Foto</CardTitle>
+                                        <CardTitle className="text-2xl font-bold">Galeri Foto ({allImages.length})</CardTitle>
                                     </CardHeader>
                                     <CardContent className="p-6 pt-0">
                                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                            {activity.additionalImages.map((img, idx) => (
+                                            {allImages.map((img, idx) => (
                                                 <div
                                                     key={idx}
                                                     className="relative aspect-square rounded-xl overflow-hidden group cursor-pointer"
-                                                    onClick={() => setSelectedImage(img)}
+                                                    onClick={() => openLightbox(idx)}
                                                 >
                                                     <img
                                                         src={img}
-                                                        alt={`Gallery ${idx + 1}`}
+                                                        alt={idx === 0 ? 'Cover' : `Gallery ${idx}`}
                                                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                                     />
-                                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors">
+                                                    {idx === 0 && (
+                                                        <span className="absolute top-2 left-2 bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                                            Cover
+                                                        </span>
+                                                    )}
+                                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                                                        <span className="opacity-0 group-hover:opacity-100 text-white text-sm font-medium transition-opacity">Perbesar</span>
                                                         <Button
                                                             size="icon"
                                                             variant="secondary"
@@ -556,26 +612,74 @@ export default function ActivityDetail() {
                 </AlertDialogContent>
             </AlertDialog>
 
-            <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
-                <DialogContent aria-describedby={undefined} showCloseButton={false} className="max-w-4xl p-0 bg-transparent border-none shadow-none text-white place-items-center flex justify-center items-center">
-                    <DialogTitle className="sr-only">Perbesar Gambar</DialogTitle>
-                    <div className="relative w-full h-full flex flex-col items-center">
-                        {selectedImage && (
+            <Dialog open={lightboxIndex !== null} onOpenChange={(open) => !open && closeLightbox()}>
+                <DialogContent
+                    aria-describedby={undefined}
+                    showCloseButton={false}
+                    className="max-w-[95vw] md:max-w-4xl p-0 bg-black/95 border-none shadow-2xl overflow-hidden"
+                    onTouchStart={handleTouchStart}
+                    onTouchEnd={handleTouchEnd}
+                >
+                    <DialogTitle className="sr-only">Galeri Foto</DialogTitle>
+                    <div className="relative w-full h-[80vh] flex items-center justify-center">
+                        {lightboxIndex !== null && allImages[lightboxIndex] && (
                             <img
-                                src={selectedImage}
-                                alt="Enlarged"
-                                className="max-h-[85vh] w-auto object-contain rounded-md shadow-2xl"
+                                src={allImages[lightboxIndex]}
+                                alt={`Photo ${lightboxIndex + 1}`}
+                                className="max-w-full max-h-full object-contain"
                             />
                         )}
+
+                        {/* Close Button */}
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="absolute top-2 right-2 md:-right-12 md:top-0 text-white bg-black/50 hover:bg-black/70 rounded-full z-50 transition-colors backdrop-blur-sm"
-                            onClick={() => setSelectedImage(null)}
+                            className="absolute top-4 right-4 text-white bg-black/50 hover:bg-black/70 rounded-full z-50"
+                            onClick={closeLightbox}
                         >
-                            <span className="sr-only">Close</span>
                             <X className="h-6 w-6" />
                         </Button>
+
+                        {/* Download Button */}
+                        {lightboxIndex !== null && allImages[lightboxIndex] && (
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="absolute top-4 left-4 text-white bg-black/50 hover:bg-black/70 rounded-full z-50"
+                                onClick={(e) => handleDownload(e, allImages[lightboxIndex])}
+                            >
+                                <Download className="h-5 w-5" />
+                            </Button>
+                        )}
+
+                        {/* Previous Button */}
+                        {lightboxIndex !== null && lightboxIndex > 0 && (
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="absolute left-4 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/70 rounded-full h-12 w-12"
+                                onClick={goToPrev}
+                            >
+                                <ChevronLeft className="h-8 w-8" />
+                            </Button>
+                        )}
+
+                        {/* Next Button */}
+                        {lightboxIndex !== null && lightboxIndex < allImages.length - 1 && (
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="absolute right-4 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/70 rounded-full h-12 w-12"
+                                onClick={goToNext}
+                            >
+                                <ChevronRight className="h-8 w-8" />
+                            </Button>
+                        )}
+
+                        {/* Image Counter */}
+                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white bg-black/50 px-4 py-2 rounded-full text-sm font-medium">
+                            {lightboxIndex !== null ? lightboxIndex + 1 : 0} / {allImages.length}
+                        </div>
                     </div>
                 </DialogContent>
             </Dialog>
