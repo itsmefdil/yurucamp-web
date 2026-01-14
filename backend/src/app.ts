@@ -9,6 +9,7 @@ import interactionsRouter from './routes/interactions';
 import utilsRouter from './routes/utils';
 import categoriesRouter from './routes/categories';
 import gearRouter from './routes/gear';
+import sitemapRouter from './routes/sitemap';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -38,6 +39,7 @@ app.use('/interactions', interactionsRouter);
 app.use('/utils', utilsRouter);
 app.use('/categories', categoriesRouter);
 app.use('/gear', gearRouter);
+app.use('/sitemap.xml', sitemapRouter);
 
 // Health check
 app.get('/', (req, res) => {

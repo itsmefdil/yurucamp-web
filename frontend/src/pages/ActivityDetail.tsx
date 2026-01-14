@@ -25,6 +25,8 @@ import {
     AlertDialogTitle,
 } from '../components/ui/alert-dialog';
 import { EditActivityModal } from '../components/activities/EditActivityModal';
+import ReactMarkdown from 'react-markdown';
+import remarkBreaks from 'remark-breaks';
 
 export default function ActivityDetail() {
     const { id } = useParams<{ id: string }>();
@@ -319,7 +321,7 @@ export default function ActivityDetail() {
                                 <div className="flex flex-wrap items-center gap-2 md:gap-3 text-white/90 mb-3 md:mb-4 text-sm md:text-base font-medium">
                                     {activity.category && (
                                         <span className="bg-primary/90 backdrop-blur-sm px-3 md:px-4 py-1.5 rounded-full text-white text-[10px] md:text-sm font-bold uppercase tracking-wider shadow-lg">
-                                            {activity.category}
+                                            {typeof activity.category === 'object' ? activity.category.name : activity.category}
                                         </span>
                                     )}
                                     {activity.date && (
@@ -350,8 +352,10 @@ export default function ActivityDetail() {
                         <div className="lg:col-span-8 space-y-8">
                             <Card className="border-none shadow-xl rounded-3xl overflow-hidden bg-white ring-1 ring-black/5">
                                 <CardContent className="p-5 md:p-10 space-y-6">
-                                    <div className="prose md:prose-lg max-w-none text-gray-600 leading-loose whitespace-pre-wrap">
-                                        {activity.description || "Tidak ada deskripsi."}
+                                    <div className="prose md:prose-lg prose-orange max-w-none text-gray-600 leading-relaxed">
+                                        <ReactMarkdown remarkPlugins={[remarkBreaks]}>
+                                            {activity.description || "Tidak ada deskripsi."}
+                                        </ReactMarkdown>
                                     </div>
                                 </CardContent>
                                 <div className="px-6 md:px-10 py-6 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between">
