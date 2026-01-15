@@ -5,6 +5,7 @@ import { generateId } from '../utils/id';
 // Renamed from profiles to users
 export const users = pgTable('users', {
     id: uuid('id').defaultRandom().primaryKey().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }),
     email: text('email').unique().notNull(),
     googleId: text('google_id').unique(),
@@ -12,8 +13,30 @@ export const users = pgTable('users', {
     avatarUrl: text('avatar_url'),
     bio: text('bio'),
     phone: text('phone'),
+    role: text('role').default('user').notNull(),
     exp: integer('exp').default(0).notNull(),
     level: integer('level').default(1).notNull(),
+    regionId: uuid('region_id').references(() => regions.id), // References regions
+});
+
+export const regions = pgTable('regions', {
+    id: uuid('id').defaultRandom().primaryKey().notNull(),
+    name: text('name').notNull(),
+    slug: text('slug').unique().notNull(),
+    description: text('description'),
+    imageUrl: text('image_url'),
+    coverUrl: text('cover_url'),
+    status: text('status').default('active').notNull(), // 'pending', 'active', 'rejected'
+    socialLinks: text('social_links'), // JSON string for flexibility
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+});
+
+export const regionMembers = pgTable('region_members', {
+    id: uuid('id').defaultRandom().primaryKey().notNull(),
+    regionId: uuid('region_id').references(() => regions.id, { onDelete: 'cascade' }).notNull(),
+    userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+    role: text('role').default('member').notNull(), // 'member', 'admin'
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 });
 
 export const activities = pgTable('activities', {
@@ -26,6 +49,7 @@ export const activities = pgTable('activities', {
     imageUrl: text('image_url'),
     additionalImages: text('additional_images').array(),
     userId: uuid('user_id').references(() => users.id), // References users
+    regionId: uuid('region_id').references(() => regions.id), // References regions
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow(),
 });
 
@@ -71,6 +95,7 @@ export const events = pgTable('events', {
     price: numeric('price').default('0'),
     maxParticipants: integer('max_participants'),
     organizerId: uuid('organizer_id').references(() => users.id, { onDelete: 'set null' }), // References users
+    regionId: uuid('region_id').references(() => regions.id), // References regions
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 });
