@@ -202,7 +202,11 @@ export default function CampAreas() {
 
                                             {/* Creator Info - Compact */}
                                             {campArea.user && (
-                                                <div className="flex items-center gap-2 mt-auto pt-3 border-t border-gray-100">
+                                                <Link
+                                                    to={`/u/${campArea.userId}`}
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    className="flex items-center gap-2 mt-auto pt-3 border-t border-gray-100 hover:bg-orange-50 -mx-4 px-4 -mb-4 pb-4 rounded-b-3xl transition-colors"
+                                                >
                                                     <div className="relative">
                                                         <div className="w-7 h-7 rounded-full overflow-hidden bg-orange-100 border border-white shadow-sm">
                                                             {campArea.user.avatarUrl ? (
@@ -222,7 +226,7 @@ export default function CampAreas() {
                                                         </div>
                                                     </div>
                                                     <span className="text-xs text-gray-600 truncate font-medium">{campArea.user.fullName || 'Pengguna'}</span>
-                                                </div>
+                                                </Link>
                                             )}
                                         </div>
                                     </Card>
