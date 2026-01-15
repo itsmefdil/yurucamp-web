@@ -4,6 +4,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { Toaster } from 'sonner';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { BottomNav } from './components/layout/BottomNav';
+import { TitleUpdater } from './components/TitleUpdater';
 
 // Pages
 import Home from './pages/Home';
@@ -44,6 +45,7 @@ function App() {
         <QueryClientProvider client={queryClient}>
             <AuthProvider>
                 <BrowserRouter>
+                    <TitleUpdater />
                     <Routes>
                         {/* Public Routes */}
                         <Route path="/" element={<Home />} />
