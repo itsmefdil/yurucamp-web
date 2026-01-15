@@ -1,3 +1,4 @@
+import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './contexts/AuthContext';
@@ -5,7 +6,16 @@ import { Toaster } from 'sonner';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { BottomNav } from './components/layout/BottomNav';
 import { TitleUpdater } from './components/TitleUpdater';
+import { AdminLayout } from './components/layout/AdminLayout';
+import { AdminRoute } from './components/AdminRoute';
 
+// Lazy load admin pages
+const AdminDashboard = React.lazy(() => import('./pages/admin/Dashboard'));
+const AdminUsers = React.lazy(() => import('./pages/admin/Users'));
+const AdminCampAreas = React.lazy(() => import('./pages/admin/CampAreas'));
+const AdminActivities = React.lazy(() => import('./pages/admin/Activities'));
+const AdminEvents = React.lazy(() => import('./pages/admin/Events'));
+const AdminRegions = React.lazy(() => import('./pages/admin/Regions'));
 // Pages
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -30,6 +40,11 @@ import EditActivity from './pages/dashboard/EditActivity';
 import EditProfile from './pages/dashboard/EditProfile';
 import GearListDashboard from './pages/GearLists/GearListDashboard';
 import GearListDetail from './pages/GearLists/GearListDetail';
+import RegionDetail from './pages/RegionDetail';
+import RegionManagement from './pages/RegionManagement';
+import CreateRegion from './pages/CreateRegion';
+import Community from './pages/Community';
+import UserProfile from './pages/UserProfile';
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -81,6 +96,19 @@ function App() {
                         } />
                         <Route path="/watch" element={<Watch />} />
                         <Route path="/w/:seasonId" element={<WatchSeason />} />
+                        <Route path="/r/create" element={
+                            <ProtectedRoute>
+                                <CreateRegion />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/r/:slug" element={<RegionDetail />} />
+                        <Route path="/r/:slug/manage" element={
+                            <ProtectedRoute>
+                                <RegionManagement />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/community" element={<Community />} />
+                        <Route path="/u/:id" element={<UserProfile />} />
 
                         {/* Protected Routes */}
                         <Route
@@ -126,6 +154,48 @@ function App() {
 
                         {/* Public Gear List View (for shared lists) */}
                         <Route path="/g/:id" element={<GearListDetail />} />
+
+                        {/* Admin Routes */}
+                        <Route
+                            path="/admin"
+                            element={
+                                <AdminRoute>
+                                    <AdminLayout />
+                                </AdminRoute>
+                            }
+                        >
+                            <Route index element={
+                                <Suspense fallback={<div className="p-8">Loading dashboard...</div>}>
+                                    <AdminDashboard />
+                                </Suspense>
+                            } />
+                            <Route path="users" element={
+                                <Suspense fallback={<div className="p-8">Loading users...</div>}>
+                                    <AdminUsers />
+                                </Suspense>
+                            } />
+                            <Route path="camp-areas" element={
+                                <Suspense fallback={<div className="p-8">Loading camp areas...</div>}>
+                                    <AdminCampAreas />
+                                </Suspense>
+                            } />
+                            <Route path="activities" element={
+                                <Suspense fallback={<div className="p-8">Loading activities...</div>}>
+                                    <AdminActivities />
+                                </Suspense>
+                            } />
+                            <Route path="events" element={
+                                <Suspense fallback={<div className="p-8">Loading events...</div>}>
+                                    <AdminEvents />
+                                </Suspense>
+                            } />
+                            <Route path="regions" element={
+                                <Suspense fallback={<div className="p-8">Loading regions...</div>}>
+                                    <AdminRegions />
+                                </Suspense>
+                            } />
+                            {/* Add more admin routes here */}
+                        </Route>
                     </Routes>
                     <Toaster position="top-right" />
                     <BottomNav />
