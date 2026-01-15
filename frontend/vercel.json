@@ -1,12 +1,12 @@
 {
     "rewrites": [
         {
-            "source": "/(.*)",
-            "destination": "/index.html"
+            "source": "/sitemap.xml",
+            "destination": "https://api.yurucamp.my.id/sitemap.xml"
         },
         {
-            "source": "/sitemap.xml",
-            "destination": "https://api.yurucamp.id/sitemap.xml"
+            "source": "/(.*)",
+            "destination": "/index.html"
         }
     ]
 }
