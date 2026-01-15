@@ -492,17 +492,19 @@ export default function ActivityDetail() {
                                         {interactions?.comments && interactions.comments.length > 0 ? (
                                             interactions.comments.map((comment: Comment) => (
                                                 <div key={comment.id} className="flex gap-4 p-4 bg-gray-50 rounded-xl">
-                                                    <Avatar className="h-10 w-10">
-                                                        <AvatarImage src={comment.user?.avatarUrl} />
-                                                        <AvatarFallback className="bg-primary text-white">
-                                                            {comment.user?.fullName?.[0] || 'U'}
-                                                        </AvatarFallback>
-                                                    </Avatar>
+                                                    <a href={`/u/${comment.userId}`}>
+                                                        <Avatar className="h-10 w-10 cursor-pointer hover:ring-2 hover:ring-orange-300 transition-all">
+                                                            <AvatarImage src={comment.user?.avatarUrl} />
+                                                            <AvatarFallback className="bg-primary text-white">
+                                                                {comment.user?.fullName?.[0] || 'U'}
+                                                            </AvatarFallback>
+                                                        </Avatar>
+                                                    </a>
                                                     <div className="flex-1">
                                                         <div className="flex items-center justify-between mb-1">
-                                                            <span className="font-bold text-gray-900">
+                                                            <a href={`/u/${comment.userId}`} className="font-bold text-gray-900 hover:text-orange-500 transition-colors">
                                                                 {comment.user?.fullName || 'Pengguna'}
-                                                            </span>
+                                                            </a>
                                                             {user?.id === comment.userId && (
                                                                 <Button
                                                                     variant="ghost"
@@ -541,7 +543,7 @@ export default function ActivityDetail() {
                                         <CardTitle className="text-lg font-bold">Dibuat Oleh</CardTitle>
                                     </CardHeader>
                                     <CardContent className="p-0">
-                                        <div className="flex items-center gap-4">
+                                        <a href={`/u/${activity.user.id}`} className="flex items-center gap-4 hover:bg-gray-50 p-2 -m-2 rounded-xl transition-colors">
                                             <div className="relative">
                                                 <Avatar className="h-14 w-14 border-2 border-white shadow-md">
                                                     <AvatarImage src={activity.user.avatarUrl} />
@@ -564,7 +566,7 @@ export default function ActivityDetail() {
                                                     <p className="text-xs text-gray-400">{activity.user.exp} EXP</p>
                                                 )}
                                             </div>
-                                        </div>
+                                        </a>
                                     </CardContent>
                                 </Card>
                             )}

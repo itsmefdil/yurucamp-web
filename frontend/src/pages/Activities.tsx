@@ -1,169 +1,342 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
+import { Card, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Footer } from '../components/layout/Footer';
 import { Navbar } from '../components/layout/Navbar';
-import { Plus, MapPin, Calendar, Tent } from 'lucide-react';
+import { Plus, MapPin, Calendar, Tent, ChevronLeft, ChevronRight, Search, X } from 'lucide-react';
 import { AddActivityModal } from '../components/activities/AddActivityModal';
+import RegionSelector from '../components/ui/RegionSelector';
 import api from '../lib/api';
 import type { Activity } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { formatDate } from '../lib/utils';
 
+const ITEMS_PER_PAGE = 20;
+
 export default function Activities() {
     const { user } = useAuth();
     const [isAddActivityOpen, setIsAddActivityOpen] = useState(false);
+    const [selectedRegionId, setSelectedRegionId] = useState<string | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [searchQuery, setSearchQuery] = useState('');
 
     const { data: activities, isLoading } = useQuery({
-        queryKey: ['activities'],
+        queryKey: ['activities', selectedRegionId],
         queryFn: async () => {
-            const response = await api.get('/activities');
+            const params = selectedRegionId ? { regionId: selectedRegionId } : {};
+            const response = await api.get('/activities', { params });
             return response.data as Activity[];
         },
     });
 
+    // Filter activities by search query
+    const filteredActivities = activities?.filter((activity) => {
+        if (!searchQuery.trim()) return true;
+        const query = searchQuery.toLowerCase();
+        return (
+            activity.title?.toLowerCase().includes(query) ||
+            activity.location?.toLowerCase().includes(query) ||
+            activity.description?.toLowerCase().includes(query) ||
+            activity.user?.fullName?.toLowerCase().includes(query) ||
+            activity.region?.name?.toLowerCase().includes(query)
+        );
+    }) || [];
+
+    // Pagination calculations
+    const totalItems = filteredActivities.length;
+    const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    const paginatedActivities = filteredActivities.slice(startIndex, endIndex);
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    // Reset page when region changes
+    const handleRegionChange = (regionId: string | null) => {
+        setSelectedRegionId(regionId);
+        setCurrentPage(1);
+    };
+
+    // Handle search
+    const handleSearch = (query: string) => {
+        setSearchQuery(query);
+        setCurrentPage(1);
+    };
+
     return (
         <div className="min-h-screen flex flex-col bg-gray-50">
             <Navbar />
-            {/* Hero Section */}
-            <div className="relative bg-[#FFF8F0] overflow-hidden pt-24 pb-16 md:pt-32 md:pb-24 border-b border-orange-100">
+            {/* Compact Hero Section */}
+            <div className="relative bg-[#FFF8F0] overflow-hidden pt-28 pb-8 md:pt-36 md:pb-12 border-b border-orange-100">
                 <div className="absolute inset-0 bg-[url('/pattern.svg')] opacity-[0.03]" />
                 <div className="container mx-auto px-4 relative z-10">
-                    <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-                        <div className="text-center md:text-left max-w-2xl text-gray-800">
-                            <Badge variant="secondary" className="mb-4 px-4 py-1.5 text-sm font-bold bg-orange-100 text-orange-600 hover:bg-orange-200 border-none">
-                                Komunitas Yuru Camp
-                            </Badge>
-                            <h1 className="text-4xl md:text-6xl font-black mb-6 leading-tight text-gray-900">
-                                Bagikan Momen <br />
-                                <span className="text-orange-500">Petualanganmu</span>
+                    <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                        <div className="text-center md:text-left">
+                            <h1 className="text-2xl md:text-4xl font-black mb-2 leading-tight text-gray-900">
+                                Aktifitas <span className="text-orange-500">Camping</span>
                             </h1>
-                            <p className="text-lg md:text-xl text-gray-600 mb-8 leading-relaxed max-w-lg">
-                                Temukan inspirasi camping, hiking, dan kegiatan seru lainnya dari teman-teman komunitas.
+                            <p className="text-sm md:text-base text-gray-600">
+                                Temukan dan bagikan momen petualanganmu
                             </p>
-                            <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                                {user ? (
-                                    <Button
-                                        size="lg"
-                                        className="rounded-2xl bg-orange-500 text-white hover:bg-orange-600 font-bold text-base px-8 shadow-lg hover:shadow-orange-200 hover:scale-105 transition-all"
-                                        onClick={() => setIsAddActivityOpen(true)}
-                                    >
-                                        <Plus className="mr-2 h-5 w-5" /> Buat Aktifitas Baru
-                                    </Button>
-                                ) : (
-                                    <Button size="lg" className="rounded-2xl bg-orange-500 text-white hover:bg-orange-600 font-bold text-base px-8 shadow-lg" asChild>
-                                        <Link to="/login">
-                                            Login untuk Membuat Aktifitas
-                                        </Link>
-                                    </Button>
-                                )}
-                            </div>
                         </div>
-                        <div className="hidden md:block relative w-80 h-80 lg:w-96 lg:h-96">
-                            <div className="absolute inset-0 bg-gradient-to-tr from-orange-200 to-yellow-100 rounded-full blur-3xl opacity-50 animate-pulse" />
-                            <div className="absolute inset-4 bg-white/40 rounded-full blur-2xl" />
-                        </div>
+                        {user ? (
+                            <Button
+                                size="sm"
+                                className="rounded-xl bg-orange-500 text-white hover:bg-orange-600 font-bold px-6 shadow-lg hover:shadow-orange-200 hover:scale-105 transition-all"
+                                onClick={() => setIsAddActivityOpen(true)}
+                            >
+                                <Plus className="mr-2 h-4 w-4" /> Buat Aktifitas
+                            </Button>
+                        ) : (
+                            <Button size="sm" className="rounded-xl bg-orange-500 text-white hover:bg-orange-600 font-bold px-6 shadow-lg" asChild>
+                                <Link to="/login">
+                                    Login untuk Membuat
+                                </Link>
+                            </Button>
+                        )}
                     </div>
                 </div>
             </div>
 
-            <main className="flex-1 container mx-auto px-4 -mt-8 relative z-20 pb-24">
-                {isLoading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {[1, 2, 3, 4, 5, 6].map((i) => (
-                            <Card key={i} className="overflow-hidden bg-white shadow-lg rounded-3xl animate-pulse">
-                                <div className="aspect-video bg-gray-200" />
-                                <CardHeader className="p-5">
-                                    <div className="h-6 bg-gray-200 rounded w-3/4" />
-                                </CardHeader>
-                                <CardFooter className="p-5">
-                                    <div className="h-10 bg-gray-200 rounded w-full" />
-                                </CardFooter>
-                            </Card>
-                        ))}
+            <main className="flex-1 container mx-auto px-4 py-6 pb-24">
+                {/* Unified Search & Filter Bar */}
+                <div className="mb-6">
+                    <div className="bg-white rounded-2xl shadow-lg border border-orange-100 p-2">
+                        <div className="flex flex-col md:flex-row gap-2">
+                            {/* Search Input */}
+                            <div className="relative flex-1 group">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <Search className="h-5 w-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
+                                </div>
+                                <input
+                                    type="text"
+                                    placeholder="Cari aktifitas, lokasi, atau pengguna..."
+                                    value={searchQuery}
+                                    onChange={(e) => handleSearch(e.target.value)}
+                                    className="w-full pl-11 pr-10 py-2.5 bg-transparent rounded-2xl focus:outline-none focus:bg-orange-50/50 text-gray-800 placeholder-gray-400 font-medium transition-all"
+                                />
+                                {searchQuery && (
+                                    <button
+                                        onClick={() => handleSearch('')}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors"
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </button>
+                                )}
+                            </div>
+
+                            <div className="hidden md:block w-px bg-gray-100 my-2" />
+
+                            {/* Region Filter */}
+                            <div className="min-w-[240px]">
+                                <RegionSelector
+                                    value={selectedRegionId}
+                                    onChange={handleRegionChange}
+                                    showLabel={false}
+                                    className="h-full"
+                                    variant="ghost"
+                                />
+                            </div>
+                        </div>
                     </div>
-                ) : activities && activities.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {activities.map((activity) => (
-                            <Link key={activity.id} to={`/a/${activity.id}`} className="block group">
-                                <Card className="overflow-hidden bg-white group-hover:-translate-y-2 transition-all duration-300 h-full flex flex-col border-2 border-transparent hover:border-orange-200 shadow-lg hover:shadow-2xl rounded-3xl">
-                                    <div className="relative aspect-video bg-orange-50 overflow-hidden m-2 rounded-2xl">
-                                        <img
-                                            src={activity.imageUrl || "/aktifitas.jpg"}
-                                            alt={activity.title}
-                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                        />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-60" />
-                                        <div className="absolute bottom-3 left-3 right-3 text-white">
-                                            <div className="flex items-center gap-1 text-xs font-bold bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-full w-fit">
-                                                <MapPin className="h-3 w-3" />
-                                                <span className="truncate max-w-[150px]">{activity.location || "Lokasi tidak tersedia"}</span>
-                                            </div>
-                                        </div>
-                                        {activity.category && (
-                                            <div className="absolute top-3 right-3">
-                                                <Badge className="bg-primary/90 text-white text-xs font-bold">
-                                                    {typeof activity.category === 'string' ? activity.category : activity.category?.name}
-                                                </Badge>
-                                            </div>
-                                        )}
-                                    </div>
-                                    <CardHeader className="p-5 pb-2">
-                                        <CardTitle className="line-clamp-2 text-xl font-bold text-gray-800 group-hover:text-orange-500 transition-colors leading-tight">
-                                            {activity.title}
-                                        </CardTitle>
-                                        {activity.date && (
-                                            <div className="flex items-center gap-2 text-sm text-gray-500 mt-2">
-                                                <Calendar className="h-4 w-4" />
-                                                <span>{formatDate(activity.date)}</span>
-                                            </div>
-                                        )}
+                </div>
+
+                {/* Active Filters / Results Info */}
+                {(searchQuery || selectedRegionId) && (
+                    <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-2 flex-wrap text-sm">
+                        <span className="text-gray-500">Menampilkan {totalItems} hasil</span>
+                        {searchQuery && (
+                            <Badge variant="secondary" className="bg-orange-100 text-orange-700 hover:bg-orange-200">
+                                "{searchQuery}"
+                                <button onClick={() => handleSearch('')} className="ml-1 hover:text-orange-900">
+                                    <X className="h-3 w-3" />
+                                </button>
+                            </Badge>
+                        )}
+                        {selectedRegionId && (
+                            <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-200">
+                                Region
+                                <button onClick={() => handleRegionChange(null)} className="ml-1 hover:text-blue-900">
+                                    <X className="h-3 w-3" />
+                                </button>
+                            </Badge>
+                        )}
+                    </div>
+                )}
+
+
+                {
+                    isLoading ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                                <Card key={i} className="overflow-hidden bg-white shadow-lg rounded-3xl animate-pulse">
+                                    <div className="aspect-video bg-gray-200" />
+                                    <CardHeader className="p-5">
+                                        <div className="h-6 bg-gray-200 rounded w-3/4" />
                                     </CardHeader>
-                                    <CardFooter className="p-5 pt-0 mt-auto">
-                                        <div className="flex items-center gap-3 w-full bg-orange-50/50 p-2 rounded-2xl">
-                                            <div className="relative">
-                                                <Avatar className="h-8 w-8 border-2 border-white shadow-sm">
-                                                    <AvatarImage src={activity.user?.avatarUrl || undefined} />
-                                                    <AvatarFallback className="text-xs bg-orange-200 text-orange-700 font-bold">
-                                                        {activity.user?.fullName?.charAt(0).toUpperCase() || 'U'}
-                                                    </AvatarFallback>
-                                                </Avatar>
-                                                {activity.user?.level && (
-                                                    <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-primary text-[8px] font-bold text-white flex items-center justify-center border border-white">
-                                                        {activity.user.level}
+                                    <CardFooter className="p-5">
+                                        <div className="h-10 bg-gray-200 rounded w-full" />
+                                    </CardFooter>
+                                </Card>
+                            ))}
+                        </div>
+                    ) : paginatedActivities && paginatedActivities.length > 0 ? (
+                        <>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                {paginatedActivities.map((activity) => (
+                                    <Link key={activity.id} to={`/a/${activity.id}`} className="block group">
+                                        <Card className="overflow-hidden bg-white group-hover:-translate-y-2 transition-all duration-300 h-full flex flex-col border-2 border-transparent hover:border-orange-200 shadow-lg hover:shadow-2xl rounded-3xl">
+                                            <div className="relative aspect-video bg-orange-50 overflow-hidden m-2 rounded-2xl">
+                                                <img
+                                                    src={activity.imageUrl || "/aktifitas.jpg"}
+                                                    alt={activity.title}
+                                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                                />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-60" />
+                                                <div className="absolute bottom-3 left-3 right-3 text-white flex flex-col gap-1.5 items-start">
+                                                    {activity.region && (
+                                                        <div className="px-2 py-0.5 rounded-md bg-black/40 backdrop-blur-sm text-[10px] font-medium border border-white/10">
+                                                            {activity.region.name}
+                                                        </div>
+                                                    )}
+                                                    <div className="flex items-center gap-1 text-xs font-bold bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-full w-fit max-w-full">
+                                                        <MapPin className="h-3 w-3 flex-shrink-0" />
+                                                        <span className="truncate">{activity.location || "Lokasi tidak tersedia"}</span>
+                                                    </div>
+                                                </div>
+                                                {activity.category && (
+                                                    <div className="absolute top-3 right-3">
+                                                        <Badge className="bg-primary/90 text-white text-xs font-bold">
+                                                            {typeof activity.category === 'string' ? activity.category : activity.category?.name}
+                                                        </Badge>
                                                     </div>
                                                 )}
                                             </div>
-                                            <div className="flex flex-col min-w-0 flex-1">
-                                                <span className="text-sm font-semibold text-gray-600 truncate">
-                                                    {activity.user?.fullName || 'Pengguna'}
-                                                </span>
-                                                {activity.user?.levelName && (
-                                                    <span className="text-[10px] text-gray-400 truncate">
-                                                        {activity.user.levelName}
-                                                    </span>
+                                            <CardHeader className="p-5 pb-2">
+                                                <CardTitle className="line-clamp-2 text-xl font-bold text-gray-800 group-hover:text-orange-500 transition-colors leading-tight">
+                                                    {activity.title}
+                                                </CardTitle>
+                                                {activity.date && (
+                                                    <div className="flex items-center gap-2 text-sm text-gray-500 mt-2">
+                                                        <Calendar className="h-4 w-4" />
+                                                        <span>{formatDate(activity.date)}</span>
+                                                    </div>
                                                 )}
-                                            </div>
-                                        </div>
-                                    </CardFooter>
-                                </Card>
-                            </Link>
-                        ))}
-                    </div>
-                ) : (
-                    <div className="col-span-full text-center py-12 text-gray-500 bg-orange-50 rounded-3xl border-2 border-dashed border-orange-200">
-                        <Tent className="h-12 w-12 text-orange-300 mx-auto mb-3" />
-                        <p className="font-medium">Belum ada aktifitas.</p>
-                    </div>
-                )}
-            </main>
+                                            </CardHeader>
+                                            <CardFooter className="p-5 pt-0 mt-auto">
+                                                <div
+                                                    onClick={(e) => {
+                                                        if (activity.user?.id) {
+                                                            e.preventDefault();
+                                                            e.stopPropagation();
+                                                            window.location.href = `/u/${activity.user.id}`;
+                                                        }
+                                                    }}
+                                                    className="flex items-center gap-3 w-full bg-orange-50/50 p-2 rounded-2xl cursor-pointer hover:bg-orange-100/70 transition-colors"
+                                                >
+                                                    <div className="relative">
+                                                        <Avatar className="h-8 w-8 border-2 border-white shadow-sm">
+                                                            <AvatarImage src={activity.user?.avatarUrl || undefined} />
+                                                            <AvatarFallback className="text-xs bg-orange-200 text-orange-700 font-bold">
+                                                                {activity.user?.fullName?.charAt(0).toUpperCase() || 'U'}
+                                                            </AvatarFallback>
+                                                        </Avatar>
+                                                        {activity.user?.level && (
+                                                            <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-primary text-[8px] font-bold text-white flex items-center justify-center border border-white">
+                                                                {activity.user.level}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex flex-col min-w-0 flex-1">
+                                                        <span className="text-sm font-semibold text-gray-600 truncate">
+                                                            {activity.user?.fullName || 'Pengguna'}
+                                                        </span>
+                                                        {activity.user?.levelName && (
+                                                            <span className="text-[10px] text-gray-400 truncate">
+                                                                {activity.user.levelName}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </CardFooter>
+                                        </Card>
+                                    </Link>
+                                ))}
+                            </div>
+
+                            {/* Pagination Controls */}
+                            {totalPages > 1 && (
+                                <div className="flex items-center justify-center gap-2 mt-10">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="rounded-full"
+                                        onClick={() => handlePageChange(currentPage - 1)}
+                                        disabled={currentPage === 1}
+                                    >
+                                        <ChevronLeft className="h-4 w-4" />
+                                    </Button>
+
+                                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                                        if (
+                                            page === 1 ||
+                                            page === totalPages ||
+                                            (page >= currentPage - 1 && page <= currentPage + 1)
+                                        ) {
+                                            return (
+                                                <Button
+                                                    key={page}
+                                                    variant={currentPage === page ? "default" : "outline"}
+                                                    size="sm"
+                                                    className={`rounded-full min-w-[36px] ${currentPage === page ? 'bg-orange-500 hover:bg-orange-600' : ''}`}
+                                                    onClick={() => handlePageChange(page)}
+                                                >
+                                                    {page}
+                                                </Button>
+                                            );
+                                        } else if (
+                                            page === currentPage - 2 ||
+                                            page === currentPage + 2
+                                        ) {
+                                            return <span key={page} className="text-gray-400">...</span>;
+                                        }
+                                        return null;
+                                    })}
+
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="rounded-full"
+                                        onClick={() => handlePageChange(currentPage + 1)}
+                                        disabled={currentPage === totalPages}
+                                    >
+                                        <ChevronRight className="h-4 w-4" />
+                                    </Button>
+
+                                    <span className="ml-4 text-sm text-gray-500">
+                                        {startIndex + 1}-{Math.min(endIndex, totalItems)} dari {totalItems}
+                                    </span>
+                                </div>
+                            )}
+                        </>
+                    ) : (
+                        <div className="col-span-full text-center py-12 text-gray-500 bg-orange-50 rounded-3xl border-2 border-dashed border-orange-200">
+                            <Tent className="h-12 w-12 text-orange-300 mx-auto mb-3" />
+                            <p className="font-medium">Belum ada aktifitas.</p>
+                        </div>
+                    )
+                }
+            </main >
 
             <Footer />
             <AddActivityModal open={isAddActivityOpen} onOpenChange={setIsAddActivityOpen} />
-        </div>
+        </div >
     );
 }
