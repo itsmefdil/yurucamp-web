@@ -5,7 +5,7 @@ import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
-import { ArrowLeft, Edit, Trash2, MapPin, Wifi, Car, Coffee, Tent, Info, DollarSign, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, MapPin, Wifi, Car, Coffee, Tent, Info, DollarSign, X, ChevronLeft, ChevronRight, Share2 } from 'lucide-react';
 import api from '../lib/api';
 import type { CampArea } from '../types';
 import { useAuth } from '../contexts/AuthContext';
@@ -50,6 +50,30 @@ export default function CampAreaDetail() {
     const handleDeleteCampArea = () => {
         if (confirm('Apakah Anda yakin ingin menghapus camp area ini?')) {
             deleteCampAreaMutation.mutate();
+        }
+    };
+
+    const handleShare = async () => {
+        if (!campArea) return;
+        const shareData = {
+            title: campArea.name,
+            text: `Yuk camping di ${campArea.name} - Yurucamp`,
+            url: window.location.href,
+        };
+
+        if (navigator.share) {
+            try {
+                await navigator.share(shareData);
+            } catch (err) {
+                console.error('Error sharing:', err);
+            }
+        } else {
+            try {
+                await navigator.clipboard.writeText(window.location.href);
+                toast.success('Link berhasil disalin!');
+            } catch (err) {
+                toast.error('Gagal menyalin link');
+            }
         }
     };
 
@@ -165,6 +189,16 @@ export default function CampAreaDetail() {
                         </div>
 
                         <div className="absolute top-6 right-6 z-20 flex gap-2">
+                            {/* Share button always visible */}
+                            <Button
+                                variant="secondary"
+                                size="icon"
+                                className="rounded-full bg-white hover:bg-gray-100 text-gray-900 shadow-lg border-none transition-all hover:scale-105"
+                                onClick={handleShare}
+                            >
+                                <Share2 className="h-5 w-5" />
+                            </Button>
+
                             {isOwner && (
                                 <>
                                     <Button
