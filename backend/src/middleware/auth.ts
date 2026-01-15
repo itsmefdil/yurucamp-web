@@ -66,6 +66,16 @@ export const optionalAuthenticate = (req: Request, res: Response, next: NextFunc
 };
 
 export const basicAuth = (req: Request, res: Response, next: NextFunction) => {
+    // Exclude auth routes (e.g. Google OAuth redirect)
+    if (req.path.startsWith('/auth')) {
+        return next();
+    }
+
+    // Exclude public routes (Health check, Sitemap)
+    if (req.path === '/' || req.path === '/sitemap.xml') {
+        return next();
+    }
+
     // Only apply to GET requests
     if (req.method !== 'GET') {
         return next();
