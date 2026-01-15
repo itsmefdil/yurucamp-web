@@ -8,6 +8,8 @@ export interface User {
     googleId?: string;
     createdAt?: string;
     updatedAt?: string;
+    role?: 'user' | 'admin' | string;
+    regionId?: string | null;
     // EXP System
     exp?: number;
     level?: number;
@@ -22,6 +24,7 @@ export interface Activity {
     categoryId?: string;
     date?: string;
     location?: string;
+    regionId?: string | null;
     imageUrl?: string;
     additionalImages?: string[];
     userId: string;
@@ -31,6 +34,11 @@ export interface Activity {
         id: string;
         name: string;
     } | string;
+    region?: {
+        id: string;
+        name: string;
+        slug: string;
+    };
 }
 
 export interface CampArea {
@@ -61,6 +69,13 @@ export interface Event {
     location: string;
     dateStart: string;
     dateEnd?: string;
+    regionId?: string | null;
+    region?: {
+        id: string;
+        name: string;
+        slug: string;
+        imageUrl?: string | null;
+    };
     imageUrl?: string;
     price?: string;
     maxParticipants?: number;

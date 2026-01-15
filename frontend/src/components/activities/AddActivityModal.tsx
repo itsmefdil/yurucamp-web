@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -16,6 +16,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '../../components/ui/select';
+import RegionSelector from '../../components/ui/RegionSelector';
 import { Avatar, AvatarImage, AvatarFallback } from '../../components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../../components/ui/dialog';
 import api from '../../lib/api';
@@ -27,6 +28,7 @@ const activitySchema = z.object({
     categoryId: z.string().min(1, "Kategori harus dipilih"),
     date: z.string().min(1, "Tanggal harus diisi"),
     location: z.string().min(3, "Lokasi minimal 3 karakter"),
+    regionId: z.string().nullable().optional(),
 });
 
 type ActivityFormValues = z.infer<typeof activitySchema>;
@@ -55,8 +57,15 @@ export function AddActivityModal({ open, onOpenChange }: AddActivityModalProps) 
             categoryId: '',
             date: new Date().toISOString().split('T')[0],
             location: '',
+            regionId: null,
         },
     });
+
+    useEffect(() => {
+        if (open && user?.regionId) {
+            form.setValue('regionId', user.regionId);
+        }
+    }, [open, user, form]);
 
     const { data: categories, isLoading: isLoadingCategories } = useQuery({
         queryKey: ['categories'],
@@ -172,7 +181,8 @@ export function AddActivityModal({ open, onOpenChange }: AddActivityModalProps) 
                 date: data.date,
                 location: data.location,
                 imageUrl: coverUrl,
-                additionalImages: additionalUrls
+                additionalImages: additionalUrls,
+                regionId: data.regionId
             };
 
             await api.post('/activities', payload);
@@ -303,6 +313,13 @@ export function AddActivityModal({ open, onOpenChange }: AddActivityModalProps) 
 
                     {/* Details */}
                     <div className="mt-2 border-t border-gray-100">
+                        <div className="px-4 py-3">
+                            <RegionSelector
+                                label="Tag Region (Opsional)"
+                                value={form.watch('regionId')}
+                                onChange={(val) => form.setValue('regionId', val)}
+                            />
+                        </div>
                         <div className="divide-y divide-gray-100">
                             {/* Location */}
                             <div className="flex items-center px-4 py-3 gap-3">

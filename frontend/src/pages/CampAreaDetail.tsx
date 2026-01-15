@@ -235,7 +235,6 @@ export default function CampAreaDetail() {
                                 <div className="flex flex-wrap items-center gap-2 md:gap-3 text-white/90 mb-3 md:mb-4 text-sm md:text-base font-medium">
                                     {campArea.price && (
                                         <span className="bg-green-500/90 backdrop-blur-sm px-3 md:px-4 py-1.5 rounded-full text-white text-xs md:text-sm font-bold shadow-lg flex items-center gap-1">
-                                            <DollarSign className="h-3 w-3 md:h-4 md:w-4" />
                                             Rp {parseInt(campArea.price).toLocaleString('id-ID')}
                                         </span>
                                     )}

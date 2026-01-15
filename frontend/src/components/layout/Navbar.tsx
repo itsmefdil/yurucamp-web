@@ -29,6 +29,11 @@ export function Navbar() {
                             Aktifitas
                         </Link>
 
+                        <Link to="/community" className="flex items-center gap-2 transition-colors hover:text-primary hover:scale-105 transform">
+                            <User className="w-4 h-4" />
+                            Komunitas
+                        </Link>
+
                         <Link to="/camp-areas" className="flex items-center gap-2 transition-colors hover:text-primary hover:scale-105 transform">
                             <Tent className="w-4 h-4" />
                             Camp Area
@@ -43,9 +48,19 @@ export function Navbar() {
                             <PlayCircle className="w-4 h-4" />
                             Nonton
                         </Link>
+
+
                     </nav>
 
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 lg:gap-4">
+                        {/* Mobile only: Nonton icon */}
+                        <Link
+                            to="/watch"
+                            className="lg:hidden flex items-center justify-center w-9 h-9 rounded-full hover:bg-orange-50 text-orange-500 hover:text-primary transition-colors"
+                        >
+                            <PlayCircle className="w-5 h-5 animate-pulse" />
+                        </Link>
+
                         {user ? (
                             <UserNav user={user} />
                         ) : (

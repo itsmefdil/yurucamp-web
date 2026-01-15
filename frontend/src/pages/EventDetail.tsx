@@ -237,6 +237,20 @@ export default function EventDetail() {
                             </div>
                         </div>
 
+                        {/* Event Title (Moved Here) */}
+                        <div className="mb-6 md:mb-8 text-center md:text-left">
+                            <h1 className="text-2xl md:text-5xl font-black text-gray-900 mb-2 leading-tight tracking-tight">
+                                {event.title}
+                            </h1>
+                            <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500 font-medium justify-center md:justify-start">
+                                {isPast && (
+                                    <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full border border-gray-200 text-xs uppercase tracking-wide">
+                                        Event Selesai
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                             {/* Left Column: Image & Organizer */}
                             <div className="lg:col-span-4 space-y-6">
@@ -294,60 +308,97 @@ export default function EventDetail() {
                                     )}
                                 </div>
 
-                                {/* Organizer Card (Moved here) */}
-                                {event.organizer && (
-                                    <Card className="border-none shadow-lg bg-white rounded-3xl p-6 ring-1 ring-black/5">
-                                        <CardHeader className="p-0 mb-4">
-                                            <CardTitle className="text-lg font-bold text-gray-700">Penyelenggara</CardTitle>
+                                {/* Region Organizer Card */}
+                                {event.region && (
+                                    <Card className="border-none shadow-lg bg-white rounded-3xl p-4 md:p-6 ring-1 ring-black/5">
+                                        <CardHeader className="p-0 mb-3 md:mb-4">
+                                            <CardTitle className="text-sm md:text-lg font-bold text-gray-700 flex items-center gap-2">
+                                                <span className="w-1 md:w-1.5 h-4 md:h-6 bg-blue-500 rounded-full"></span>
+                                                Region Komunitas
+                                            </CardTitle>
                                         </CardHeader>
                                         <CardContent className="p-0">
-                                            <div className="flex items-center gap-4">
+                                            <Link to={`/r/${event.region.slug}`} className="flex items-center gap-3 md:gap-4 hover:bg-blue-50 p-2 md:p-3 -m-2 rounded-2xl transition-all group border border-transparent hover:border-blue-100">
                                                 <div className="relative">
-                                                    <Avatar className="h-14 w-14 border-2 border-white shadow-md">
+                                                    <Avatar className="h-10 w-10 md:h-16 md:w-16 border-2 border-white shadow-md group-hover:scale-105 transition-transform">
+                                                        <AvatarImage src={event.region.imageUrl || ''} className="object-cover" />
+                                                        <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-sm md:text-xl font-bold">
+                                                            {event.region.name?.[0] || 'R'}
+                                                        </AvatarFallback>
+                                                    </Avatar>
+                                                    <div className="absolute -bottom-1 -right-1 w-4 h-4 md:w-6 md:h-6 rounded-full bg-blue-500 text-white flex items-center justify-center border-2 border-white shadow-sm">
+                                                        <CheckCircle className="w-2 h-2 md:w-3 md:h-3" />
+                                                    </div>
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <h4 className="font-bold text-gray-900 truncate text-sm md:text-lg group-hover:text-blue-700 transition-colors">
+                                                        {event.region.name}
+                                                    </h4>
+                                                    <p className="text-xs md:text-sm text-gray-500 font-medium flex items-center gap-1">
+                                                        Lihat Komunitas <ArrowLeft className="w-2.5 h-2.5 md:w-3 md:h-3 rotate-180" />
+                                                    </p>
+                                                </div>
+                                            </Link>
+                                        </CardContent>
+                                    </Card>
+                                )}
+
+                                {/* Organizer Card (Moved here) */}
+                                {event.organizer && (
+                                    <Card className="border-none shadow-lg bg-white rounded-3xl p-4 md:p-6 ring-1 ring-black/5">
+                                        <CardHeader className="p-0 mb-3 md:mb-4">
+                                            <CardTitle className="text-sm md:text-lg font-bold text-gray-700">Penyelenggara</CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="p-0">
+                                            <a href={`/u/${event.organizerId}`} className="flex items-center gap-3 md:gap-4 hover:bg-gray-50 p-2 -m-2 rounded-xl transition-colors">
+                                                <div className="relative">
+                                                    <Avatar className="h-10 w-10 md:h-14 md:w-14 border-2 border-white shadow-md">
                                                         <AvatarImage src={event.organizer.avatarUrl} />
-                                                        <AvatarFallback className="bg-orange-500 text-white text-xl font-bold">
+                                                        <AvatarFallback className="bg-orange-500 text-white text-sm md:text-xl font-bold">
                                                             {event.organizer.fullName?.[0] || 'U'}
                                                         </AvatarFallback>
                                                     </Avatar>
                                                     {event.organizer.level && (
-                                                        <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-[10px] font-bold text-white flex items-center justify-center border-2 border-white shadow">
+                                                        <div className="absolute -bottom-1 -right-1 w-4 h-4 md:w-6 md:h-6 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-[8px] md:text-[10px] font-bold text-white flex items-center justify-center border-2 border-white shadow">
                                                             {event.organizer.level}
                                                         </div>
                                                     )}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <h4 className="font-bold text-gray-900 truncate">{event.organizer.fullName || 'Pengguna'}</h4>
+                                                    <h4 className="font-bold text-gray-900 truncate text-sm md:text-base">{event.organizer.fullName || 'Pengguna'}</h4>
                                                     {event.organizer.levelName && (
-                                                        <p className="text-sm text-orange-600 font-medium">{event.organizer.levelName}</p>
+                                                        <p className="text-xs md:text-sm text-orange-600 font-medium">{event.organizer.levelName}</p>
                                                     )}
                                                 </div>
-                                            </div>
+                                            </a>
                                         </CardContent>
                                     </Card>
                                 )}
 
                                 {/* Participants Summary (Mobile/Left Column) */}
-                                <div className="bg-white rounded-3xl p-6 shadow-lg ring-1 ring-black/5">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <h3 className="font-bold text-gray-700">Peserta</h3>
-                                        <span className="text-sm font-medium px-2.5 py-1 rounded-full bg-blue-50 text-blue-600">
+                                <div className="bg-white rounded-3xl p-4 md:p-6 shadow-lg ring-1 ring-black/5">
+                                    <div className="flex items-center justify-between mb-3 md:mb-4">
+                                        <h3 className="font-bold text-gray-700 text-sm md:text-base">Peserta</h3>
+                                        <span className="text-xs md:text-sm font-medium px-2 md:px-2.5 py-0.5 md:py-1 rounded-full bg-blue-50 text-blue-600">
                                             {totalParticipantsCount} / {event.maxParticipants}
                                         </span>
                                     </div>
-                                    <div className="flex -space-x-2 overflow-hidden mb-4 p-1 pl-2">
+                                    <div className="flex -space-x-2 overflow-hidden mb-3 md:mb-4 p-1 pl-2">
                                         {allParticipants.slice(0, 5).map((p) => (
-                                            <Avatar key={p.id} className="inline-block border-2 border-white ring-2 ring-gray-100 w-10 h-10">
-                                                <AvatarImage src={p.avatarUrl} />
-                                                <AvatarFallback className="bg-gray-100 text-gray-600">{p.fullName?.[0]}</AvatarFallback>
-                                            </Avatar>
+                                            <a key={p.id} href={`/u/${p.id}`}>
+                                                <Avatar className="inline-block border-2 border-white ring-2 ring-gray-100 w-8 h-8 md:w-10 md:h-10 cursor-pointer hover:ring-orange-300 transition-all">
+                                                    <AvatarImage src={p.avatarUrl} />
+                                                    <AvatarFallback className="bg-gray-100 text-gray-600 text-xs md:text-sm">{p.fullName?.[0]}</AvatarFallback>
+                                                </Avatar>
+                                            </a>
                                         ))}
                                         {allParticipants.length > 5 && (
-                                            <div className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-white bg-gray-100 text-xs font-medium text-gray-600 ring-2 ring-gray-100 z-10">
+                                            <div className="flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-white bg-gray-100 text-[10px] md:text-xs font-medium text-gray-600 ring-2 ring-gray-100 z-10">
                                                 +{allParticipants.length - 5}
                                             </div>
                                         )}
                                     </div>
-                                    <Button variant="outline" className="w-full rounded-full" onClick={() => setIsParticipantsModalOpen(true)}>
+                                    <Button variant="outline" className="w-full rounded-full h-8 md:h-10 text-xs md:text-sm" onClick={() => setIsParticipantsModalOpen(true)}>
                                         Lihat Semua
                                     </Button>
                                 </div>
@@ -358,12 +409,7 @@ export default function EventDetail() {
                                 {/* Header Section */}
                                 <div>
 
-                                    {/* Event Title */}
-                                    <div className="mb-6 md:mb-8">
-                                        <h1 className="text-2xl md:text-5xl font-black text-gray-900 mb-3 md:mb-4 leading-tight tracking-tight">
-                                            {event.title}
-                                        </h1>
-                                    </div>
+
 
                                     {/* Info Card (Light Themed) */}
                                     <div className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-8 shadow-xl ring-1 ring-black/5 mb-6 md:mb-8">

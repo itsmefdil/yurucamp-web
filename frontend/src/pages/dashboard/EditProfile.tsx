@@ -12,6 +12,7 @@ import { Input } from '../../components/ui/input';
 import { Avatar, AvatarImage, AvatarFallback } from '../../components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card';
 import { Label } from '../../components/ui/label';
+import RegionSelector from '../../components/ui/RegionSelector';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../lib/api';
 import { Navbar } from '../../components/layout/Navbar';
@@ -22,6 +23,7 @@ const profileSchema = z.object({
     email: z.string().email("Email tidak valid"),
     // bio: z.string().optional(),
     avatarUrl: z.string().optional(),
+    regionId: z.string().nullable().optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -39,6 +41,7 @@ export default function EditProfile() {
             fullName: '',
             email: '',
             avatarUrl: '',
+            regionId: null,
         },
     });
 
@@ -48,6 +51,7 @@ export default function EditProfile() {
                 fullName: user.fullName || '',
                 email: user.email || '',
                 avatarUrl: user.avatarUrl || '',
+                regionId: user.regionId || null,
             });
             setImagePreview(user.avatarUrl || null);
         }
@@ -101,7 +105,8 @@ export default function EditProfile() {
             const response = await api.put('/auth/profile', {
                 fullName: data.fullName,
                 email: data.email,
-                avatarUrl: avatarUrl
+                avatarUrl: avatarUrl,
+                regionId: data.regionId
             });
 
             // Update local user context
@@ -189,6 +194,14 @@ export default function EditProfile() {
                                             <AlertCircle className="w-3 h-3" /> Email tidak dapat diubah
                                         </p>
                                     </div>
+
+                                    <div className="space-y-2">
+                                        <RegionSelector
+                                            label="Region Asal / Komunitas"
+                                            value={form.watch('regionId')}
+                                            onChange={(val) => form.setValue('regionId', val)}
+                                        />
+                                    </div>
                                 </div>
 
                                 <div className="flex gap-3 pt-4">
@@ -215,8 +228,8 @@ export default function EditProfile() {
                         </CardContent>
                     </Card>
                 </div>
-            </main>
+            </main >
             <Footer />
-        </div>
+        </div >
     );
 }

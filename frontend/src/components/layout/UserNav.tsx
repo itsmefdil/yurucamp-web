@@ -9,7 +9,7 @@ import {
     DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { User as UserIcon, Settings, LogOut, ChevronDown, Info, Backpack, Star } from 'lucide-react';
+import { User as UserIcon, Settings, LogOut, ChevronDown, Info, Backpack, Star, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import type { User } from '../../types';
 
@@ -107,18 +107,28 @@ export function UserNav({ user }: UserNavProps) {
                         <span>Dashboard</span>
                     </Link>
                 </DropdownMenuItem>
+                {user.role === 'admin' ? (
+                    <DropdownMenuItem asChild className="cursor-pointer">
+                        <Link to="/admin" className="flex items-center w-full">
+                            <LayoutDashboard className="mr-2 h-4 w-4" />
+                            <span>Dashboard Admin</span>
+                        </Link>
+                    </DropdownMenuItem>
+                ) : (
+                    <DropdownMenuItem asChild className="cursor-pointer">
+                        <Link to="/dashboard/settings" className="flex items-center w-full">
+                            <Settings className="mr-2 h-4 w-4" />
+                            <span>Pengaturan</span>
+                        </Link>
+                    </DropdownMenuItem>
+                )}
                 <DropdownMenuItem asChild>
                     <Link to="/gear-lists" className="cursor-pointer">
                         <Backpack className="mr-2 h-4 w-4" />
                         <span>Gear List</span>
                     </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild className="cursor-pointer">
-                    <Link to="/dashboard/settings" className="flex items-center w-full">
-                        <Settings className="mr-2 h-4 w-4" />
-                        <span>Pengaturan</span>
-                    </Link>
-                </DropdownMenuItem>
+
                 <DropdownMenuItem asChild className="cursor-pointer">
                     <Link to="/about" className="flex items-center w-full">
                         <Info className="mr-2 h-4 w-4" />
