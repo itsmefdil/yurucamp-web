@@ -15,6 +15,15 @@ api.interceptors.request.use(
         const token = localStorage.getItem('token');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
+        } else {
+            // Use Basic Auth for public access if configured
+            const user = import.meta.env.VITE_BASIC_AUTH_USER;
+            const pass = import.meta.env.VITE_BASIC_AUTH_PASSWORD;
+
+            if (user && pass) {
+                const credentials = btoa(`${user}:${pass}`);
+                config.headers.Authorization = `Basic ${credentials}`;
+            }
         }
         return config;
     },

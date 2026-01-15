@@ -11,6 +11,7 @@ import categoriesRouter from './routes/categories';
 import gearRouter from './routes/gear';
 import sitemapRouter from './routes/sitemap';
 import dotenv from 'dotenv';
+import { basicAuth } from './middleware/auth';
 
 dotenv.config();
 
@@ -29,6 +30,8 @@ app.use(cors({
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+app.use(basicAuth);
 
 // Routes
 app.use('/activities', activityRouter);
