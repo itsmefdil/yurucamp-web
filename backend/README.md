@@ -1,70 +1,104 @@
-# Backend Documentation
+# Yurucamp Backend
 
-This `backend` folder contains the separate Express + Drizzle backend for the Yurucamp application, ready for Vercel deployment.
+This `backend` folder contains the Express + Drizzle backend for the Yurucamp application.
+
+## Tech Stack
+
+- **Runtime**: [Bun](https://bun.sh)
+- **Framework**: [Express.js](https://expressjs.com/)
+- **Database**: PostgreSQL
+- **ORM**: [Drizzle ORM](https://orm.drizzle.team/)
+- **Authentication**: Passport.js (Google OAuth/Email) + JWT
+- **Image Storage**: Cloudinary
 
 ## Structure
 
-- `src/app.ts`: Main Express application.
-- `src/db/`: Database configuration (Drizzle) and schema.
-- `src/routes/`: API routes.
-    - `activities.ts`: Activities CRUD.
-    - `campAreas.ts`: Camp Areas CRUD.
-    - `events.ts`: Events CRUD & Participation.
-    - `auth.ts`: Profile management & User context.
-    - `interactions.ts`: Likes & Comments.
-    - `utils.ts`: Helper endpoints (e.g. hero images).
-- `src/middleware/auth.ts`: Middleware to verify Supabase JWT tokens.
-- `api/index.ts`: Entry point for Vercel Serverless Functions.
+- `src/app.ts`: Main Express application configuration.
+- `src/server.ts`: Entry point for local development.
+- `src/db/`: Database configuration and schema definitions.
+- `src/routes/`: API route handlers.
+    - `auth.ts`: Authentication (Google OAuth, Profile).
+    - `events.ts`: Event management.
+    - `activities.ts`: Community activities.
+    - `campAreas.ts`: Camping spot listings.
+    - `gear.ts`: Gear lists and categories.
+    - `interactions.ts`: Comments and likes.
+- `src/middleware/`: Custom middlewares (Auth, etc.).
+- `api/index.ts`: Entry point for Vercel Serverless deployment.
 
 ## Setup
 
-1.  **Install Dependencies** (using Bun as requested):
-    ```bash
-    cd backend
-    bun install
-    ```
+### 1. Install Dependencies
+Using Bun is recommended:
+```bash
+cd backend
+bun install
+```
 
-2.  **Environment Variables**:
-    Create a `.env` file in `backend/` with the following variables (copy from `.env.example`):
-    ```env
-    DATABASE_URL=... (Your Drizzle-compatible Postgres URL)
-    CLOUDINARY_API_SECRET=...
-    SUPABASE_JWT_SECRET=... (Found in Supabase Project Settings > API)
-    # ... other variables from .env.example
-    ```
+### 2. Environment Variables
+Create a `.env` file in `backend/` with the following variables:
+```env
+# Database (PostgreSQL)
+DATABASE_URL="postgres://user:pass@host:port/dbname"
 
-3.  **Run Locally**:
-    ```bash
-    bun run bun:dev
-    # Or simply: bun run dev
-    ```
-    The server will start on port 3333.
+# Authentication (JWT)
+JWT_SECRET="your-secure-random-string"
+FRONTEND_URL="http://localhost:5173" # or your production URL
 
-## Deployment to Vercel
+# OAuth (Google)
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+
+# Image Storage (Cloudinary)
+CLOUDINARY_CLOUD_NAME="your-cloud-name"
+CLOUDINARY_API_KEY="your-api-key"
+CLOUDINARY_API_SECRET="your-api-secret"
+```
+
+### 3. Database Migration
+Sync your database schema with Drizzle:
+```bash
+# Generate migrations
+bun run generate
+
+# Push schema changes directly (for quick dev)
+bun run push
+# OR apply migrations formally
+bun run migrate
+```
+
+### 4. Run Locally
+Start the development server:
+```bash
+bun run dev
+```
+The server will start on port `3333` (or process.env.PORT).
+
+## Deployment (Vercel)
+
+This project is configured for deployment on Vercel as Serverless Functions.
 
 1.  Push the changes to your repository.
 2.  Import the project in Vercel.
-3.  **Important**: If deploying as a monorepo (alongside Next.js):
-    - Create a **new project** in Vercel.
-    - Set the **Root Directory** to `backend`.
-    - Vercel should automatically detect the configuration.
-4.  Set the Environment Variables in Vercel for this new project.
+3.  **Monorepo Setup**:
+    - Select `backend` as the **Root Directory**.
+    - Vercel should auto-detect the settings.
+    - **Build Command**: `tsc` (or leave default if configured).
+    - **Output Directory**: `dist` (or `.` if serving directly from api/index.ts).
+4.  Add all Environment Variables in Vercel.
 
-## Authentication (Google OAuth)
+## Authentication Flow
 
-Authentication is handled via Supabase Auth.
-1.  **Frontend**: User logs in via Google (Supabase SDK).
-2.  **Frontend**: Gets the `access_token` (JWT).
-3.  **Frontend**: Sends requests to Backend with `Authorization: Bearer <token>`.
-4.  **Backend**: Verifies the token using `SUPABASE_JWT_SECRET`.
+1.  **Login**: User clicks "Login with Google".
+2.  **Redirect**: Frontend redirects to `API_URL/auth/google`.
+3.  **Callback**: Google redirects back to `API_URL/auth/google/callback`.
+4.  **Token Generation**: Backend validates profile, creates/updates user in DB, generates a JWT.
+5.  **Final Redirect**: Backend redirects to `FRONTEND_URL/auth/callback?token=JWT`.
+6.  **Session**: Frontend stores the JWT and sends it in the `Authorization: Bearer <token>` header for subsequent requests.
 
-This ensures that Google OAuth users (and Email/Password users) are correctly authenticated in the backend.
+## Scripts
 
-## API Endpoints
-
-- `GET /activities`, `POST /activities`, etc.
-- `GET /camp-areas`, `POST /camp-areas`, etc.
-- `GET /events`, `POST /events`, `POST /events/:id/join`, etc.
-- `GET /auth/me`, `PUT /auth/profile`
-- `GET /interactions/video/:id`, `POST /interactions/like`, `POST /interactions/comment`
-- `GET /utils/hero-images`
+- `bun run dev`: Start dev server with hot reload.
+- `bun run build`: Build TypeScript to JavaScript.
+- `bun run push`: Push schema changes to DB (Drizzle).
+- `bun run seed`: Seed database with initial data.
