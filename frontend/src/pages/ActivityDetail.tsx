@@ -161,15 +161,27 @@ export default function ActivityDetail() {
         setShowDeleteDialog(false);
     };
 
-    const handleShare = () => {
+    const handleShare = async () => {
+        if (!activity) return;
+        const shareData = {
+            title: activity.title,
+            text: `Lihat aktifitas ${activity.title} di Yurucamp!`,
+            url: window.location.href,
+        };
+
         if (navigator.share) {
-            navigator.share({
-                title: activity?.title,
-                url: window.location.href,
-            });
+            try {
+                await navigator.share(shareData);
+            } catch (err) {
+                console.error('Error sharing:', err);
+            }
         } else {
-            navigator.clipboard.writeText(window.location.href);
-            toast.success('Link disalin ke clipboard!');
+            try {
+                await navigator.clipboard.writeText(window.location.href);
+                toast.success('Link berhasil disalin!');
+            } catch (err) {
+                toast.error('Gagal menyalin link');
+            }
         }
     };
 
@@ -298,6 +310,14 @@ export default function ActivityDetail() {
                         </div>
 
                         <div className="absolute top-6 right-6 z-20 flex gap-2">
+                            <Button
+                                variant="secondary"
+                                size="icon"
+                                className="rounded-full bg-white hover:bg-gray-100 text-gray-900 shadow-lg border-none transition-all hover:scale-105"
+                                onClick={handleShare}
+                            >
+                                <Share2 className="h-5 w-5" />
+                            </Button>
                             {isOwner && (
                                 <>
                                     <Button variant="secondary" size="icon" className="rounded-full bg-white hover:bg-gray-100 text-gray-900 shadow-lg border-none transition-all hover:scale-105" onClick={() => setIsEditOpen(true)}>

@@ -5,7 +5,7 @@ import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
-import { ArrowLeft, Edit, Trash2, MapPin, Calendar, Users, UserPlus, UserMinus, Info, Ticket, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, MapPin, Calendar, Users, UserPlus, UserMinus, Info, Ticket, CheckCircle, Share2 } from 'lucide-react';
 import api from '../lib/api';
 import type { Event } from '../types';
 import { useAuth } from '../contexts/AuthContext';
@@ -123,6 +123,30 @@ export default function EventDetail() {
         }
     };
 
+    const handleShare = async () => {
+        if (!event) return;
+        const shareData = {
+            title: event.title,
+            text: `Yuk ikut event ${event.title} di Yurucamp!`,
+            url: window.location.href,
+        };
+
+        if (navigator.share) {
+            try {
+                await navigator.share(shareData);
+            } catch (err) {
+                console.error('Error sharing:', err);
+            }
+        } else {
+            try {
+                await navigator.clipboard.writeText(window.location.href);
+                toast.success('Link berhasil disalin!');
+            } catch (err) {
+                toast.error('Gagal menyalin link');
+            }
+        }
+    };
+
     if (isLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -168,29 +192,40 @@ export default function EventDetail() {
                                 </Link>
                             </Button>
 
-                            {isOrganizer && (
-                                <div className="flex gap-2">
-                                    <Button
-                                        variant="secondary"
-                                        size="icon"
-                                        className="rounded-full bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 shadow-sm transition-all hover:scale-105"
-                                        asChild
-                                    >
-                                        <Link to={`/e/${id}/edit`}>
-                                            <Edit className="h-5 w-5" />
-                                        </Link>
-                                    </Button>
-                                    <Button
-                                        variant="destructive"
-                                        size="icon"
-                                        className="rounded-full shadow-lg"
-                                        onClick={handleDeleteEvent}
-                                        disabled={deleteEventMutation.isPending}
-                                    >
-                                        <Trash2 className="h-5 w-5" />
-                                    </Button>
-                                </div>
-                            )}
+                            <div className="flex gap-2">
+                                <Button
+                                    variant="secondary"
+                                    size="icon"
+                                    className="rounded-full bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 shadow-sm transition-all hover:scale-105"
+                                    onClick={handleShare}
+                                >
+                                    <Share2 className="h-5 w-5" />
+                                </Button>
+
+                                {isOrganizer && (
+                                    <>
+                                        <Button
+                                            variant="secondary"
+                                            size="icon"
+                                            className="rounded-full bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 shadow-sm transition-all hover:scale-105"
+                                            asChild
+                                        >
+                                            <Link to={`/e/${id}/edit`}>
+                                                <Edit className="h-5 w-5" />
+                                            </Link>
+                                        </Button>
+                                        <Button
+                                            variant="destructive"
+                                            size="icon"
+                                            className="rounded-full shadow-lg"
+                                            onClick={handleDeleteEvent}
+                                            disabled={deleteEventMutation.isPending}
+                                        >
+                                            <Trash2 className="h-5 w-5" />
+                                        </Button>
+                                    </>
+                                )}
+                            </div>
                         </div>
 
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -527,61 +562,65 @@ export default function EventDetail() {
                 />
 
                 {/* Mobile Floating Action Bar */}
-                {!isOrganizer && !isPast && (
-                    <div className="fixed bottom-20 left-4 right-4 z-40 lg:hidden mobile-fab-enter">
-                        {!isJoined ? (
-                            <Button
-                                className="w-full rounded-2xl bg-orange-600 hover:bg-orange-700 text-white font-bold py-6 text-lg shadow-2xl hover:shadow-orange-200 border-2 border-white/20 ring-4 ring-black/5"
-                                onClick={handleJoinEvent}
-                                disabled={joinEventMutation.isPending}
-                            >
-                                <UserPlus className="mr-2 h-5 w-5" />
-                                {joinEventMutation.isPending ? 'Mendaftar...' : 'Daftar Sekarang'}
-                            </Button>
-                        ) : (
-                            <div className="flex gap-2">
-                                <div className="flex-1 bg-emerald-500 text-white p-3 rounded-2xl text-center text-sm font-bold shadow-xl border-2 border-white/20 ring-4 ring-black/5 flex items-center justify-center gap-2">
-                                    <span>🎉 Terdaftar</span>
-                                </div>
+                {
+                    !isOrganizer && !isPast && (
+                        <div className="fixed bottom-20 left-4 right-4 z-40 lg:hidden mobile-fab-enter">
+                            {!isJoined ? (
                                 <Button
-                                    variant="destructive"
-                                    className="aspect-square h-auto rounded-2xl shadow-xl border-2 border-white/20 ring-4 ring-black/5"
-                                    onClick={handleLeaveEvent}
-                                    disabled={leaveEventMutation.isPending}
+                                    className="w-full rounded-2xl bg-orange-600 hover:bg-orange-700 text-white font-bold py-6 text-lg shadow-2xl hover:shadow-orange-200 border-2 border-white/20 ring-4 ring-black/5"
+                                    onClick={handleJoinEvent}
+                                    disabled={joinEventMutation.isPending}
                                 >
-                                    <UserMinus className="h-5 w-5" />
+                                    <UserPlus className="mr-2 h-5 w-5" />
+                                    {joinEventMutation.isPending ? 'Mendaftar...' : 'Daftar Sekarang'}
                                 </Button>
-                            </div>
-                        )}
-                    </div>
-                )}
+                            ) : (
+                                <div className="flex gap-2">
+                                    <div className="flex-1 bg-emerald-500 text-white p-3 rounded-2xl text-center text-sm font-bold shadow-xl border-2 border-white/20 ring-4 ring-black/5 flex items-center justify-center gap-2">
+                                        <span>🎉 Terdaftar</span>
+                                    </div>
+                                    <Button
+                                        variant="destructive"
+                                        className="aspect-square h-auto rounded-2xl shadow-xl border-2 border-white/20 ring-4 ring-black/5"
+                                        onClick={handleLeaveEvent}
+                                        disabled={leaveEventMutation.isPending}
+                                    >
+                                        <UserMinus className="h-5 w-5" />
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
+                    )
+                }
 
                 {/* Lightbox */}
-                {isLightboxOpen && event.imageUrl && (
-                    <div
-                        className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
-                        onClick={() => setIsLightboxOpen(false)}
-                    >
-                        <div className="relative max-w-7xl max-h-[90vh] w-full flex items-center justify-center">
-                            <img
-                                src={event.imageUrl}
-                                alt={event.title}
-                                className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
-                                onClick={(e) => e.stopPropagation()}
-                            />
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="absolute top-4 right-4 text-white hover:bg-white/20 rounded-full"
-                                onClick={() => setIsLightboxOpen(false)}
-                            >
-                                <span className="sr-only">Close</span>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
-                            </Button>
+                {
+                    isLightboxOpen && event.imageUrl && (
+                        <div
+                            className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+                            onClick={() => setIsLightboxOpen(false)}
+                        >
+                            <div className="relative max-w-7xl max-h-[90vh] w-full flex items-center justify-center">
+                                <img
+                                    src={event.imageUrl}
+                                    alt={event.title}
+                                    className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+                                    onClick={(e) => e.stopPropagation()}
+                                />
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="absolute top-4 right-4 text-white hover:bg-white/20 rounded-full"
+                                    onClick={() => setIsLightboxOpen(false)}
+                                >
+                                    <span className="sr-only">Close</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                                </Button>
+                            </div>
                         </div>
-                    </div>
-                )}
-            </div>
-        </div>
+                    )
+                }
+            </div >
+        </div >
     );
 }
