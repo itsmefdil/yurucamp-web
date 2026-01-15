@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import { db } from '../db';
-import { events, eventParticipants, users } from '../db/schema';
+import { events, eventParticipants, users, regions } from '../db/schema';
 import { authenticate } from '../middleware/auth';
 import { uploadImage, deleteImage, getPublicIdFromUrl } from '../lib/cloudinary';
 import { eq, and, desc, sql } from 'drizzle-orm';
@@ -13,7 +13,15 @@ const upload = multer({ storage: multer.memoryStorage() });
 // GET all events
 router.get('/', async (req: Request, res: Response) => {
     try {
-        const result = await db.select().from(events).orderBy(desc(events.createdAt));
+        const { regionId } = req.query;
+        let query = db.select().from(events);
+
+        if (regionId) {
+            // @ts-ignore
+            query.where(eq(events.regionId, regionId));
+        }
+
+        const result = await query.orderBy(desc(events.createdAt));
         res.json(result);
     } catch (error) {
         console.error(error);
@@ -91,6 +99,7 @@ router.get('/:id', async (req: Request, res: Response) => {
             price: events.price,
             maxParticipants: events.maxParticipants,
             organizerId: events.organizerId,
+            regionId: events.regionId,
             createdAt: events.createdAt,
             updatedAt: events.updatedAt,
             organizer: {
@@ -99,10 +108,17 @@ router.get('/:id', async (req: Request, res: Response) => {
                 avatarUrl: users.avatarUrl,
                 level: users.level,
                 exp: users.exp,
+            },
+            region: {
+                id: regions.id,
+                name: regions.name,
+                slug: regions.slug,
+                imageUrl: regions.imageUrl,
             }
         })
             .from(events)
             .leftJoin(users, eq(events.organizerId, users.id))
+            .leftJoin(regions, eq(events.regionId, regions.id))
             .where(eq(events.id, id))
             .limit(1);
 
@@ -139,7 +155,7 @@ router.post('/', authenticate, upload.single('image'), async (req: Request, res:
         const user = req.user;
         const userId = user.sub || user.id;
 
-        const { title, description, location, date_start, date_end, price, max_participants, imageUrl } = req.body;
+        const { title, description, location, date_start, date_end, price, max_participants, imageUrl, regionId } = req.body;
         const imageFile = req.file;
 
         let image_url = imageUrl || null; // Accept imageUrl from JSON body (client-side upload)
@@ -156,6 +172,7 @@ router.post('/', authenticate, upload.single('image'), async (req: Request, res:
             price: price || '0',
             maxParticipants: max_participants ? parseInt(max_participants) : null,
             imageUrl: image_url,
+            regionId: regionId || null,
             organizerId: userId,
         }).returning();
 
@@ -174,7 +191,7 @@ router.put('/:id', authenticate, upload.single('image'), async (req: Request, re
         const user = req.user;
         const userId = user.sub || user.id;
 
-        const { title, description, location, date_start, date_end, price, max_participants, imageUrl } = req.body;
+        const { title, description, location, date_start, date_end, price, max_participants, imageUrl, regionId } = req.body;
         const imageFile = req.file;
 
         // Verify ownership
@@ -216,6 +233,7 @@ router.put('/:id', authenticate, upload.single('image'), async (req: Request, re
             price: price || '0',
             maxParticipants: max_participants ? parseInt(max_participants) : null,
             imageUrl: image_url,
+            regionId: regionId ?? existingEvent[0].regionId,
         }).where(eq(events.id, id)).returning();
 
         res.json(updatedEvent[0]);

@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import { db } from '../db';
-import { activities, users } from '../db/schema';
+import { activities, users, regions } from '../db/schema';
 import { authenticate } from '../middleware/auth';
 import { deleteImage, getPublicIdFromUrl } from '../lib/cloudinary';
 import { eq, and, desc } from 'drizzle-orm';
@@ -15,7 +15,9 @@ router.get('/', async (req: Request, res: Response) => {
     try {
         const { getLevelName } = await import('../utils/exp');
 
-        const result = await db.select({
+        const { regionId } = req.query;
+
+        let query = db.select({
             id: activities.id,
             title: activities.title,
             description: activities.description,
@@ -25,6 +27,7 @@ router.get('/', async (req: Request, res: Response) => {
             imageUrl: activities.imageUrl,
             additionalImages: activities.additionalImages,
             userId: activities.userId,
+            regionId: activities.regionId,
             createdAt: activities.createdAt,
             user: {
                 id: users.id,
@@ -32,11 +35,23 @@ router.get('/', async (req: Request, res: Response) => {
                 avatarUrl: users.avatarUrl,
                 level: users.level,
                 exp: users.exp,
+            },
+            region: {
+                id: regions.id,
+                name: regions.name,
+                slug: regions.slug,
             }
         })
             .from(activities)
             .leftJoin(users, eq(activities.userId, users.id))
-            .orderBy(desc(activities.createdAt));
+            .leftJoin(regions, eq(activities.regionId, regions.id));
+
+        if (regionId) {
+            // @ts-ignore
+            query.where(eq(activities.regionId, regionId));
+        }
+
+        const result = await query.orderBy(desc(activities.createdAt));
 
         // Add levelName to each user
         const enrichedResult = result.map(activity => ({
@@ -111,7 +126,7 @@ router.post('/', authenticate, upload.none(), async (req: Request, res: Response
         const user = req.user;
         const userId = user.sub || user.id;
 
-        const { title, description, categoryId, date, location, imageUrl, additionalImages } = req.body;
+        const { title, description, categoryId, date, location, imageUrl, additionalImages, regionId } = req.body;
 
         const newActivity = await db.insert(activities).values({
             title,
@@ -122,6 +137,7 @@ router.post('/', authenticate, upload.none(), async (req: Request, res: Response
             imageUrl: imageUrl || null,
             additionalImages: additionalImages || [],
             userId: userId,
+            regionId: regionId || null,
         }).returning();
 
         // Award EXP for posting activity
@@ -142,7 +158,7 @@ router.put('/:id', authenticate, upload.none(), async (req: Request, res: Respon
         const user = req.user;
         const userId = user.sub || user.id;
 
-        const { title, description, categoryId, date, location, keptImages, additionalImages, imageUrl } = req.body;
+        const { title, description, categoryId, date, location, keptImages, additionalImages, imageUrl, regionId } = req.body;
 
         // Verify ownership
         const existingActivity = await db.select().from(activities).where(eq(activities.id, id)).limit(1);
@@ -209,6 +225,7 @@ router.put('/:id', authenticate, upload.none(), async (req: Request, res: Respon
             location,
             imageUrl: imageUrl || existingActivity[0].imageUrl, // Use new URL or fallback (though client should send current if no change)
             additionalImages: allAdditionalImages,
+            regionId: regionId ?? existingActivity[0].regionId,
         }).where(eq(activities.id, id)).returning();
 
         res.json(updatedActivity[0]);

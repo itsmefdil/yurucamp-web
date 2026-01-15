@@ -95,7 +95,7 @@ router.get('/google/callback',
         const token = jwt.sign({
             sub: user.id,
             email: user.email,
-            role: 'authenticated'
+            role: user.role // Use actual role from DB
         }, secret, { expiresIn: '7d' });
 
         // Redirect to frontend with token (e.g., via query param or cookie)
@@ -137,7 +137,7 @@ router.put('/profile', authenticate, upload.single('avatar'), async (req: Reques
     try {
         const user = req.user;
         const userId = user.sub;
-        const { fullName, email, bio, phone, avatarUrl: bodyAvatarUrl } = req.body;
+        const { fullName, email, bio, phone, avatarUrl: bodyAvatarUrl, regionId } = req.body;
         const avatarFile = req.file;
 
         const currentUser = await db.select().from(users).where(eq(users.id, userId)).limit(1);
@@ -172,6 +172,7 @@ router.put('/profile', authenticate, upload.single('avatar'), async (req: Reques
             email,
             bio,
             phone,
+            regionId: regionId || null,
             updatedAt: new Date().toISOString(),
         };
 
