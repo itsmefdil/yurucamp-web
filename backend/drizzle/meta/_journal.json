@@ -50,6 +50,13 @@
       "when": 1768447834040,
       "tag": "0006_groovy_mystique",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1768452149859,
+      "tag": "0007_hot_demogoblin",
+      "breakpoints": true
     }
   ]
 }

@@ -4,7 +4,7 @@ import { db } from '../db';
 import { events, eventParticipants, users } from '../db/schema';
 import { authenticate } from '../middleware/auth';
 import { uploadImage, deleteImage, getPublicIdFromUrl } from '../lib/cloudinary';
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, and, desc, sql } from 'drizzle-orm';
 import { awardExp } from '../utils/exp';
 
 const router = Router();
@@ -110,13 +110,14 @@ router.get('/:id', async (req: Request, res: Response) => {
             res.status(404).json({ error: 'Event not found' });
             return
         }
-        // Fetch participants
+        // Fetch participants with seat count
         const participantsList = await db.select({
             id: users.id,
             fullName: users.fullName,
             avatarUrl: users.avatarUrl,
             level: users.level,
             exp: users.exp,
+            seatCount: eventParticipants.seatCount,
         })
             .from(eventParticipants)
             .innerJoin(users, eq(eventParticipants.userId, users.id))
@@ -272,6 +273,13 @@ router.post('/:id/join', authenticate, async (req: Request, res: Response) => {
         const { id } = req.params;
         const user = req.user;
         const userId = user.sub || user.id;
+        const { seatCount = 1 } = req.body;
+        const seats = parseInt(seatCount);
+
+        if (seats < 1) {
+            res.status(400).json({ error: "Jumlah seat minimal 1" });
+            return;
+        }
 
         // Check if already joined
         const existing = await db.select().from(eventParticipants)
@@ -283,9 +291,35 @@ router.post('/:id/join', authenticate, async (req: Request, res: Response) => {
             return;
         }
 
+        // Check capacity
+        const event = await db.select().from(events).where(eq(events.id, id)).limit(1);
+        if (event.length === 0) {
+            res.status(404).json({ error: "Event not found" });
+            return;
+        }
+
+        if (event[0].maxParticipants) {
+            const currentStats = await db.select({
+                total: sql<number>`sum(${eventParticipants.seatCount})`
+            })
+                .from(eventParticipants)
+                .where(eq(eventParticipants.eventId, id));
+
+            const currentTotal = Number(currentStats[0]?.total || 0);
+
+            if (currentTotal + seats > event[0].maxParticipants) {
+                res.status(400).json({
+                    error: "Not enough seats",
+                    message: `Sisa kuota tidak cukup. Tersisa: ${event[0].maxParticipants - currentTotal}`
+                });
+                return;
+            }
+        }
+
         await db.insert(eventParticipants).values({
             eventId: id,
             userId: userId,
+            seatCount: seats,
         });
 
         // Award EXP for joining event

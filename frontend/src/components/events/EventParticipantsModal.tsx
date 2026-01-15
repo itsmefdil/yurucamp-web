@@ -11,6 +11,7 @@ interface Participant {
     level?: number;
     levelName?: string;
     exp?: number;
+    seatCount?: number;
 }
 
 interface EventParticipantsModalProps {
@@ -57,7 +58,14 @@ export function EventParticipantsModal({ open, onOpenChange, participants, title
                                         </div>
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <h4 className="font-semibold text-sm truncate">{participant.fullName}</h4>
+                                        <div className="flex items-center justify-between gap-2">
+                                            <h4 className="font-semibold text-sm truncate">{participant.fullName}</h4>
+                                            {participant.seatCount && participant.seatCount > 1 && (
+                                                <Badge variant="secondary" className="text-[10px] h-5 px-1.5 bg-orange-50 text-orange-700 border border-orange-100">
+                                                    {participant.seatCount} Tiket
+                                                </Badge>
+                                            )}
+                                        </div>
                                         <div className="flex items-center gap-2 text-xs text-gray-500">
                                             <Trophy className="w-3 h-3 text-yellow-500" />
                                             <span>{participant.levelName || 'Camper Pemula'}</span>

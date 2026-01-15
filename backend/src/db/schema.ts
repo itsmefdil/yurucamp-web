@@ -79,6 +79,7 @@ export const eventParticipants = pgTable('event_participants', {
     id: uuid('id').defaultRandom().primaryKey().notNull(),
     eventId: text('event_id').references(() => events.id, { onDelete: 'cascade' }).notNull(),
     userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(), // References users
+    seatCount: integer('seat_count').default(1).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 });
 

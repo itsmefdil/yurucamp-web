@@ -1,0 +1,1 @@
+ALTER TABLE "event_participants" ADD COLUMN "seat_count" integer DEFAULT 1 NOT NULL;

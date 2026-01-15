@@ -5,7 +5,7 @@ import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
-import { ArrowLeft, Edit, Trash2, MapPin, Calendar, Users, UserPlus, UserMinus, Info, Ticket, CheckCircle, Share2 } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, MapPin, Calendar, Users, UserPlus, UserMinus, Info, Ticket, CheckCircle, Share2, Plus, Minus } from 'lucide-react';
 import api from '../lib/api';
 import type { Event } from '../types';
 import { useAuth } from '../contexts/AuthContext';
@@ -23,6 +23,7 @@ export default function EventDetail() {
     const queryClient = useQueryClient();
     const [isParticipantsModalOpen, setIsParticipantsModalOpen] = useState(false);
     const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+    const [seatCount, setSeatCount] = useState(1);
 
     // Fetch event detail
     const { data: event, isLoading } = useQuery({
@@ -56,6 +57,10 @@ export default function EventDetail() {
         return parts;
     }, [event]);
 
+    const totalParticipantsCount = useMemo(() => {
+        return allParticipants.reduce((acc, p) => acc + (p.seatCount || 1), 0);
+    }, [allParticipants]);
+
     // Delete event mutation
     const deleteEventMutation = useMutation({
         mutationFn: async () => {
@@ -73,7 +78,7 @@ export default function EventDetail() {
     // Join event mutation
     const joinEventMutation = useMutation({
         mutationFn: async () => {
-            await api.post(`/events/${id}/join`);
+            await api.post(`/events/${id}/join`, { seatCount });
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['event', id] });
@@ -322,7 +327,7 @@ export default function EventDetail() {
                                     <div className="flex items-center justify-between mb-4">
                                         <h3 className="font-bold text-gray-700">Peserta</h3>
                                         <span className="text-sm font-medium px-2.5 py-1 rounded-full bg-blue-50 text-blue-600">
-                                            {allParticipants.length} / {event.maxParticipants}
+                                            {totalParticipantsCount} / {event.maxParticipants}
                                         </span>
                                     </div>
                                     <div className="flex -space-x-2 overflow-hidden mb-4 p-1 pl-2">
@@ -390,12 +395,12 @@ export default function EventDetail() {
                                                 <div className="min-w-0">
                                                     <p className="text-gray-500 text-xs md:text-sm mb-0.5 md:mb-1 font-medium">Kapasitas</p>
                                                     <p className="font-bold text-sm md:text-lg text-gray-900">
-                                                        {allParticipants.length} {(event.maxParticipants ?? 0) > 0 ? `/ ${event.maxParticipants}` : ''} Peserta
+                                                        {totalParticipantsCount} {(event.maxParticipants ?? 0) > 0 ? `/ ${event.maxParticipants}` : ''} Peserta
                                                     </p>
                                                     {(event.maxParticipants ?? 0) === 0 ? (
                                                         <span className="text-orange-600 text-xs md:text-sm">Tidak Dibatasi</span>
-                                                    ) : ((event.maxParticipants ?? 0) - allParticipants.length) > 0 ? (
-                                                        <span className="text-emerald-600 text-xs md:text-sm">Sisa {(event.maxParticipants ?? 0) - allParticipants.length} slot</span>
+                                                    ) : ((event.maxParticipants ?? 0) - totalParticipantsCount) > 0 ? (
+                                                        <span className="text-emerald-600 text-xs md:text-sm">Sisa {(event.maxParticipants ?? 0) - totalParticipantsCount} slot</span>
                                                     ) : (
                                                         <span className="text-red-500 text-xs md:text-sm">Penuh</span>
                                                     )}
@@ -442,19 +447,49 @@ export default function EventDetail() {
                                                             </Button>
                                                         )}
                                                     </div>
-                                                ) : (!isPast && ((event.maxParticipants ?? 0) === 0 || allParticipants.length < (event.maxParticipants ?? 0))) ? (
-                                                    <Button
-                                                        size="lg"
-                                                        className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold h-14 text-lg rounded-xl shadow-lg shadow-orange-500/20 transform transition-all active:scale-[0.98]"
-                                                        onClick={handleJoinEvent}
-                                                        disabled={joinEventMutation.isPending}
-                                                    >
-                                                        <UserPlus className="h-5 w-5 mr-2" />
-                                                        {joinEventMutation.isPending ? 'Memproses...' : 'Daftar Sekarang'}
-                                                    </Button>
+                                                ) : (!isPast && ((event.maxParticipants ?? 0) === 0 || totalParticipantsCount < (event.maxParticipants ?? 0))) ? (
+                                                    <div className="space-y-4">
+                                                        {/* Seat Selector */}
+                                                        <div className="flex items-center justify-between bg-orange-50 p-3 rounded-xl border border-orange-100">
+                                                            <span className="text-sm font-bold text-gray-700">Jumlah Orang</span>
+                                                            <div className="flex items-center gap-3 bg-white rounded-lg p-1 shadow-sm border border-orange-100">
+                                                                <Button
+                                                                    type="button"
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="h-8 w-8 rounded-md text-orange-600 hover:bg-orange-50 hover:text-orange-700"
+                                                                    onClick={() => setSeatCount(Math.max(1, seatCount - 1))}
+                                                                    disabled={seatCount <= 1}
+                                                                >
+                                                                    <Minus className="h-4 w-4" />
+                                                                </Button>
+                                                                <span className="font-bold text-gray-800 w-4 text-center">{seatCount}</span>
+                                                                <Button
+                                                                    type="button"
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="h-8 w-8 rounded-md text-orange-600 hover:bg-orange-50 hover:text-orange-700"
+                                                                    onClick={() => setSeatCount(seatCount + 1)}
+                                                                    disabled={event.maxParticipants ? (seatCount >= (event.maxParticipants - totalParticipantsCount)) : false}
+                                                                >
+                                                                    <Plus className="h-4 w-4" />
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+
+                                                        <Button
+                                                            size="lg"
+                                                            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold h-14 text-lg rounded-xl shadow-lg shadow-orange-500/20 transform transition-all active:scale-[0.98]"
+                                                            onClick={handleJoinEvent}
+                                                            disabled={joinEventMutation.isPending}
+                                                        >
+                                                            <UserPlus className="h-5 w-5 mr-2" />
+                                                            {joinEventMutation.isPending ? 'Memproses...' : `Daftar (${seatCount} Orang)`}
+                                                        </Button>
+                                                    </div>
                                                 ) : (
                                                     <Button size="lg" disabled className="w-full bg-gray-200 text-gray-500 h-14 rounded-xl font-bold">
-                                                        {isPast ? 'Event Selesai' : ((event.maxParticipants ?? 0) > 0 && allParticipants.length >= (event.maxParticipants ?? 0) ? 'Kuota Penuh' : 'Pendaftaran Tutup')}
+                                                        {isPast ? 'Event Selesai' : ((event.maxParticipants ?? 0) > 0 && totalParticipantsCount >= (event.maxParticipants ?? 0) ? 'Kuota Penuh' : 'Pendaftaran Tutup')}
                                                     </Button>
                                                 )
                                             ) : (
@@ -566,14 +601,44 @@ export default function EventDetail() {
                     !isOrganizer && !isPast && (
                         <div className="fixed bottom-20 left-4 right-4 z-40 lg:hidden mobile-fab-enter">
                             {!isJoined ? (
-                                <Button
-                                    className="w-full rounded-2xl bg-orange-600 hover:bg-orange-700 text-white font-bold py-6 text-lg shadow-2xl hover:shadow-orange-200 border-2 border-white/20 ring-4 ring-black/5"
-                                    onClick={handleJoinEvent}
-                                    disabled={joinEventMutation.isPending}
-                                >
-                                    <UserPlus className="mr-2 h-5 w-5" />
-                                    {joinEventMutation.isPending ? 'Mendaftar...' : 'Daftar Sekarang'}
-                                </Button>
+                                <div className="space-y-2">
+                                    {(!isPast && ((event.maxParticipants ?? 0) === 0 || totalParticipantsCount < (event.maxParticipants ?? 0))) && (
+                                        <div className="bg-white/95 backdrop-blur-md p-2 rounded-xl border border-orange-100 shadow-xl flex items-center justify-between ring-1 ring-black/5 animate-in fade-in slide-in-from-bottom-2">
+                                            <span className="text-xs font-bold text-gray-700 pl-2">Jumlah</span>
+                                            <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-0.5 shadow-inner">
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-7 w-7 rounded-md text-orange-600 hover:bg-white hover:shadow-sm transition-all"
+                                                    onClick={() => setSeatCount(Math.max(1, seatCount - 1))}
+                                                    disabled={seatCount <= 1}
+                                                >
+                                                    <Minus className="h-3.5 w-3.5" />
+                                                </Button>
+                                                <span className="font-bold text-gray-800 w-5 text-center text-sm tabular-nums">{seatCount}</span>
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-7 w-7 rounded-md text-orange-600 hover:bg-white hover:shadow-sm transition-all"
+                                                    onClick={() => setSeatCount(seatCount + 1)}
+                                                    disabled={event.maxParticipants ? (seatCount >= (event.maxParticipants - totalParticipantsCount)) : false}
+                                                >
+                                                    <Plus className="h-3.5 w-3.5" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    )}
+                                    <Button
+                                        className="w-full rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold h-12 text-sm shadow-xl hover:shadow-orange-200 border border-white/20 ring-2 ring-black/5"
+                                        onClick={handleJoinEvent}
+                                        disabled={joinEventMutation.isPending}
+                                    >
+                                        <UserPlus className="mr-2 h-4 w-4" />
+                                        {joinEventMutation.isPending ? 'Proses...' : `Daftar (${seatCount} Orang)`}
+                                    </Button>
+                                </div>
                             ) : (
                                 <div className="flex gap-2">
                                     <div className="flex-1 bg-emerald-500 text-white p-3 rounded-2xl text-center text-sm font-bold shadow-xl border-2 border-white/20 ring-4 ring-black/5 flex items-center justify-center gap-2">

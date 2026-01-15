@@ -218,6 +218,16 @@ export default function About() {
                             </Button>
                         </div>
                     </div>
+
+                    {/* Legal Disclaimer */}
+                    <div className="border-t border-gray-100 pt-12 pb-8 text-center space-y-4">
+                        <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest">Legal Disclaimer</h3>
+                        <p className="text-sm text-gray-500 max-w-3xl mx-auto leading-relaxed">
+                            YuruCamp ID Community is an unofficial non-profit fan project created for educational and community purposes only.
+                            This website is not affiliated with, endorsed, sponsored, or specifically approved by Afro, Houbunsha, C-Station, or the official Yuru Camp committee.
+                            All original characters, names, and related indicia are trademarks and copyright of their respective owners.
+                        </p>
+                    </div>
                 </div>
             </main>
             <Footer />
