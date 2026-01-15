@@ -15,6 +15,7 @@ import { EventParticipantsModal } from '../components/events/EventParticipantsMo
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/avatar';
 import ReactMarkdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
+import useDocumentTitle from '../hooks/useDocumentTitle';
 
 export default function EventDetail() {
     const { id } = useParams<{ id: string }>();
@@ -34,6 +35,9 @@ export default function EventDetail() {
         },
         enabled: !!id,
     });
+
+    // Set page title
+    useDocumentTitle(event ? `${event.title} | Event Yurucamp` : 'Detail Event | Yurucamp Indonesia');
 
     // Check availability
     const isJoined = useMemo(() => {

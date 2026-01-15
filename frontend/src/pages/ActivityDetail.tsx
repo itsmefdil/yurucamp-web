@@ -27,6 +27,7 @@ import {
 import { EditActivityModal } from '../components/activities/EditActivityModal';
 import ReactMarkdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
+import useDocumentTitle from '../hooks/useDocumentTitle';
 
 export default function ActivityDetail() {
     const { id } = useParams<{ id: string }>();

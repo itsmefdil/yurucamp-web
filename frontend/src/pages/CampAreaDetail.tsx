@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogTitle } from '../components/ui/dialog';
 import ReactMarkdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
+import useDocumentTitle from '../hooks/useDocumentTitle';
 
 
 export default function CampAreaDetail() {
@@ -32,6 +33,11 @@ export default function CampAreaDetail() {
         },
         enabled: !!id,
     });
+
+    // Set page title
+    useDocumentTitle(campArea ? `${campArea.name} | Camp Area Yurucamp` : 'Detail Camp Area | Yurucamp Indonesia');
+
+    // Delete camp area mutation
 
     // Delete camp area mutation
     const deleteCampAreaMutation = useMutation({
