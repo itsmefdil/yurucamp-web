@@ -43,6 +43,13 @@
       "when": 1768335330268,
       "tag": "0005_milky_black_widow",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1768447834040,
+      "tag": "0006_groovy_mystique",
+      "breakpoints": true
     }
   ]
 }

@@ -52,33 +52,33 @@ function App() {
                         <Route path="/auth/callback" element={<AuthCallback />} />
                         <Route path="/about" element={<About />} />
                         <Route path="/activities" element={<Activities />} />
-                        <Route path="/activities/:id" element={<ActivityDetail />} />
+                        <Route path="/a/:id" element={<ActivityDetail />} />
                         <Route path="/camp-areas" element={<CampAreas />} />
-                        <Route path="/camp-areas/add" element={
+                        <Route path="/c/add" element={
                             <ProtectedRoute>
                                 <AddCampArea />
                             </ProtectedRoute>
                         } />
-                        <Route path="/camp-areas/:id" element={<CampAreaDetail />} />
-                        <Route path="/camp-areas/:id/edit" element={
+                        <Route path="/c/:id" element={<CampAreaDetail />} />
+                        <Route path="/c/:id/edit" element={
                             <ProtectedRoute>
                                 <EditCampArea />
                             </ProtectedRoute>
                         } />
                         <Route path="/events" element={<Events />} />
-                        <Route path="/events/add" element={
+                        <Route path="/e/add" element={
                             <ProtectedRoute>
                                 <AddEvent />
                             </ProtectedRoute>
                         } />
-                        <Route path="/events/:id" element={<EventDetail />} />
-                        <Route path="/events/:id/edit" element={
+                        <Route path="/e/:id" element={<EventDetail />} />
+                        <Route path="/e/:id/edit" element={
                             <ProtectedRoute>
                                 <EditEvent />
                             </ProtectedRoute>
                         } />
                         <Route path="/watch" element={<Watch />} />
-                        <Route path="/watch/:seasonId" element={<WatchSeason />} />
+                        <Route path="/w/:seasonId" element={<WatchSeason />} />
 
                         {/* Protected Routes */}
                         <Route
@@ -123,7 +123,7 @@ function App() {
                         />
 
                         {/* Public Gear List View (for shared lists) */}
-                        <Route path="/gear-lists/:id" element={<GearListDetail />} />
+                        <Route path="/g/:id" element={<GearListDetail />} />
                     </Routes>
                     <Toaster position="top-right" />
                     <BottomNav />

@@ -146,7 +146,7 @@ export default function GearListDashboard() {
                         {lists.map((list) => (
                             <Link
                                 key={list.id}
-                                to={`/gear-lists/${list.id}`}
+                                to={`/g/${list.id}`}
                                 className="group block bg-white rounded-2xl border border-border p-5 hover:shadow-lg hover:border-primary/30 transition-all relative"
                             >
                                 <div className="absolute top-4 right-4 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">

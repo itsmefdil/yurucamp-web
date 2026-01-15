@@ -173,7 +173,7 @@ export default function CampAreaDetail() {
                                         className="rounded-full bg-white hover:bg-gray-100 text-gray-900 shadow-lg border-none transition-all hover:scale-105"
                                         asChild
                                     >
-                                        <Link to={`/camp-areas/${id}/edit`}>
+                                        <Link to={`/c/${id}/edit`}>
                                             <Edit className="h-5 w-5" />
                                         </Link>
                                     </Button>

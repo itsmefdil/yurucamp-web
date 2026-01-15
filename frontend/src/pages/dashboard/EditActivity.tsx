@@ -200,7 +200,7 @@ export default function EditActivity() {
             });
 
             toast.success("Aktifitas berhasil diperbarui!");
-            navigate(`/activities/${id}`);
+            navigate(`/a/${id}`);
         } catch (error) {
             console.error(error);
             toast.error("Gagal memperbarui aktifitas");
@@ -424,7 +424,7 @@ export default function EditActivity() {
                                     <Button
                                         type="button"
                                         variant="outline"
-                                        onClick={() => navigate(`/activities/${id}`)}
+                                        onClick={() => navigate(`/a/${id}`)}
                                         disabled={isSubmitting}
                                     >
                                         Batal

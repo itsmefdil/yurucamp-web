@@ -125,7 +125,7 @@ export default function Watch() {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
                                 {category.items.map((item) => (
-                                    <Link to={`/watch/${item.id}`} key={item.id} className="group flex flex-col gap-3">
+                                    <Link to={`/w/${item.id}`} key={item.id} className="group flex flex-col gap-3">
                                         <div className="relative aspect-video rounded-xl md:rounded-2xl overflow-hidden bg-white shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-2 md:border-4 border-white ring-1 ring-gray-100">
                                             <img
                                                 src={item.image}

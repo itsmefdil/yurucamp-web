@@ -89,7 +89,7 @@ export default function Activities() {
                 ) : activities && activities.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {activities.map((activity) => (
-                            <Link key={activity.id} to={`/activities/${activity.id}`} className="block group">
+                            <Link key={activity.id} to={`/a/${activity.id}`} className="block group">
                                 <Card className="overflow-hidden bg-white group-hover:-translate-y-2 transition-all duration-300 h-full flex flex-col border-2 border-transparent hover:border-orange-200 shadow-lg hover:shadow-2xl rounded-3xl">
                                     <div className="relative aspect-video bg-orange-50 overflow-hidden m-2 rounded-2xl">
                                         <img

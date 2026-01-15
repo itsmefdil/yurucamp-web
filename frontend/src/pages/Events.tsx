@@ -82,7 +82,7 @@ export default function Events() {
                                         className="rounded-2xl bg-orange-500 text-white hover:bg-orange-600 font-bold text-base px-8 shadow-lg hover:shadow-orange-200 hover:scale-105 transition-all"
                                         asChild
                                     >
-                                        <Link to="/events/add">
+                                        <Link to="/e/add">
                                             <Plus className="mr-2 h-5 w-5" /> Buat Event Baru
                                         </Link>
                                     </Button>
@@ -166,7 +166,7 @@ export default function Events() {
                             const isPast = new Date(event.dateStart) < new Date();
 
                             return (
-                                <Link key={event.id} to={`/events/${event.id}`} className="block group">
+                                <Link key={event.id} to={`/e/${event.id}`} className="block group">
                                     <Card className={`overflow-hidden bg-white group-hover:-translate-y-2 transition-all duration-300 h-full flex flex-col border-2 border-transparent hover:border-orange-200 shadow-lg hover:shadow-2xl rounded-3xl ${isPast ? 'opacity-80' : ''}`}>
                                         <div className="relative aspect-video bg-orange-50 overflow-hidden m-2 rounded-2xl">
                                             <img

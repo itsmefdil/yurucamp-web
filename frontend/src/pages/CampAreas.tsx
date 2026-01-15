@@ -59,7 +59,7 @@ export default function CampAreas() {
                                         className="rounded-2xl bg-orange-500 text-white hover:bg-orange-600 font-bold text-base px-8 shadow-lg hover:shadow-orange-200 hover:scale-105 transition-all"
                                         asChild
                                     >
-                                        <Link to="/camp-areas/add">
+                                        <Link to="/c/add">
                                             <Plus className="mr-2 h-5 w-5" /> Tambah Camp Area
                                         </Link>
                                     </Button>
@@ -99,7 +99,7 @@ export default function CampAreas() {
                 ) : campAreas && campAreas.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {campAreas.map((campArea) => (
-                            <Link key={campArea.id} to={`/camp-areas/${campArea.id}`} className="block group">
+                            <Link key={campArea.id} to={`/c/${campArea.id}`} className="block group">
                                 <Card className="overflow-hidden bg-white group-hover:-translate-y-1 transition-all duration-300 h-full flex flex-col border border-gray-100 hover:border-orange-200 shadow-md hover:shadow-xl rounded-2xl">
                                     {/* Image Section */}
                                     <div className="relative aspect-[4/3] bg-orange-50 overflow-hidden">

@@ -176,7 +176,7 @@ export function DashboardView({ profile, activities, joinedEvents, createdEvents
 
                                                 <div className="flex gap-2 pt-2 border-t border-gray-100">
                                                     <Button variant="outline" size="sm" className="flex-1 rounded-full text-xs font-bold hover:bg-orange-50 hover:text-orange-600 hover:border-orange-200" asChild>
-                                                        <Link to={`/activities/${activity.id}`}>Lihat</Link>
+                                                        <Link to={`/a/${activity.id}`}>Lihat</Link>
                                                     </Button>
                                                     <Button size="sm" className="flex-1 rounded-full text-xs font-bold gap-1 bg-gray-900 hover:bg-orange-600 transition-colors" asChild>
                                                         <Link to={`/dashboard/edit-activity/${activity.id}`}>
@@ -258,7 +258,7 @@ export function DashboardView({ profile, activities, joinedEvents, createdEvents
 
                                                 <div className="flex gap-2 pt-2 border-t border-gray-100">
                                                     <Button variant="outline" size="sm" className="flex-1 rounded-full text-xs font-bold hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200" asChild>
-                                                        <Link to={`/events/${event.id}`}>Lihat Detail</Link>
+                                                        <Link to={`/e/${event.id}`}>Lihat Detail</Link>
                                                     </Button>
                                                 </div>
                                             </CardContent>
@@ -335,7 +335,7 @@ export function DashboardView({ profile, activities, joinedEvents, createdEvents
 
                                                 <div className="flex gap-2 pt-2 border-t border-gray-100">
                                                     <Button variant="outline" size="sm" className="flex-1 rounded-full text-xs font-bold hover:bg-green-50 hover:text-green-600 hover:border-green-200" asChild>
-                                                        <Link to={`/events/${event.id}`}>Lihat</Link>
+                                                        <Link to={`/e/${event.id}`}>Lihat</Link>
                                                     </Button>
                                                     <Button
                                                         size="sm"

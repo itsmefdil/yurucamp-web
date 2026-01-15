@@ -172,7 +172,7 @@ export default function EditEvent() {
             queryClient.invalidateQueries({ queryKey: ['event', event.id] });
             queryClient.invalidateQueries({ queryKey: ['events'] });
 
-            navigate(`/events/${event.id}`);
+            navigate(`/e/${event.id}`);
 
         } catch (error) {
             console.error(error);
@@ -226,7 +226,7 @@ export default function EditEvent() {
                         <h2 className="text-2xl font-bold mb-4">Akses Ditolak</h2>
                         <p className="text-gray-600 mb-6">Anda bukan penyelenggara event ini.</p>
                         <Button asChild>
-                            <Link to={`/events/${id}`}>Kembali ke Detail Event</Link>
+                            <Link to={`/e/${id}`}>Kembali ke Detail Event</Link>
                         </Button>
                     </div>
                 </main>
@@ -252,7 +252,7 @@ export default function EditEvent() {
                     <div className="max-w-4xl mx-auto mb-8">
                         <div className="flex items-center gap-4 mb-6">
                             <Button variant="outline" size="icon" className="rounded-full bg-white border-gray-200 hover:bg-gray-50" asChild>
-                                <Link to={`/events/${id}`}>
+                                <Link to={`/e/${id}`}>
                                     <ArrowLeft className="h-5 w-5" />
                                 </Link>
                             </Button>
@@ -548,7 +548,7 @@ export default function EditEvent() {
                                     className="w-full h-12 rounded-xl"
                                     asChild
                                 >
-                                    <Link to={`/events/${id}`}>
+                                    <Link to={`/e/${id}`}>
                                         Batal
                                     </Link>
                                 </Button>

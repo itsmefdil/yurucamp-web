@@ -241,7 +241,7 @@ export default function EditCampArea() {
             queryClient.invalidateQueries({ queryKey: ['camp-area', campArea.id] });
             queryClient.invalidateQueries({ queryKey: ['camp-areas'] });
 
-            navigate(`/camp-areas/${campArea.id}`);
+            navigate(`/c/${campArea.id}`);
 
         } catch (error) {
             console.error(error);
@@ -273,7 +273,7 @@ export default function EditCampArea() {
                         asChild
                         className="mb-4 hover:bg-orange-50 hover:text-orange-600 -ml-4"
                     >
-                        <Link to={`/camp-areas/${id}`}>
+                        <Link to={`/c/${id}`}>
                             <ArrowLeft className="h-4 w-4 mr-2" />
                             Kembali
                         </Link>
@@ -464,7 +464,7 @@ export default function EditCampArea() {
                                         className="h-12 px-6 rounded-xl text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                                         asChild
                                     >
-                                        <Link to={`/camp-areas/${id}`}>Batal</Link>
+                                        <Link to={`/c/${id}`}>Batal</Link>
                                     </Button>
                                     <Button
                                         type="submit"

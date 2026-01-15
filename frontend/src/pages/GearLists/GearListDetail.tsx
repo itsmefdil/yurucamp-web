@@ -234,7 +234,7 @@ export default function GearListDetail() {
     if (!list) return null;
 
     const isOwner = list.isOwner !== false; // Default to true if not specified (for backwards compat)
-    const shareUrl = `${window.location.origin}/gear-lists/${id}`;
+    const shareUrl = `${window.location.origin}/g/${id}`;
 
     const handleCopyLink = () => {
         navigator.clipboard.writeText(shareUrl);

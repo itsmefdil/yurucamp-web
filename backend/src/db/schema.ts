@@ -1,5 +1,6 @@
 import { pgTable, uuid, text, timestamp, date, numeric, integer, primaryKey, boolean } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
+import { generateId } from '../utils/id';
 
 // Renamed from profiles to users
 export const users = pgTable('users', {
@@ -16,7 +17,7 @@ export const users = pgTable('users', {
 });
 
 export const activities = pgTable('activities', {
-    id: uuid('id').defaultRandom().primaryKey().notNull(),
+    id: text('id').primaryKey().$defaultFn(() => generateId()),
     title: text('title').notNull(),
     description: text('description'),
     categoryId: uuid('category_id').references(() => categories.id),
@@ -29,7 +30,7 @@ export const activities = pgTable('activities', {
 });
 
 export const campAreas = pgTable('camp_areas', {
-    id: uuid('id').defaultRandom().primaryKey().notNull(),
+    id: text('id').primaryKey().$defaultFn(() => generateId()),
     name: text('name').notNull(),
     description: text('description'),
     location: text('location'),
@@ -43,7 +44,7 @@ export const campAreas = pgTable('camp_areas', {
 
 export const activityLikes = pgTable('activity_likes', {
     id: uuid('id').defaultRandom().primaryKey().notNull(),
-    activityId: uuid('activity_id').references(() => activities.id, { onDelete: 'cascade' }),
+    activityId: text('activity_id').references(() => activities.id, { onDelete: 'cascade' }),
     videoId: text('video_id'),
     userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(), // References users
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow(),
@@ -51,7 +52,7 @@ export const activityLikes = pgTable('activity_likes', {
 
 export const activityComments = pgTable('activity_comments', {
     id: uuid('id').defaultRandom().primaryKey().notNull(),
-    activityId: uuid('activity_id').references(() => activities.id, { onDelete: 'cascade' }),
+    activityId: text('activity_id').references(() => activities.id, { onDelete: 'cascade' }),
     videoId: text('video_id'),
     userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(), // References users
     content: text('content').notNull(),
@@ -60,7 +61,7 @@ export const activityComments = pgTable('activity_comments', {
 });
 
 export const events = pgTable('events', {
-    id: uuid('id').defaultRandom().primaryKey().notNull(),
+    id: text('id').primaryKey().$defaultFn(() => generateId()),
     title: text('title').notNull(),
     description: text('description'),
     location: text('location').notNull(),
@@ -76,7 +77,7 @@ export const events = pgTable('events', {
 
 export const eventParticipants = pgTable('event_participants', {
     id: uuid('id').defaultRandom().primaryKey().notNull(),
-    eventId: uuid('event_id').references(() => events.id, { onDelete: 'cascade' }).notNull(),
+    eventId: text('event_id').references(() => events.id, { onDelete: 'cascade' }).notNull(),
     userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(), // References users
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 });
@@ -88,7 +89,7 @@ export const categories = pgTable('categories', {
 });
 
 export const gearLists = pgTable('gear_lists', {
-    id: uuid('id').defaultRandom().primaryKey().notNull(),
+    id: text('id').primaryKey().$defaultFn(() => generateId()),
     userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
     name: text('name').notNull(),
     description: text('description'),
@@ -99,7 +100,7 @@ export const gearLists = pgTable('gear_lists', {
 
 export const gearCategories = pgTable('gear_categories', {
     id: uuid('id').defaultRandom().primaryKey().notNull(),
-    gearListId: uuid('gear_list_id').references(() => gearLists.id, { onDelete: 'cascade' }).notNull(),
+    gearListId: text('gear_list_id').references(() => gearLists.id, { onDelete: 'cascade' }).notNull(),
     name: text('name').notNull(),
     sortOrder: integer('sort_order').default(0).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
