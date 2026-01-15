@@ -40,6 +40,15 @@ export default function Home() {
         },
     });
 
+    // Fetch regions for community preview
+    const { data: regions } = useQuery({
+        queryKey: ['regions'],
+        queryFn: async () => {
+            const response = await api.get('/regions');
+            return response.data as { id: string; name: string; slug: string; imageUrl?: string; coverUrl?: string; memberCount: number }[];
+        },
+    });
+
     // Fetch hero images
     const { data: heroImages = ['/yc-bg.png', '/yc-bg.png', '/yc-bg.png', '/yc-bg.png', '/yc-bg.png'] } = useQuery({
         queryKey: ['heroImages'],
@@ -230,7 +239,16 @@ export default function Home() {
                                             )}
                                         </CardHeader>
                                         <CardFooter className="p-5 pt-0 mt-auto">
-                                            <div className="flex items-center gap-3 w-full bg-orange-50/50 p-2 rounded-2xl">
+                                            <div
+                                                onClick={(e) => {
+                                                    if (activity.user?.id) {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        window.location.href = `/u/${activity.user.id}`;
+                                                    }
+                                                }}
+                                                className="flex items-center gap-3 w-full bg-orange-50/50 p-2 rounded-2xl cursor-pointer hover:bg-orange-100/70 transition-colors"
+                                            >
                                                 <div className="relative">
                                                     <Avatar className="h-8 w-8 border-2 border-white shadow-sm">
                                                         <AvatarImage src={activity.user?.avatarUrl || undefined} />
@@ -267,6 +285,63 @@ export default function Home() {
                             )}
                         </div>
                     </section>
+
+                    {/* Komunitas Preview */}
+                    {regions && regions.length > 0 && (
+                        <section className="py-12 md:py-24 container mx-auto px-4">
+                            <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 md:mb-12">
+                                <h2 className="text-2xl md:text-4xl font-black text-gray-800 tracking-tight text-center md:text-left">
+                                    Komunitas <span className="text-orange-500">Populer</span>
+                                </h2>
+                                <Button variant="ghost" className="text-base md:text-lg hover:bg-orange-100 text-orange-600 font-bold rounded-full px-6 w-full md:w-auto" asChild>
+                                    <Link to="/komunitas" className="flex items-center justify-center gap-2">
+                                        Lihat Semua <ArrowRight className="h-5 w-5" />
+                                    </Link>
+                                </Button>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                {regions.slice(0, 4).map((region) => (
+                                    <Link key={region.id} to={`/r/${region.slug}`} className="block group">
+                                        <Card className="overflow-hidden border-none shadow-md hover:shadow-xl transition-all duration-300 group-hover:-translate-y-1 rounded-2xl">
+                                            {/* Cover */}
+                                            <div className="relative h-24 bg-gradient-to-r from-orange-400 to-amber-500">
+                                                {region.coverUrl && (
+                                                    <img
+                                                        src={region.coverUrl}
+                                                        alt="Cover"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                )}
+                                                {/* Profile Image */}
+                                                <div className="absolute -bottom-6 left-4 w-12 h-12 rounded-xl border-3 border-white bg-white shadow-lg overflow-hidden">
+                                                    {region.imageUrl ? (
+                                                        <img
+                                                            src={region.imageUrl}
+                                                            alt={region.name}
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    ) : (
+                                                        <div className="w-full h-full bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center text-white text-lg font-bold">
+                                                            {region.name[0]}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <CardContent className="pt-10 pb-4 px-4">
+                                                <h3 className="font-bold text-gray-900 group-hover:text-orange-500 transition-colors truncate">
+                                                    {region.name}
+                                                </h3>
+                                                <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
+                                                    <Users className="w-3.5 h-3.5" />
+                                                    <span>{region.memberCount} anggota</span>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    </Link>
+                                ))}
+                            </div>
+                        </section>
+                    )}
 
                     {/* Camp Area Preview */}
                     <section className="py-12 md:py-32 px-4 bg-orange-50/30">
