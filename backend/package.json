@@ -9,6 +9,7 @@
         "build": "tsc",
         "generate": "drizzle-kit generate",
         "migrate": "drizzle-kit migrate",
+        "push": "drizzle-kit push",
         "seed": "tsx src/scripts/seed.ts",
         "delete-data": "tsx src/scripts/delete-data.ts",
         "bun:dev": "bun --watch src/server.ts",

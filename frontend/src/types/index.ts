@@ -66,7 +66,7 @@ export interface Event {
     maxParticipants?: number;
     organizerId?: string;
     organizer?: User;
-    participants?: User[];
+    participants?: (User & { seatCount?: number })[];
     createdAt: string;
     updatedAt: string;
 }
