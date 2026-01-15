@@ -1,6 +1,5 @@
-import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Mountain, Tent, Calendar, PlayCircle } from 'lucide-react';
+import { Home, Mountain, Tent, Calendar, Users } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 const navItems = [
@@ -8,7 +7,7 @@ const navItems = [
     { path: '/activities', icon: Mountain, label: 'Aktifitas' },
     { path: '/camp-areas', icon: Tent, label: 'Camp' },
     { path: '/events', icon: Calendar, label: 'Acara' },
-    { path: '/watch', icon: PlayCircle, label: 'Nonton' },
+    { path: '/community', icon: Users, label: 'Komunitas' },
 ];
 
 export function BottomNav() {
