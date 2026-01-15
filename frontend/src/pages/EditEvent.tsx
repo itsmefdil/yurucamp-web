@@ -5,11 +5,12 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { ImagePlus, MapPin, Calendar, Loader2, X, Users, DollarSign, ArrowLeft, FileText, Tent, Mountain, TreePine } from 'lucide-react';
+import { ImagePlus, MapPin, Calendar, Loader2, X, Users, DollarSign, ArrowLeft, FileText, Tent, Mountain, TreePine, Globe } from 'lucide-react';
 
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
+import RegionSelector from '../components/ui/RegionSelector';
 import { Dialog, DialogContent } from '../components/ui/dialog';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
@@ -25,6 +26,7 @@ const eventSchema = z.object({
     dateEnd: z.string().optional(),
     price: z.string().optional(),
     maxParticipants: z.string().optional(),
+    regionId: z.string().optional(),
 });
 
 type EventFormValues = z.infer<typeof eventSchema>;
@@ -61,6 +63,7 @@ export default function EditEvent() {
             dateEnd: '',
             price: '',
             maxParticipants: '',
+            regionId: '',
         },
     });
 
@@ -87,6 +90,7 @@ export default function EditEvent() {
                 dateEnd: event.dateEnd ? formatDateTimeLocal(event.dateEnd) : '',
                 price: event.price || '',
                 maxParticipants: event.maxParticipants?.toString() || '',
+                regionId: event.regionId || '',
             });
         }
     }, [event, form]);
@@ -162,6 +166,7 @@ export default function EditEvent() {
                 date_end: data.dateEnd ? toISOWithTimezone(data.dateEnd) : null,
                 price: data.price || '0',
                 max_participants: data.maxParticipants || null,
+                regionId: data.regionId || null,
                 imageUrl: imageUrl
             };
 
@@ -431,6 +436,27 @@ export default function EditEvent() {
                                 </div>
                             </div>
 
+                            {/* Region Selector */}
+                            <div className="bg-white rounded-2xl shadow-sm ring-1 ring-black/5 overflow-hidden">
+                                <div className="p-6">
+                                    <div className="mt-1">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            <Globe className="w-4 h-4 inline-block mr-1 text-blue-500" />
+                                            Region Komunitas <span className="text-gray-400 text-xs">(Opsional)</span>
+                                        </label>
+                                        <RegionSelector
+                                            value={form.watch('regionId')}
+                                            onChange={(val) => form.setValue('regionId', val || '')}
+                                            showLabel={false}
+                                            placeholder="Pilih Region Komunitas (Opsional)"
+                                            className="w-full"
+                                            variant="default"
+                                        />
+                                        <p className="text-xs text-gray-500 mt-1">Acara ini akan muncul di halaman komunitas region tersebut</p>
+                                    </div>
+                                </div>
+                            </div>
+
                             {/* Ticket & Capacity */}
                             <div className="bg-white rounded-2xl shadow-sm ring-1 ring-black/5 overflow-hidden">
                                 <div className="p-6">
@@ -512,8 +538,8 @@ export default function EditEvent() {
                                                     <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full">
                                                         {(() => {
                                                             const price = form.watch('price') || '';
-                                                            return price && parseInt(price) > 0
-                                                                ? `Rp ${parseInt(price).toLocaleString('id-ID')}`
+                                                            return price && parseInt(price as string) > 0
+                                                                ? `Rp ${parseInt(price as string).toLocaleString('id-ID')}`
                                                                 : 'GRATIS';
                                                         })()}
                                                     </span>

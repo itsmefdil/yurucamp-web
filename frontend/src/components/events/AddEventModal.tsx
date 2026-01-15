@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { Image, MapPin, Calendar, Loader2, X, Users, DollarSign } from 'lucide-react';
+import RegionSelector from '../../components/ui/RegionSelector';
 
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -22,6 +23,7 @@ const eventSchema = z.object({
     dateEnd: z.string().optional(),
     price: z.string().optional(),
     maxParticipants: z.string().optional(),
+    regionId: z.string().nullable().optional(),
 });
 
 type EventFormValues = z.infer<typeof eventSchema>;
@@ -50,8 +52,15 @@ export function AddEventModal({ open, onOpenChange }: AddEventModalProps) {
             dateEnd: '',
             price: '',
             maxParticipants: '',
+            regionId: null,
         },
     });
+
+    useEffect(() => {
+        if (open && user?.regionId) {
+            form.setValue('regionId', user.regionId);
+        }
+    }, [open, user, form]);
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -115,7 +124,8 @@ export function AddEventModal({ open, onOpenChange }: AddEventModalProps) {
                 date_end: data.dateEnd || null,
                 price: data.price || '0',
                 max_participants: data.maxParticipants || null,
-                imageUrl: imageUrl
+                imageUrl: imageUrl,
+                regionId: data.regionId
             };
 
             await api.post('/events', payload);
@@ -239,6 +249,13 @@ export function AddEventModal({ open, onOpenChange }: AddEventModalProps) {
 
                     {/* Details */}
                     <div className="mt-2 border-t border-gray-100">
+                        <div className="px-4 py-3">
+                            <RegionSelector
+                                label="Region Event (Opsional)"
+                                value={form.watch('regionId')}
+                                onChange={(val) => form.setValue('regionId', val)}
+                            />
+                        </div>
                         <div className="divide-y divide-gray-100">
                             {/* Location */}
                             <div className="flex items-center px-4 py-3 gap-3">
