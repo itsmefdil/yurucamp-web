@@ -558,7 +558,7 @@ export default function ActivityDetail() {
                                 <CardContent className="p-0 space-y-4">
                                     {otherActivities && otherActivities.length > 0 ? (
                                         otherActivities.map((item) => (
-                                            <Link to={`/activities/${item.id}`} key={item.id} className="flex gap-4 group p-2 hover:bg-gray-50 rounded-xl transition-all duration-300">
+                                            <Link to={`/a/${item.id}`} key={item.id} className="flex gap-4 group p-2 hover:bg-gray-50 rounded-xl transition-all duration-300">
                                                 <div className="relative w-20 h-20 rounded-xl overflow-hidden shrink-0">
                                                     <img
                                                         src={item.imageUrl || "/placeholder.jpg"}

@@ -133,7 +133,7 @@ export default function AddEvent() {
             queryClient.invalidateQueries({ queryKey: ['events'] });
 
             if (response.data?.id) {
-                navigate(`/events/${response.data.id}`);
+                navigate(`/e/${response.data.id}`);
             } else {
                 navigate('/events');
             }

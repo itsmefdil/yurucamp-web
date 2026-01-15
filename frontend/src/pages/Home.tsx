@@ -195,7 +195,7 @@ export default function Home() {
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {activities?.slice(0, 3).map((activity) => (
-                                <Link key={activity.id} to={`/activities/${activity.id}`} className="block group">
+                                <Link key={activity.id} to={`/a/${activity.id}`} className="block group">
                                     <Card className="overflow-hidden bg-white group-hover:-translate-y-2 transition-all duration-300 h-full flex flex-col border-2 border-transparent hover:border-orange-200 shadow-lg hover:shadow-2xl rounded-3xl">
                                         <div className="relative aspect-video bg-orange-50 overflow-hidden m-2 rounded-2xl">
                                             <img
@@ -283,7 +283,7 @@ export default function Home() {
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                                 {campAreas?.slice(0, 3).map((campArea) => (
-                                    <Link key={campArea.id} to={`/camp-areas/${campArea.id}`} className="block group">
+                                    <Link key={campArea.id} to={`/c/${campArea.id}`} className="block group">
                                         <Card className="overflow-hidden bg-white group-hover:-translate-y-1 transition-all duration-300 h-full flex flex-col border border-gray-100 hover:border-orange-200 shadow-md hover:shadow-xl rounded-2xl">
                                             {/* Image Section */}
                                             <div className="relative aspect-[4/3] bg-orange-50 overflow-hidden">
@@ -392,7 +392,7 @@ export default function Home() {
                                 {events?.slice(0, 3).map((event) => {
                                     const isPast = new Date(event.dateStart) < new Date();
                                     return (
-                                        <Link key={event.id} to={`/events/${event.id}`} className="block group">
+                                        <Link key={event.id} to={`/e/${event.id}`} className="block group">
                                             <Card className={`overflow-hidden bg-white group-hover:-translate-y-2 transition-all duration-300 h-full flex flex-col border-2 border-transparent hover:border-orange-200 shadow-lg hover:shadow-2xl rounded-3xl ${isPast ? 'opacity-80' : ''}`}>
                                                 <div className="relative aspect-video bg-orange-50 overflow-hidden m-2 rounded-2xl">
                                                     <img
