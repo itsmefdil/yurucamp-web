@@ -326,39 +326,41 @@ export default function CampAreaDetail() {
                         <div className="lg:col-span-4 space-y-6">
                             {/* Created By Card */}
                             {campArea.user && (
-                                <Card className="border-none shadow-lg bg-white rounded-3xl p-6 ring-1 ring-black/5">
-                                    <CardHeader className="p-0 mb-4">
-                                        <CardTitle className="text-lg font-bold text-gray-700">Dibuat Oleh</CardTitle>
-                                    </CardHeader>
-                                    <CardContent className="p-0">
-                                        <div className="flex items-center gap-4">
-                                            <div className="relative">
-                                                <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-orange-200">
-                                                    {campArea.user.avatarUrl ? (
-                                                        <img
-                                                            src={campArea.user.avatarUrl}
-                                                            alt={campArea.user.fullName || 'User'}
-                                                            className="w-full h-full object-cover"
-                                                        />
-                                                    ) : (
-                                                        <div className="w-full h-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-lg">
-                                                            {(campArea.user.fullName || 'U').charAt(0).toUpperCase()}
-                                                        </div>
-                                                    )}
+                                <Link to={`/u/${campArea.userId}`}>
+                                    <Card className="border-none shadow-lg bg-white rounded-3xl p-6 ring-1 ring-black/5 hover:ring-orange-200 hover:shadow-xl transition-all cursor-pointer">
+                                        <CardHeader className="p-0 mb-4">
+                                            <CardTitle className="text-lg font-bold text-gray-700">Dibuat Oleh</CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="p-0">
+                                            <div className="flex items-center gap-4">
+                                                <div className="relative">
+                                                    <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-orange-200">
+                                                        {campArea.user.avatarUrl ? (
+                                                            <img
+                                                                src={campArea.user.avatarUrl}
+                                                                alt={campArea.user.fullName || 'User'}
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                        ) : (
+                                                            <div className="w-full h-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-lg">
+                                                                {(campArea.user.fullName || 'U').charAt(0).toUpperCase()}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    {/* Level Badge */}
+                                                    <div className="absolute -bottom-1 -right-1 bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-md">
+                                                        Lv.{campArea.user.level || 1}
+                                                    </div>
                                                 </div>
-                                                {/* Level Badge */}
-                                                <div className="absolute -bottom-1 -right-1 bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-md">
-                                                    Lv.{campArea.user.level || 1}
+                                                <div className="flex-1">
+                                                    <p className="font-bold text-gray-900">{campArea.user.fullName || 'Pengguna'}</p>
+                                                    <p className="text-sm text-orange-600 font-medium">{campArea.user.levelName || 'Camper Pemula'}</p>
+                                                    <p className="text-xs text-gray-500 mt-0.5">{campArea.user.exp || 0} EXP</p>
                                                 </div>
                                             </div>
-                                            <div className="flex-1">
-                                                <p className="font-bold text-gray-900">{campArea.user.fullName || 'Pengguna'}</p>
-                                                <p className="text-sm text-orange-600 font-medium">{campArea.user.levelName || 'Camper Pemula'}</p>
-                                                <p className="text-xs text-gray-500 mt-0.5">{campArea.user.exp || 0} EXP</p>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
+                                        </CardContent>
+                                    </Card>
+                                </Link>
                             )}
 
                             {/* Price Card */}
