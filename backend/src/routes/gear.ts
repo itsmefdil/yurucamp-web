@@ -261,6 +261,7 @@ router.delete('/items/:id', authenticate, async (req: Request, res: Response) =>
 });
 
 
+// Reorder items in a category
 router.put('/categories/:categoryId/items/reorder', authenticate, async (req: Request, res: Response) => {
     try {
         const { categoryId } = req.params;
@@ -273,8 +274,6 @@ router.put('/categories/:categoryId/items/reorder', authenticate, async (req: Re
 
         // Use transaction or Promise.all to update all items
         // For simplicity with Drizzle/Postgres here, we'll loop
-        // Ensure all items belong to the category for safety? Ideally yes.
-
         await db.transaction(async (tx) => {
             for (let i = 0; i < itemIds.length; i++) {
                 await tx.update(gearItems)
@@ -287,6 +286,65 @@ router.put('/categories/:categoryId/items/reorder', authenticate, async (req: Re
     } catch (error) {
         console.error("Error reordering items:", error);
         res.status(500).json({ error: 'Failed to reorder items' });
+    }
+});
+
+// Apply template (Batch create categories and items)
+router.post('/:id/apply-template', authenticate, async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { categories } = req.body; // Expects { name: string, items: string[] }[]
+
+        const user = req.user;
+        const userId = user.sub || user.id;
+
+        // Verify ownership
+        const existing = await db.select().from(gearLists).where(eq(gearLists.id, id)).limit(1);
+        if (existing.length === 0) {
+            res.status(404).json({ error: 'Gear list not found' });
+            return;
+        }
+        if (existing[0].userId !== userId) {
+            res.status(403).json({ error: 'Unauthorized' });
+            return;
+        }
+
+        if (!Array.isArray(categories)) {
+            res.status(400).json({ error: 'Categories must be an array' });
+            return;
+        }
+
+        await db.transaction(async (tx) => {
+            // Get current max sort order for categories to append
+            // For simplicity, we just assume new ones go at the end based on current length or just use loop index if empty
+            // But getting current count is safer.
+            const currentCats = await tx.select().from(gearCategories).where(eq(gearCategories.gearListId, id));
+            let startSortOrder = currentCats.length;
+
+            for (const cat of categories) {
+                const newCat = await tx.insert(gearCategories).values({
+                    gearListId: id,
+                    name: cat.name,
+                    sortOrder: startSortOrder++
+                }).returning();
+
+                if (cat.items && Array.isArray(cat.items)) {
+                    for (let i = 0; i < cat.items.length; i++) {
+                        await tx.insert(gearItems).values({
+                            categoryId: newCat[0].id,
+                            name: cat.items[i],
+                            sortOrder: i
+                        });
+                    }
+                }
+            }
+        });
+
+        res.json({ message: 'Template applied successfully' });
+
+    } catch (error) {
+        console.error("Error applying template:", error);
+        res.status(500).json({ error: 'Failed to apply template' });
     }
 });
 
