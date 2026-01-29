@@ -1,21 +1,22 @@
-import React, { useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import React, { useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { Image, MapPin, DollarSign, Loader2, X, Wifi, Car, Coffee, Tent, Info, ArrowLeft } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Image, MapPin, DollarSign, Loader2, X, Wifi, Car, Coffee, Tent, Info, Upload, ArrowLeft } from 'lucide-react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Textarea } from '../components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Navbar } from '../components/layout/Navbar';
-import { Footer } from '../components/layout/Footer';
-import api from '../lib/api';
-import { compressImage } from '../lib/imageCompression';
-
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Textarea } from '../../components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { Navbar } from '../../components/layout/Navbar';
+import { Footer } from '../../components/layout/Footer';
+import api from '../../lib/api';
+import { useAuth } from '../../contexts/AuthContext';
+import { compressImage } from '../../lib/imageCompression';
+import type { CampArea } from '../../types';
 
 const campAreaSchema = z.object({
     name: z.string().min(3, "Nama minimal 3 karakter"),
@@ -40,13 +41,29 @@ const facilityOptions: FacilityOption[] = [
     { id: 'info', label: 'Pusat Info', icon: <Info className="w-4 h-4" /> },
 ];
 
-export default function AddCampArea() {
+const facilityNameToId: Record<string, string> = {
+    'Wifi': 'wifi',
+    'Parkir': 'parking',
+    'Kantin': 'canteen',
+    'Sewa Tenda': 'tent',
+    'Pusat Info': 'info',
+};
+
+export default function EditCampArea() {
+    const { id } = useParams<{ id: string }>();
+    const { user } = useAuth();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
+
+    // State
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+    // Additional images
+    const [existingImages, setExistingImages] = useState<string[]>([]);
     const [additionalFiles, setAdditionalFiles] = useState<File[]>([]);
     const [additionalPreviews, setAdditionalPreviews] = useState<string[]>([]);
+
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [uploadStatus, setUploadStatus] = useState('');
     const [selectedFacilities, setSelectedFacilities] = useState<string[]>([]);
@@ -61,9 +78,67 @@ export default function AddCampArea() {
         },
     });
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Fetch camp area detail
+    const { data: campArea, isLoading } = useQuery({
+        queryKey: ['camp-area', id],
+        queryFn: async () => {
+            const response = await api.get(`/camp-areas/${id}`);
+            return response.data as CampArea;
+        },
+        enabled: !!id,
+    });
+
+    // Populate Data
+    useEffect(() => {
+        if (campArea) {
+            // Permission check
+            if (user?.id !== campArea.userId) {
+                toast.error("Anda tidak memiliki akses untuk mengedit ini");
+                navigate('/camp-areas');
+                return;
+            }
+
+            form.reset({
+                name: campArea.name,
+                description: campArea.description || '',
+                location: campArea.location || '',
+                price: campArea.price || '',
+            });
+
+            setImageFile(null);
+            setImagePreview(null);
+            setExistingImages(campArea.additionalImages || []);
+            setAdditionalFiles([]);
+            setAdditionalPreviews([]);
+
+            // Map facilities to IDs
+            const facilityIds = (campArea.facilities || [])
+                .map(f => facilityNameToId[f])
+                .filter(Boolean);
+            setSelectedFacilities(facilityIds);
+        }
+    }, [campArea, user, navigate, form]);
+
+    const handleCoverChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            if (file.size > 20 * 1024 * 1024) {
+                toast.error("Ukuran file maksimal 20MB");
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                toast.info("File cover cukup besar, akan dioptimasi otomatis.");
+            }
+            setImageFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => setImagePreview(reader.result as string);
+            reader.readAsDataURL(file);
+        }
+        e.target.value = '';
+    };
+
+    const handleAdditionalImagesChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
-        let isFirstFile = !imageFile && !imagePreview;
 
         for (const file of files) {
             if (file.size > 20 * 1024 * 1024) {
@@ -71,49 +146,31 @@ export default function AddCampArea() {
                 continue;
             }
 
-            // Auto compress > 5MB happens in uploadToCloudinary, but we warn here if super huge
             if (file.size > 5 * 1024 * 1024) {
-                toast.info(`File ${file.name} cukup besar, akan dioptimasi otomatis saat upload.`);
+                // Just logging/toast once per batch might be better, but per file is ok
             }
 
-            const reader = new FileReader();
-
-            if (isFirstFile) {
-                setImageFile(file);
-                reader.onloadend = () => setImagePreview(reader.result as string);
+            const totalAdditional = existingImages.length + additionalFiles.length + 1;
+            if (totalAdditional <= 10) {
+                const reader = new FileReader();
+                setAdditionalFiles(prev => [...prev, file]);
+                reader.onloadend = () => setAdditionalPreviews(prev => [...prev, reader.result as string]);
                 reader.readAsDataURL(file);
-                isFirstFile = false;
             } else {
-                const totalAdditional = additionalFiles.length + 1;
-                if (totalAdditional <= 10) {
-                    setAdditionalFiles(prev => [...prev, file]);
-                    reader.onloadend = () => setAdditionalPreviews(prev => [...prev, reader.result as string]);
-                    reader.readAsDataURL(file);
-                } else {
-                    toast.error("Maksimal 10 foto tambahan");
-                    break;
-                }
+                toast.error("Maksimal 10 foto tambahan total");
+                break;
             }
         }
         e.target.value = '';
     };
 
-    const removeImage = (index: number) => {
-        if (index === 0 && imagePreview) {
-            if (additionalFiles.length > 0) {
-                setImageFile(additionalFiles[0]);
-                setImagePreview(additionalPreviews[0]);
-                setAdditionalFiles(prev => prev.slice(1));
-                setAdditionalPreviews(prev => prev.slice(1));
-            } else {
-                setImageFile(null);
-                setImagePreview(null);
-            }
-        } else {
-            const adjustedIndex = imagePreview ? index - 1 : index;
-            setAdditionalFiles(prev => prev.filter((_, i) => i !== adjustedIndex));
-            setAdditionalPreviews(prev => prev.filter((_, i) => i !== adjustedIndex));
-        }
+    const removeExistingImage = (index: number) => {
+        setExistingImages(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const removeNewAdditionalImage = (index: number) => {
+        setAdditionalFiles(prev => prev.filter((_, i) => i !== index));
+        setAdditionalPreviews(prev => prev.filter((_, i) => i !== index));
     };
 
     const toggleFacility = (facilityId: string) => {
@@ -123,8 +180,6 @@ export default function AddCampArea() {
                 : [...prev, facilityId]
         );
     };
-
-    const allPreviews = imagePreview ? [imagePreview, ...additionalPreviews] : additionalPreviews;
 
     const uploadToCloudinary = async (file: File) => {
         const { data: signData } = await api.get('/utils/cloudinary-signature?folder=camp_area');
@@ -148,7 +203,6 @@ export default function AddCampArea() {
         const data = await response.json();
         if (!response.ok) {
             const errorMessage = data.error?.message || "Upload failed";
-            // Translate common Cloudinary errors
             if (errorMessage.includes("File size too large")) {
                 throw new Error("Ukuran file terlalu besar setelah kompresi");
             }
@@ -158,38 +212,36 @@ export default function AddCampArea() {
     };
 
     const onSubmit = async (data: CampAreaFormValues) => {
-        if (!imageFile) {
-            toast.error("Tambahkan minimal 1 foto");
-            return;
-        }
+        if (!campArea) return;
 
         try {
             setIsSubmitting(true);
             setUploadStatus('Menyiapkan upload...');
 
-            // Upload Cover
-            setUploadStatus('Mengupload foto cover...');
-            const coverUrl = await uploadToCloudinary(imageFile);
+            let coverUrl = null;
+            if (imageFile) {
+                setUploadStatus('Mengupload cover baru...');
+                coverUrl = await uploadToCloudinary(imageFile);
+            }
 
-            // Upload Additional Images
-            const additionalUrls: string[] = [];
+            const newAdditionalUrls: string[] = [];
             if (additionalFiles.length > 0) {
                 setUploadStatus(`Mengupload ${additionalFiles.length} foto tambahan...`);
                 const uploadPromises = additionalFiles.map(file => uploadToCloudinary(file));
                 const results = await Promise.all(uploadPromises);
-                additionalUrls.push(...results);
+                newAdditionalUrls.push(...results);
             }
 
-            setUploadStatus('Menyimpan data camp area...');
+            setUploadStatus('Menyimpan perubahan...');
 
-            // Build payload
             const payload = {
                 name: data.name,
                 description: data.description,
                 location: data.location,
                 price: data.price,
                 imageUrl: coverUrl,
-                additionalImages: additionalUrls,
+                keptImages: existingImages,
+                additionalImages: newAdditionalUrls,
                 wifi: selectedFacilities.includes('wifi'),
                 parking: selectedFacilities.includes('parking'),
                 canteen: selectedFacilities.includes('canteen'),
@@ -197,24 +249,35 @@ export default function AddCampArea() {
                 info: selectedFacilities.includes('info'),
             };
 
-            await api.post('/camp-areas', payload, {
+            await api.put(`/camp-areas/${campArea.id}`, payload, {
                 headers: { 'Content-Type': 'application/json' }
             });
 
             setUploadStatus('Selesai!');
-            toast.success("Camp area berhasil dibuat!");
+            toast.success("Camp area berhasil diperbarui!");
+            queryClient.invalidateQueries({ queryKey: ['camp-area', campArea.id] });
             queryClient.invalidateQueries({ queryKey: ['camp-areas'] });
 
-            navigate('/camp-areas');
+            navigate(`/c/${campArea.id}`);
 
         } catch (error) {
             console.error(error);
-            toast.error("Gagal membuat camp area: " + (error instanceof Error ? error.message : "Error unknown"));
+            toast.error("Gagal memperbarui camp area");
         } finally {
             setIsSubmitting(false);
             setUploadStatus('');
         }
     };
+
+    const currentCover = imagePreview || campArea?.imageUrl;
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <Loader2 className="w-10 h-10 animate-spin text-orange-500" />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen flex flex-col bg-gray-50">
@@ -227,7 +290,7 @@ export default function AddCampArea() {
                         asChild
                         className="mb-4 hover:bg-orange-50 hover:text-orange-600 -ml-4"
                     >
-                        <Link to="/camp-areas">
+                        <Link to={`/c/${id}`}>
                             <ArrowLeft className="h-4 w-4 mr-2" />
                             Kembali
                         </Link>
@@ -236,62 +299,97 @@ export default function AddCampArea() {
                     <Card className="border-none shadow-lg bg-white rounded-3xl overflow-hidden">
                         <CardHeader className="border-b bg-white p-6">
                             <CardTitle className="text-2xl font-bold text-gray-800">
-                                Tambah Camp Area
+                                Edit Camp Area
                             </CardTitle>
                         </CardHeader>
 
                         <CardContent className="p-6 md:p-8">
                             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                                {/* Photo Upload */}
+                                {/* Photo Grid */}
                                 <div className="space-y-4">
                                     <label className="block text-sm font-bold text-gray-700">
                                         Foto Camp Area
                                     </label>
 
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                        {/* Upload Button */}
-                                        <label className="relative aspect-square rounded-2xl border-2 border-dashed border-gray-300 hover:border-orange-400 hover:bg-orange-50 transition-all cursor-pointer flex flex-col items-center justify-center gap-2 group">
-                                            <div className="bg-orange-100/50 p-3 rounded-full text-orange-500 group-hover:bg-orange-100 group-hover:scale-110 transition-all">
-                                                <Image className="w-6 h-6" />
-                                            </div>
-                                            <span className="text-xs font-semibold text-gray-500 group-hover:text-orange-600">
-                                                Tambah Foto
-                                            </span>
-                                            <input
-                                                type="file"
-                                                multiple
-                                                accept="image/*"
-                                                className="hidden"
-                                                onChange={handleImageChange}
-                                            />
-                                        </label>
-
-                                        {/* Previews */}
-                                        {allPreviews.map((preview, index) => (
-                                            <div key={index} className="relative aspect-square rounded-2xl overflow-hidden group shadow-sm border border-gray-100">
+                                        {/* Cover Image */}
+                                        <div className="relative aspect-square rounded-2xl overflow-hidden group border-2 border-orange-500 bg-gray-100">
+                                            {currentCover ? (
                                                 <img
-                                                    src={preview}
-                                                    alt={`Preview ${index + 1}`}
+                                                    src={currentCover}
+                                                    alt="Cover"
                                                     className="w-full h-full object-cover"
                                                 />
-                                                {index === 0 && (
-                                                    <span className="absolute top-2 left-2 bg-orange-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm z-10">
-                                                        Cover
-                                                    </span>
-                                                )}
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                                    <Image className="w-8 h-8" />
+                                                </div>
+                                            )}
+                                            <span className="absolute top-2 left-2 bg-orange-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm z-10">
+                                                Cover
+                                            </span>
+
+                                            <label className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer z-20">
+                                                <div className="bg-white/90 p-2 rounded-full shadow-lg text-xs font-bold text-gray-900 flex items-center gap-1.5 hover:scale-105 transition-transform">
+                                                    <Upload className="w-3.5 h-3.5" /> Ganti
+                                                </div>
+                                                <input type="file" className="hidden" accept="image/*" onChange={handleCoverChange} />
+                                            </label>
+                                        </div>
+
+                                        {/* Existing Additional Images */}
+                                        {existingImages.map((src, index) => (
+                                            <div key={`existing-${index}`} className="relative aspect-square rounded-2xl overflow-hidden group shadow-sm border border-gray-100 bg-gray-50">
+                                                <img
+                                                    src={src}
+                                                    alt={`Existing ${index}`}
+                                                    className="w-full h-full object-cover"
+                                                />
                                                 <button
                                                     type="button"
-                                                    onClick={() => removeImage(index)}
+                                                    onClick={() => removeExistingImage(index)}
                                                     className="absolute top-2 right-2 bg-black/50 hover:bg-red-500 text-white p-1.5 rounded-full backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100"
                                                 >
                                                     <X className="w-3 h-3" />
                                                 </button>
                                             </div>
                                         ))}
+
+                                        {/* New Additional Images */}
+                                        {additionalPreviews.map((src, index) => (
+                                            <div key={`new-${index}`} className="relative aspect-square rounded-2xl overflow-hidden group shadow-sm border border-gray-100 bg-gray-50">
+                                                <img
+                                                    src={src}
+                                                    alt={`New ${index}`}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeNewAdditionalImage(index)}
+                                                    className="absolute top-2 right-2 bg-black/50 hover:bg-red-500 text-white p-1.5 rounded-full backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100"
+                                                >
+                                                    <X className="w-3 h-3" />
+                                                </button>
+                                            </div>
+                                        ))}
+
+                                        {/* Add Button */}
+                                        <label className="relative aspect-square rounded-2xl border-2 border-dashed border-gray-300 hover:border-orange-400 hover:bg-orange-50 transition-all cursor-pointer flex flex-col items-center justify-center gap-2 group">
+                                            <div className="bg-orange-100/50 p-3 rounded-full text-orange-500 group-hover:bg-orange-100 group-hover:scale-110 transition-all">
+                                                <Image className="w-6 h-6" />
+                                            </div>
+                                            <span className="text-xs font-semibold text-gray-500 group-hover:text-orange-600 text-center px-2">
+                                                Tambah Foto Lain
+                                            </span>
+                                            <input
+                                                type="file"
+                                                multiple
+                                                accept="image/*"
+                                                className="hidden"
+                                                onChange={handleAdditionalImagesChange}
+                                            />
+                                        </label>
                                     </div>
-                                    {!imageFile && (
-                                        <p className="text-xs text-red-500 font-medium">* Minimal 1 foto (cover)</p>
-                                    )}
                                 </div>
 
                                 {/* Main Info */}
@@ -299,7 +397,7 @@ export default function AddCampArea() {
                                     <div className="grid gap-2">
                                         <label className="font-bold text-gray-700">Nama Area</label>
                                         <Input
-                                            placeholder="Contoh: Ranca Upas Camping Ground"
+                                            placeholder="Nama camp area..."
                                             className="h-12 rounded-xl border-gray-200 focus:border-orange-500 focus:ring-orange-200"
                                             {...form.register('name')}
                                         />
@@ -311,7 +409,7 @@ export default function AddCampArea() {
                                     <div className="grid gap-2">
                                         <label className="font-bold text-gray-700">Deskripsi</label>
                                         <Textarea
-                                            placeholder="Ceritakan tentang suasana, pemandangan, dan hal menarik lainnya..."
+                                            placeholder="Deskripsi camp area..."
                                             className="min-h-[150px] rounded-xl border-gray-200 focus:border-orange-500 focus:ring-orange-200 resize-y"
                                             {...form.register('description')}
                                         />
@@ -327,7 +425,7 @@ export default function AddCampArea() {
                                                 Lokasi
                                             </label>
                                             <Input
-                                                placeholder="Nama Kota/Kabupaten"
+                                                placeholder="Lokasi..."
                                                 className="h-12 rounded-xl border-gray-200 focus:border-orange-500 focus:ring-orange-200"
                                                 {...form.register('location')}
                                             />
@@ -343,7 +441,7 @@ export default function AddCampArea() {
                                             </label>
                                             <Input
                                                 type="number"
-                                                placeholder="Contoh: 50000"
+                                                placeholder="Harga..."
                                                 className="h-12 rounded-xl border-gray-200 focus:border-orange-500 focus:ring-orange-200"
                                                 {...form.register('price')}
                                             />
@@ -383,7 +481,7 @@ export default function AddCampArea() {
                                         className="h-12 px-6 rounded-xl text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                                         asChild
                                     >
-                                        <Link to="/camp-areas">Batal</Link>
+                                        <Link to={`/c/${id}`}>Batal</Link>
                                     </Button>
                                     <Button
                                         type="submit"
@@ -395,7 +493,7 @@ export default function AddCampArea() {
                                                 <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                                                 {uploadStatus || 'Menyimpan...'}
                                             </>
-                                        ) : 'Simpan Camp Area'}
+                                        ) : 'Simpan Perubahan'}
                                     </Button>
                                 </div>
                             </form>

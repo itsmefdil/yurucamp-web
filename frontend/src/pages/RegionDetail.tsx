@@ -366,7 +366,7 @@ export default function RegionDetail() {
                                 className="flex-1 py-3 rounded-xl font-semibold data-[state=active]:bg-orange-500 data-[state=active]:text-white data-[state=inactive]:text-gray-500 data-[state=inactive]:hover:bg-gray-50 transition-all duration-300"
                             >
                                 <MessageSquare className="w-4 h-4 mr-2" />
-                                Aktifitas Terbaru
+                                Aktivitas Terbaru
                             </TabsTrigger>
                             <TabsTrigger
                                 value="events"
@@ -385,7 +385,7 @@ export default function RegionDetail() {
                                         <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm border border-gray-100">
                                             <MessageSquare className="w-10 h-10 text-orange-200" />
                                         </div>
-                                        <h3 className="text-xl font-bold text-gray-900">Belum ada aktifitas</h3>
+                                        <h3 className="text-xl font-bold text-gray-900">Belum ada aktivitas</h3>
                                         <p className="text-gray-500 mt-2 max-w-xs mx-auto">Jadilah member pertama yang membagikan cerita seru di region ini!</p>
                                         {isMember && (
                                             <Button className="mt-6 bg-orange-500 hover:bg-orange-600 rounded-full px-8 shadow-lg shadow-orange-200">

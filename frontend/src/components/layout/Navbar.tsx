@@ -26,7 +26,7 @@ export function Navbar() {
 
                         <Link to="/activities" className="flex items-center gap-2 transition-colors hover:text-primary hover:scale-105 transform">
                             <Mountain className="w-4 h-4" />
-                            Aktifitas
+                            Aktivitas
                         </Link>
 
                         <Link to="/community" className="flex items-center gap-2 transition-colors hover:text-primary hover:scale-105 transform">

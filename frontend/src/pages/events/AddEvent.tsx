@@ -1,22 +1,21 @@
-import { useState, useEffect } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
+import { useNavigate, Link } from 'react-router-dom';
 import { ImagePlus, MapPin, Calendar, Loader2, X, Users, DollarSign, ArrowLeft, FileText, Tent, Mountain, TreePine, Globe } from 'lucide-react';
 
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Textarea } from '../components/ui/textarea';
-import RegionSelector from '../components/ui/RegionSelector';
-import { Dialog, DialogContent } from '../components/ui/dialog';
-import { Navbar } from '../components/layout/Navbar';
-import { Footer } from '../components/layout/Footer';
-import api from '../lib/api';
-import { useAuth } from '../contexts/AuthContext';
-import type { Event } from '../types';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Textarea } from '../../components/ui/textarea';
+import RegionSelector from '../../components/ui/RegionSelector';
+import { Dialog, DialogContent } from '../../components/ui/dialog';
+import { Navbar } from '../../components/layout/Navbar';
+import { Footer } from '../../components/layout/Footer';
+import api from '../../lib/api';
+import { useAuth } from '../../contexts/AuthContext';
 
 const eventSchema = z.object({
     title: z.string().min(3, "Judul minimal 3 karakter"),
@@ -31,27 +30,15 @@ const eventSchema = z.object({
 
 type EventFormValues = z.infer<typeof eventSchema>;
 
-export default function EditEvent() {
-    const { id } = useParams<{ id: string }>();
+export default function AddEvent() {
     const { user } = useAuth();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
-
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [uploadStatus, setUploadStatus] = useState('');
     const [previewImage, setPreviewImage] = useState<string | null>(null);
-
-    // Fetch event data
-    const { data: event, isLoading } = useQuery({
-        queryKey: ['event', id],
-        queryFn: async () => {
-            const response = await api.get(`/events/${id}`);
-            return response.data as Event;
-        },
-        enabled: !!id,
-    });
 
     const form = useForm<EventFormValues>({
         resolver: zodResolver(eventSchema),
@@ -59,41 +46,13 @@ export default function EditEvent() {
             title: '',
             description: '',
             location: '',
-            dateStart: '',
+            dateStart: new Date().toISOString().slice(0, 16),
             dateEnd: '',
             price: '',
             maxParticipants: '',
             regionId: '',
         },
     });
-
-    // Populate form when event loads
-    useEffect(() => {
-        if (event) {
-            // Format for datetime-local input (needs YYYY-MM-DDTHH:mm in LOCAL time)
-            const formatDateTimeLocal = (dateStr: string) => {
-                if (!dateStr) return '';
-                const date = new Date(dateStr);
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                const hours = String(date.getHours()).padStart(2, '0');
-                const minutes = String(date.getMinutes()).padStart(2, '0');
-                return `${year}-${month}-${day}T${hours}:${minutes}`;
-            };
-
-            form.reset({
-                title: event.title,
-                description: event.description || '',
-                location: event.location || '',
-                dateStart: formatDateTimeLocal(event.dateStart),
-                dateEnd: event.dateEnd ? formatDateTimeLocal(event.dateEnd) : '',
-                price: event.price || '',
-                maxParticipants: event.maxParticipants?.toString() || '',
-                regionId: event.regionId || '',
-            });
-        }
-    }, [event, form]);
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -137,24 +96,25 @@ export default function EditEvent() {
     };
 
     const onSubmit = async (data: EventFormValues) => {
-        if (!event) return;
-
         try {
             setIsSubmitting(true);
             setUploadStatus('Menyiapkan upload...');
 
             let imageUrl = null;
             if (imageFile) {
-                setUploadStatus('Mengupload cover baru...');
+                setUploadStatus('Mengupload foto...');
                 imageUrl = await uploadToCloudinary(imageFile);
             }
 
-            setUploadStatus('Menyimpan perubahan...');
+            setUploadStatus('Menyimpan data event...');
 
             // Convert datetime-local to ISO string with timezone
             const toISOWithTimezone = (dateTimeLocal: string) => {
                 if (!dateTimeLocal) return null;
+                // datetime-local returns "YYYY-MM-DDTHH:mm" in local time
+                // Create a Date object from it (interpreted as local time)
                 const date = new Date(dateTimeLocal);
+                // Return ISO string which includes timezone info
                 return date.toISOString();
             };
 
@@ -170,68 +130,38 @@ export default function EditEvent() {
                 imageUrl: imageUrl
             };
 
-            await api.put(`/events/${event.id}`, payload);
+            const response = await api.post('/events', payload);
 
             setUploadStatus('Selesai!');
-            toast.success("Event berhasil diperbarui! 🏕️");
-            queryClient.invalidateQueries({ queryKey: ['event', event.id] });
+            toast.success("Event camping berhasil dibuat! 🏕️");
             queryClient.invalidateQueries({ queryKey: ['events'] });
 
-            navigate(`/e/${event.id}`);
+            if (response.data?.id) {
+                navigate(`/e/${response.data.id}`);
+            } else {
+                navigate('/events');
+            }
 
         } catch (error) {
             console.error(error);
-            toast.error("Gagal memperbarui event: " + (error instanceof Error ? error.message : "Error unknown"));
+            toast.error("Gagal membuat event: " + (error instanceof Error ? error.message : "Error unknown"));
         } finally {
             setIsSubmitting(false);
             setUploadStatus('');
         }
     };
 
-    const currentCover = imagePreview || event?.imageUrl;
-
-    // Loading state
-    if (isLoading) {
-        return (
-            <div className="min-h-screen flex flex-col bg-gray-50">
-                <Navbar />
-                <main className="flex-1 flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
-                </main>
-                <Footer />
-            </div>
-        );
-    }
-
-    // Event not found
-    if (!event) {
+    // Redirect if not logged in
+    if (!user) {
         return (
             <div className="min-h-screen flex flex-col bg-gray-50">
                 <Navbar />
                 <main className="flex-1 flex items-center justify-center">
                     <div className="text-center">
-                        <h2 className="text-2xl font-bold mb-4">Event tidak ditemukan</h2>
+                        <h2 className="text-2xl font-bold mb-4">Login Required</h2>
+                        <p className="text-gray-600 mb-6">Silakan login untuk membuat event.</p>
                         <Button asChild>
-                            <Link to="/events">Kembali ke Events</Link>
-                        </Button>
-                    </div>
-                </main>
-                <Footer />
-            </div>
-        );
-    }
-
-    // Check if user is the organizer
-    if (user?.id !== event.organizerId) {
-        return (
-            <div className="min-h-screen flex flex-col bg-gray-50">
-                <Navbar />
-                <main className="flex-1 flex items-center justify-center">
-                    <div className="text-center">
-                        <h2 className="text-2xl font-bold mb-4">Akses Ditolak</h2>
-                        <p className="text-gray-600 mb-6">Anda bukan penyelenggara event ini.</p>
-                        <Button asChild>
-                            <Link to={`/e/${id}`}>Kembali ke Detail Event</Link>
+                            <Link to="/login">Login</Link>
                         </Button>
                     </div>
                 </main>
@@ -257,18 +187,18 @@ export default function EditEvent() {
                     <div className="max-w-4xl mx-auto mb-8">
                         <div className="flex items-center gap-4 mb-6">
                             <Button variant="outline" size="icon" className="rounded-full bg-white border-gray-200 hover:bg-gray-50" asChild>
-                                <Link to={`/e/${id}`}>
+                                <Link to="/events">
                                     <ArrowLeft className="h-5 w-5" />
                                 </Link>
                             </Button>
                             <div>
                                 <div className="flex items-center gap-2">
                                     <Tent className="w-8 h-8 text-orange-500" />
-                                    <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Edit Event</h1>
+                                    <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Buat Event Camp</h1>
                                 </div>
                                 <p className="text-gray-600 mt-1 flex items-center gap-2">
                                     <Mountain className="w-4 h-4 text-gray-400" />
-                                    Perbarui detail event camping
+                                    Ajak campers lain untuk petualangan baru
                                 </p>
                             </div>
                         </div>
@@ -285,27 +215,25 @@ export default function EditEvent() {
                                         Poster Event
                                     </h2>
 
-                                    {currentCover ? (
+                                    {imagePreview ? (
                                         <div className="relative group">
                                             <div
                                                 className="aspect-[16/9] rounded-xl overflow-hidden cursor-pointer ring-2 ring-orange-500/20"
-                                                onClick={() => setPreviewImage(currentCover)}
+                                                onClick={() => setPreviewImage(imagePreview)}
                                             >
                                                 <img
-                                                    src={currentCover}
+                                                    src={imagePreview}
                                                     alt="Cover"
                                                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                                 />
                                             </div>
-                                            {imagePreview && (
-                                                <button
-                                                    type="button"
-                                                    onClick={removeImage}
-                                                    className="absolute top-3 right-3 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full shadow-lg transition-all"
-                                                >
-                                                    <X className="w-4 h-4" />
-                                                </button>
-                                            )}
+                                            <button
+                                                type="button"
+                                                onClick={removeImage}
+                                                className="absolute top-3 right-3 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full shadow-lg transition-all"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
                                             <label className="absolute bottom-3 right-3 bg-white/90 hover:bg-white text-gray-800 px-4 py-2 rounded-lg shadow-lg cursor-pointer transition-all text-sm font-medium">
                                                 Ganti Foto
                                                 <input
@@ -367,7 +295,13 @@ export default function EditEvent() {
                                                 Deskripsi <span className="text-red-500">*</span>
                                             </label>
                                             <Textarea
-                                                placeholder={`Jelaskan detail camping trip kamu...`}
+                                                placeholder={`Jelaskan detail camping trip kamu...
+
+Contoh:
+🏕️ Kegiatan: Solo camping, masak-masak, foto-foto
+📍 Meeting point: Stasiun Bandung jam 7 pagi
+🎒 Bawa: Tenda, sleeping bag, kompor portable
+🍜 Makan: Potluck / bawa masing-masing`}
                                                 className="min-h-[200px] border-gray-200 focus:border-orange-400 focus:ring-orange-400 resize-none"
                                                 {...form.register('description')}
                                             />
@@ -435,6 +369,8 @@ export default function EditEvent() {
                                     </div>
                                 </div>
                             </div>
+
+
 
                             {/* Region Selector */}
                             <div className="bg-white rounded-2xl shadow-sm ring-1 ring-black/5 overflow-hidden">
@@ -510,10 +446,11 @@ export default function EditEvent() {
                                         </h3>
                                     </div>
                                     <div className="p-4">
+                                        {/* Mini Preview */}
                                         <div className="rounded-xl overflow-hidden border border-gray-100 shadow-sm">
                                             <div className="aspect-video bg-gradient-to-br from-orange-100 to-amber-100 relative">
-                                                {currentCover ? (
-                                                    <img src={currentCover} alt="Preview" className="w-full h-full object-cover" />
+                                                {imagePreview ? (
+                                                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
                                                 ) : (
                                                     <div className="absolute inset-0 flex items-center justify-center text-orange-300">
                                                         <Tent className="w-12 h-12" />
@@ -536,12 +473,9 @@ export default function EditEvent() {
                                                             : 'Tanggal'}
                                                     </span>
                                                     <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                                                        {(() => {
-                                                            const price = form.watch('price') || '';
-                                                            return price && parseInt(price as string) > 0
-                                                                ? `Rp ${parseInt(price as string).toLocaleString('id-ID')}`
-                                                                : 'GRATIS';
-                                                        })()}
+                                                        {form.watch('price') && parseInt(form.watch('price') as string) > 0
+                                                            ? `Rp ${parseInt(form.watch('price') as string).toLocaleString('id-ID')}`
+                                                            : 'GRATIS'}
                                                     </span>
                                                 </div>
                                             </div>
@@ -563,21 +497,46 @@ export default function EditEvent() {
                                     ) : (
                                         <span className="flex items-center gap-2">
                                             <Tent className="w-5 h-5" />
-                                            Simpan Perubahan
+                                            Publikasikan Event
                                         </span>
                                     )}
                                 </Button>
 
-                                {/* Cancel Button */}
-                                <Button
-                                    variant="outline"
-                                    className="w-full h-12 rounded-xl"
-                                    asChild
-                                >
-                                    <Link to={`/e/${id}`}>
-                                        Batal
-                                    </Link>
-                                </Button>
+                                {/* Tips */}
+                                <div className="bg-orange-50 rounded-xl p-4 border border-orange-100">
+                                    <h4 className="font-semibold text-orange-800 text-sm mb-3 flex items-center gap-2">
+                                        🏕️ Tips Camping Trip
+                                    </h4>
+                                    <ul className="text-xs text-orange-700 space-y-2">
+                                        <li className="flex items-start gap-2">
+                                            <span>🌤️</span>
+                                            <span>Cek prakiraan cuaca sebelum berangkat</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <span>📋</span>
+                                            <span>Buat checklist perlengkapan di deskripsi</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <span>👥</span>
+                                            <span>Atur group chat untuk koordinasi</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <span>🚗</span>
+                                            <span>Tentukan meeting point yang jelas</span>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                {/* Safety Note */}
+                                <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                                    <h4 className="font-semibold text-gray-700 text-sm mb-2 flex items-center gap-2">
+                                        ⛺ Keselamatan
+                                    </h4>
+                                    <p className="text-xs text-gray-600">
+                                        Pastikan semua peserta membawa P3K dan nomor darurat tersimpan.
+                                        Beritahu keluarga lokasi camping dan waktu pulang.
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -606,6 +565,6 @@ export default function EditEvent() {
                     </div>
                 </DialogContent>
             </Dialog>
-        </div>
+        </div >
     );
 }

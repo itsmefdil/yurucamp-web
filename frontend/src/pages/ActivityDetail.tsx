@@ -24,10 +24,9 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '../components/ui/alert-dialog';
-import { EditActivityModal } from '../components/activities/EditActivityModal';
 import ReactMarkdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
-import useDocumentTitle from '../hooks/useDocumentTitle';
+
 
 export default function ActivityDetail() {
     const { id } = useParams<{ id: string }>();
@@ -38,7 +37,6 @@ export default function ActivityDetail() {
     const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
     const [touchStart, setTouchStart] = useState<number | null>(null);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-    const [isEditOpen, setIsEditOpen] = useState(false);
 
     // Fetch activity detail
     const { data: activity, isLoading } = useQuery({
@@ -166,7 +164,7 @@ export default function ActivityDetail() {
         if (!activity) return;
         const shareData = {
             title: activity.title,
-            text: `Lihat aktifitas ${activity.title} di Yurucamp!`,
+            text: `Lihat aktivitas ${activity.title} di Yurucamp!`,
             url: window.location.href,
         };
 
@@ -321,8 +319,15 @@ export default function ActivityDetail() {
                             </Button>
                             {isOwner && (
                                 <>
-                                    <Button variant="secondary" size="icon" className="rounded-full bg-white hover:bg-gray-100 text-gray-900 shadow-lg border-none transition-all hover:scale-105" onClick={() => setIsEditOpen(true)}>
-                                        <Edit className="h-5 w-5" />
+                                    <Button
+                                        variant="secondary"
+                                        size="icon"
+                                        className="rounded-full bg-white hover:bg-gray-100 text-gray-900 shadow-lg border-none transition-all hover:scale-105"
+                                        asChild
+                                    >
+                                        <Link to={`/a/${activity.id}/edit`}>
+                                            <Edit className="h-5 w-5" />
+                                        </Link>
                                     </Button>
                                     <Button
                                         variant="destructive"
@@ -575,7 +580,7 @@ export default function ActivityDetail() {
                                 <CardHeader className="p-0 mb-6 border-b border-gray-100 pb-4">
                                     <CardTitle className="text-xl font-bold flex items-center gap-2">
                                         <MapPin className="h-5 w-5 text-primary" />
-                                        Aktifitas Lainnya
+                                        Aktivitas Lainnya
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="p-0 space-y-4">
@@ -606,7 +611,7 @@ export default function ActivityDetail() {
                                         ))
                                     ) : (
                                         <div className="text-center py-8">
-                                            <p className="text-sm text-muted-foreground italic">Belum ada aktifitas lain.</p>
+                                            <p className="text-sm text-muted-foreground italic">Belum ada aktivitas lain.</p>
                                         </div>
                                     )}
                                 </CardContent>
@@ -711,13 +716,7 @@ export default function ActivityDetail() {
                 </DialogContent>
             </Dialog>
 
-            {activity && (
-                <EditActivityModal
-                    open={isEditOpen}
-                    onOpenChange={setIsEditOpen}
-                    activity={activity}
-                />
-            )}
+
         </div>
     );
 }
