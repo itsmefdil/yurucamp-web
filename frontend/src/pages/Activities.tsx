@@ -7,7 +7,7 @@ import { Badge } from '../components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Footer } from '../components/layout/Footer';
 import { Navbar } from '../components/layout/Navbar';
-import { Plus, MapPin, Calendar, Tent, ChevronLeft, ChevronRight, Search, X } from 'lucide-react';
+import { Plus, MapPin, Calendar, Tent, ChevronLeft, ChevronRight, Search, X, Filter, Tag } from 'lucide-react';
 
 import RegionSelector from '../components/ui/RegionSelector';
 import api from '../lib/api';
@@ -20,13 +20,25 @@ const ITEMS_PER_PAGE = 20;
 export default function Activities() {
     const { user } = useAuth();
     const [selectedRegionId, setSelectedRegionId] = useState<string | null>(null);
+    const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [searchQuery, setSearchQuery] = useState('');
 
-    const { data: activities, isLoading } = useQuery({
-        queryKey: ['activities', selectedRegionId],
+    // Fetch categories for filter
+    const { data: categories } = useQuery({
+        queryKey: ['categories'],
         queryFn: async () => {
-            const params = selectedRegionId ? { regionId: selectedRegionId } : {};
+            const response = await api.get('/categories');
+            return response.data as Array<{ id: string; name: string; }>;
+        },
+    });
+
+    const { data: activities, isLoading } = useQuery({
+        queryKey: ['activities', selectedRegionId, selectedCategoryId],
+        queryFn: async () => {
+            const params: any = {};
+            if (selectedRegionId) params.regionId = selectedRegionId;
+            if (selectedCategoryId) params.categoryId = selectedCategoryId;
             const response = await api.get('/activities', { params });
             return response.data as Activity[];
         },
@@ -66,6 +78,12 @@ export default function Activities() {
     // Handle search
     const handleSearch = (query: string) => {
         setSearchQuery(query);
+        setCurrentPage(1);
+    };
+
+    // Handle category change
+    const handleCategoryChange = (categoryId: string | null) => {
+        setSelectedCategoryId(categoryId);
         setCurrentPage(1);
     };
 
@@ -109,10 +127,10 @@ export default function Activities() {
             <main className="flex-1 container mx-auto px-4 py-6 pb-24">
                 {/* Unified Search & Filter Bar */}
                 <div className="mb-6">
-                    <div className="bg-white rounded-2xl shadow-lg border border-orange-100 p-2">
-                        <div className="flex flex-col md:flex-row gap-2">
+                    <div className="bg-white rounded-2xl shadow-lg border border-orange-100 overflow-hidden">
+                        <div className="flex flex-col md:flex-row">
                             {/* Search Input */}
-                            <div className="relative flex-1 group">
+                            <div className="relative flex-1 group border-b md:border-b-0 md:border-r border-gray-100">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                     <Search className="h-5 w-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
                                 </div>
@@ -121,42 +139,94 @@ export default function Activities() {
                                     placeholder="Cari aktivitas, lokasi, atau pengguna..."
                                     value={searchQuery}
                                     onChange={(e) => handleSearch(e.target.value)}
-                                    className="w-full pl-11 pr-10 py-2.5 bg-transparent rounded-2xl focus:outline-none focus:bg-orange-50/50 text-gray-800 placeholder-gray-400 font-medium transition-all"
+                                    className="w-full pl-11 pr-10 py-3.5 bg-transparent focus:outline-none focus:bg-orange-50/30 text-gray-800 placeholder-gray-400 font-medium transition-all"
                                 />
                                 {searchQuery && (
                                     <button
                                         onClick={() => handleSearch('')}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors"
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1.5 rounded-full hover:bg-gray-100 transition-all hover:scale-110"
                                     >
                                         <X className="h-4 w-4" />
                                     </button>
                                 )}
                             </div>
 
-                            <div className="hidden md:block w-px bg-gray-100 my-2" />
+                            {/* Category Filter */}
+                            <div className="relative min-w-[200px] border-b md:border-b-0 md:border-r border-gray-100 group">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <Tag className="h-4 w-4 text-gray-400 group-focus-within:text-green-500 transition-colors" />
+                                </div>
+                                <select
+                                    value={selectedCategoryId || ''}
+                                    onChange={(e) => handleCategoryChange(e.target.value || null)}
+                                    className="w-full pl-11 pr-10 py-3.5 bg-transparent border-none focus:outline-none focus:bg-green-50/30 text-gray-800 font-medium appearance-none cursor-pointer transition-all"
+                                    style={{
+                                        backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                                        backgroundPosition: 'right 0.75rem center',
+                                        backgroundRepeat: 'no-repeat',
+                                        backgroundSize: '1.25em 1.25em'
+                                    }}
+                                >
+                                    <option value="">Semua Kategori</option>
+                                    {categories?.map((cat) => (
+                                        <option key={cat.id} value={cat.id}>
+                                            {cat.name}
+                                        </option>
+                                    ))}
+                                </select>
+                                {selectedCategoryId && (
+                                    <button
+                                        onClick={() => handleCategoryChange(null)}
+                                        className="absolute right-10 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-all hover:scale-110 z-10"
+                                    >
+                                        <X className="h-3.5 w-3.5" />
+                                    </button>
+                                )}
+                            </div>
 
                             {/* Region Filter */}
-                            <div className="min-w-[240px]">
-                                <RegionSelector
-                                    value={selectedRegionId}
-                                    onChange={handleRegionChange}
-                                    showLabel={false}
-                                    className="h-full"
-                                    variant="ghost"
-                                />
+                            <div className="min-w-[240px] relative group">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+                                    <Filter className="h-4 w-4 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                                </div>
+                                <div className="pl-7">
+                                    <RegionSelector
+                                        value={selectedRegionId}
+                                        onChange={handleRegionChange}
+                                        showLabel={false}
+                                        className="h-full"
+                                        variant="ghost"
+                                    />
+                                </div>
+                                {selectedRegionId && (
+                                    <button
+                                        onClick={() => handleRegionChange(null)}
+                                        className="absolute right-10 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-all hover:scale-110 z-20"
+                                    >
+                                        <X className="h-3.5 w-3.5" />
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Active Filters / Results Info */}
-                {(searchQuery || selectedRegionId) && (
+                {(searchQuery || selectedRegionId || selectedCategoryId) && (
                     <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-2 flex-wrap text-sm">
                         <span className="text-gray-500">Menampilkan {totalItems} hasil</span>
                         {searchQuery && (
                             <Badge variant="secondary" className="bg-orange-100 text-orange-700 hover:bg-orange-200">
                                 "{searchQuery}"
                                 <button onClick={() => handleSearch('')} className="ml-1 hover:text-orange-900">
+                                    <X className="h-3 w-3" />
+                                </button>
+                            </Badge>
+                        )}
+                        {selectedCategoryId && (
+                            <Badge variant="secondary" className="bg-green-100 text-green-700 hover:bg-green-200">
+                                {categories?.find(c => c.id === selectedCategoryId)?.name || 'Kategori'}
+                                <button onClick={() => handleCategoryChange(null)} className="ml-1 hover:text-green-900">
                                     <X className="h-3 w-3" />
                                 </button>
                             </Badge>

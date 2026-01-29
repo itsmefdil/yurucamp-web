@@ -63,6 +63,7 @@ export const campAreas = pgTable('camp_areas', {
     additionalImages: text('additional_images').array(),
     facilities: text('facilities').array(),
     userId: uuid('user_id').references(() => users.id), // References users
+    regionId: uuid('region_id').references(() => regions.id), // References regions
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow(),
 });
 

@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import { db } from '../db';
-import { campAreas, users } from '../db/schema';
+import { campAreas, users, regions } from '../db/schema';
 import { authenticate } from '../middleware/auth';
 import { uploadImage, deleteImage, getPublicIdFromUrl } from '../lib/cloudinary';
 import { eq, desc } from 'drizzle-orm';
@@ -13,7 +13,9 @@ const upload = multer({ storage: multer.memoryStorage() });
 // GET all camp areas
 router.get('/', async (req: Request, res: Response) => {
     try {
-        const result = await db.select({
+        const { regionId } = req.query;
+
+        let query = db.select({
             id: campAreas.id,
             name: campAreas.name,
             description: campAreas.description,
@@ -23,6 +25,7 @@ router.get('/', async (req: Request, res: Response) => {
             additionalImages: campAreas.additionalImages,
             facilities: campAreas.facilities,
             userId: campAreas.userId,
+            regionId: campAreas.regionId,
             createdAt: campAreas.createdAt,
             user: {
                 id: users.id,
@@ -30,11 +33,23 @@ router.get('/', async (req: Request, res: Response) => {
                 avatarUrl: users.avatarUrl,
                 level: users.level,
                 exp: users.exp,
+            },
+            region: {
+                id: regions.id,
+                name: regions.name,
+                slug: regions.slug,
             }
         })
             .from(campAreas)
             .leftJoin(users, eq(campAreas.userId, users.id))
-            .orderBy(desc(campAreas.createdAt));
+            .leftJoin(regions, eq(campAreas.regionId, regions.id));
+
+        if (regionId) {
+            // @ts-ignore
+            query.where(eq(campAreas.regionId, regionId));
+        }
+
+        const result = await query.orderBy(desc(campAreas.createdAt));
 
         // Add levelName to each user
         const enrichedResult = result.map(campArea => ({
@@ -67,6 +82,7 @@ router.get('/:id', async (req: Request, res: Response) => {
             additionalImages: campAreas.additionalImages,
             facilities: campAreas.facilities,
             userId: campAreas.userId,
+            regionId: campAreas.regionId,
             createdAt: campAreas.createdAt,
             user: {
                 id: users.id,
@@ -108,7 +124,7 @@ router.post('/', authenticate, upload.fields([{ name: 'image', maxCount: 1 }, { 
         const user = req.user;
         const userId = user.sub || user.id;
 
-        const { name, description, location, price, wifi, parking, canteen, tent, info, imageUrl, additionalImages } = req.body;
+        const { name, description, location, price, wifi, parking, canteen, tent, info, imageUrl, additionalImages, regionId } = req.body;
 
         // Parse facilities (support both 'on' and boolean true)
         const facilities: string[] = [];
@@ -152,6 +168,7 @@ router.post('/', authenticate, upload.fields([{ name: 'image', maxCount: 1 }, { 
             imageUrl: image_url,
             additionalImages: additional_images,
             userId: userId,
+            regionId: regionId || null,
         }).returning();
 
         // Award EXP for posting camp area
@@ -172,7 +189,7 @@ router.put('/:id', authenticate, upload.fields([{ name: 'image', maxCount: 1 }, 
         const user = req.user;
         const userId = user.sub || user.id;
 
-        const { name, description, location, price, wifi, parking, canteen, tent, info, kept_images, keptImages, imageUrl, additionalImages } = req.body;
+        const { name, description, location, price, wifi, parking, canteen, tent, info, kept_images, keptImages, imageUrl, additionalImages, regionId } = req.body;
 
         // Parse facilities (support both 'on', 'true' and boolean true)
         const facilities: string[] = [];
@@ -258,6 +275,7 @@ router.put('/:id', authenticate, upload.fields([{ name: 'image', maxCount: 1 }, 
             facilities,
             imageUrl: image_url,
             additionalImages: additional_images,
+            regionId: regionId ?? existingCampArea[0].regionId,
         }).where(eq(campAreas.id, id)).returning();
 
         res.json(updatedCampArea[0]);

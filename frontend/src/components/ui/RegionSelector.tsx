@@ -54,7 +54,7 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({
         <div className={`flex flex-col gap-1 ${className}`}>
             {showLabel && <label className="text-sm font-medium text-amber-900/70">{label}</label>}
             <select
-                value={value || ""}
+                value={value ?? ""}
                 onChange={(e) => onChange(e.target.value || null)}
                 className={selectClassName}
             >

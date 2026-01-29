@@ -17,12 +17,14 @@ import api from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { compressImage } from '../../lib/imageCompression';
 import type { CampArea } from '../../types';
+import RegionSelector from '../../components/ui/RegionSelector';
 
 const campAreaSchema = z.object({
     name: z.string().min(3, "Nama minimal 3 karakter"),
     description: z.string().min(10, "Deskripsi minimal 10 karakter"),
     location: z.string().min(3, "Lokasi minimal 3 karakter"),
     price: z.string().min(1, "Harga harus diisi"),
+    regionId: z.string().nullable().optional(),
 });
 
 type CampAreaFormValues = z.infer<typeof campAreaSchema>;
@@ -75,6 +77,7 @@ export default function EditCampArea() {
             description: '',
             location: '',
             price: '',
+            regionId: null,
         },
     });
 
@@ -103,6 +106,7 @@ export default function EditCampArea() {
                 description: campArea.description || '',
                 location: campArea.location || '',
                 price: campArea.price || '',
+                regionId: campArea.regionId || null,
             });
 
             setImageFile(null);
@@ -247,6 +251,7 @@ export default function EditCampArea() {
                 canteen: selectedFacilities.includes('canteen'),
                 tent: selectedFacilities.includes('tent'),
                 info: selectedFacilities.includes('info'),
+                regionId: data.regionId,
             };
 
             await api.put(`/camp-areas/${campArea.id}`, payload, {
@@ -449,6 +454,16 @@ export default function EditCampArea() {
                                                 <span className="text-xs text-red-500 font-medium">{form.formState.errors.price.message}</span>
                                             )}
                                         </div>
+                                    </div>
+
+                                    <div className="grid gap-2">
+                                        <label className="font-bold text-gray-700">Region/Daerah (Opsional)</label>
+                                        <RegionSelector
+                                            value={form.watch('regionId')}
+                                            onChange={(value) => form.setValue('regionId', value)}
+                                            placeholder="Pilih Daerah"
+                                            showLabel={false}
+                                        />
                                     </div>
                                 </div>
 

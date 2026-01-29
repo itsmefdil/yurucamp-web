@@ -6,10 +6,11 @@ import { Card } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
-import { Plus, MapPin, Tent, Wifi, Car, Coffee, Info, ChevronLeft, ChevronRight, Search, X } from 'lucide-react';
+import { Plus, MapPin, Tent, Wifi, Car, Coffee, Info, ChevronLeft, ChevronRight, Search, X, Filter } from 'lucide-react';
 import api from '../lib/api';
 import type { CampArea } from '../types';
 import { useAuth } from '../contexts/AuthContext';
+import RegionSelector from '../components/ui/RegionSelector';
 
 const ITEMS_PER_PAGE = 20;
 
@@ -17,11 +18,13 @@ export default function CampAreas() {
     const { user } = useAuth();
     const [currentPage, setCurrentPage] = useState(1);
     const [searchQuery, setSearchQuery] = useState('');
+    const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
 
     const { data: campAreas, isLoading } = useQuery({
-        queryKey: ['camp-areas'],
+        queryKey: ['camp-areas', selectedRegion],
         queryFn: async () => {
-            const response = await api.get('/camp-areas');
+            const params = selectedRegion ? `?regionId=${selectedRegion}` : '';
+            const response = await api.get(`/camp-areas${params}`);
             return response.data as CampArea[];
         },
     });
@@ -59,6 +62,11 @@ export default function CampAreas() {
     const handleSearch = (query: string) => {
         setSearchQuery(query);
         setCurrentPage(1); // Reset to first page on search
+    };
+
+    const handleRegionChange = (regionId: string | null) => {
+        setSelectedRegion(regionId);
+        setCurrentPage(1); // Reset to first page on filter
     };
 
     return (
@@ -100,11 +108,12 @@ export default function CampAreas() {
             </div>
 
             <main className="flex-1 container mx-auto px-4 py-6 pb-24">
-                {/* Search Bar */}
+                {/* Search & Filter Bar */}
                 <div className="mb-6">
-                    <div className="bg-white rounded-2xl shadow-lg border border-orange-100 p-2">
-                        <div className="flex flex-col md:flex-row gap-2">
-                            <div className="relative flex-1 group">
+                    <div className="bg-white rounded-2xl shadow-lg border border-orange-100 overflow-hidden">
+                        <div className="flex flex-col md:flex-row">
+                            {/* Search Input */}
+                            <div className="relative flex-1 group border-b md:border-b-0 md:border-r border-gray-100">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                     <Search className="h-5 w-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
                                 </div>
@@ -113,14 +122,38 @@ export default function CampAreas() {
                                     placeholder="Cari lokasi camping..."
                                     value={searchQuery}
                                     onChange={(e) => handleSearch(e.target.value)}
-                                    className="w-full pl-11 pr-10 py-2.5 bg-transparent rounded-2xl focus:outline-none focus:bg-orange-50/50 text-gray-800 placeholder-gray-400 font-medium transition-all"
+                                    className="w-full pl-11 pr-10 py-3.5 bg-transparent focus:outline-none focus:bg-orange-50/30 text-gray-800 placeholder-gray-400 font-medium transition-all"
                                 />
                                 {searchQuery && (
                                     <button
                                         onClick={() => handleSearch('')}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors"
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1.5 rounded-full hover:bg-gray-100 transition-all hover:scale-110"
                                     >
                                         <X className="h-4 w-4" />
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Region Filter */}
+                            <div className="min-w-[240px] relative group">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+                                    <Filter className="h-4 w-4 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                                </div>
+                                <div className="pl-7">
+                                    <RegionSelector
+                                        value={selectedRegion}
+                                        onChange={handleRegionChange}
+                                        variant="ghost"
+                                        placeholder="Semua Daerah"
+                                        showLabel={false}
+                                    />
+                                </div>
+                                {selectedRegion && (
+                                    <button
+                                        onClick={() => handleRegionChange(null)}
+                                        className="absolute right-10 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-all hover:scale-110 z-20"
+                                    >
+                                        <X className="h-3.5 w-3.5" />
                                     </button>
                                 )}
                             </div>

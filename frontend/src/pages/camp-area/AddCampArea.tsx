@@ -15,6 +15,7 @@ import { Navbar } from '../../components/layout/Navbar';
 import { Footer } from '../../components/layout/Footer';
 import api from '../../lib/api';
 import { compressImage } from '../../lib/imageCompression';
+import RegionSelector from '../../components/ui/RegionSelector';
 
 
 const campAreaSchema = z.object({
@@ -22,6 +23,7 @@ const campAreaSchema = z.object({
     description: z.string().min(10, "Deskripsi minimal 10 karakter"),
     location: z.string().min(3, "Lokasi minimal 3 karakter"),
     price: z.string().min(1, "Harga harus diisi"),
+    regionId: z.string().nullable().optional(),
 });
 
 type CampAreaFormValues = z.infer<typeof campAreaSchema>;
@@ -58,6 +60,7 @@ export default function AddCampArea() {
             description: '',
             location: '',
             price: '',
+            regionId: null,
         },
         mode: 'onSubmit',
     });
@@ -196,6 +199,7 @@ export default function AddCampArea() {
                 canteen: selectedFacilities.includes('canteen'),
                 tent: selectedFacilities.includes('tent'),
                 info: selectedFacilities.includes('info'),
+                regionId: data.regionId,
             };
 
             await api.post('/camp-areas', payload, {
@@ -364,6 +368,16 @@ export default function AddCampArea() {
                                                 <span className="text-xs text-red-500 font-medium">{form.formState.errors.price.message}</span>
                                             )}
                                         </div>
+                                    </div>
+
+                                    <div className="grid gap-2">
+                                        <label className="font-bold text-gray-700">Region/Daerah (Opsional)</label>
+                                        <RegionSelector
+                                            value={form.watch('regionId')}
+                                            onChange={(value) => form.setValue('regionId', value)}
+                                            placeholder="Pilih Daerah"
+                                            showLabel={false}
+                                        />
                                     </div>
                                 </div>
 
