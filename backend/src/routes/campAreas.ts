@@ -208,15 +208,10 @@ router.put('/:id', authenticate, upload.fields([{ name: 'image', maxCount: 1 }, 
                 if (publicId) await deleteImage(publicId);
             }
             image_url = imageUrl;
-
-            // Handle new additional images from client-side upload
-            const newAdditionalImages = Array.isArray(additionalImages) ? additionalImages : [];
-            additional_images = [...keptImagesList, ...newAdditionalImages];
         } else {
-            // Server-side file upload mode
+            // Check for server-side file upload for cover image
             const files = req.files as { [fieldname: string]: Express.Multer.File[] };
             const imageFile = files?.['image']?.[0];
-            const additionalImageFiles = files?.['additional_images'] || [];
 
             if (imageFile) {
                 // Delete old image
@@ -226,7 +221,19 @@ router.put('/:id', authenticate, upload.fields([{ name: 'image', maxCount: 1 }, 
                 }
                 image_url = await uploadImage(imageFile, 'camp_areas');
             }
+        }
 
+        // Handle additional images
+        // 1. Add new URLs from client-side upload (JSON body)
+        if (additionalImages && Array.isArray(additionalImages)) {
+            additional_images.push(...additionalImages);
+        }
+
+        // 2. Add new URLs from server-side upload (Multipart)
+        const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+        const additionalImageFiles = files?.['additional_images'] || [];
+
+        if (additionalImageFiles.length > 0) {
             const uploadPromises = additionalImageFiles.map(file => uploadImage(file, 'camp_areas'));
             const uploadedUrls = await Promise.all(uploadPromises);
             uploadedUrls.forEach(url => {
