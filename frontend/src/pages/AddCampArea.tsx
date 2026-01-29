@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
 import api from '../lib/api';
+import { compressImage } from '../lib/imageCompression';
 
 
 const campAreaSchema = z.object({
@@ -65,9 +66,14 @@ export default function AddCampArea() {
         let isFirstFile = !imageFile && !imagePreview;
 
         for (const file of files) {
-            if (file.size > 10 * 1024 * 1024) {
-                toast.error(`File ${file.name} terlalu besar (>10MB)`);
+            if (file.size > 20 * 1024 * 1024) {
+                toast.error(`File ${file.name} terlalu besar (>20MB)`);
                 continue;
+            }
+
+            // Auto compress > 5MB happens in uploadToCloudinary, but we warn here if super huge
+            if (file.size > 5 * 1024 * 1024) {
+                toast.info(`File ${file.name} cukup besar, akan dioptimasi otomatis saat upload.`);
             }
 
             const reader = new FileReader();
@@ -123,8 +129,11 @@ export default function AddCampArea() {
     const uploadToCloudinary = async (file: File) => {
         const { data: signData } = await api.get('/utils/cloudinary-signature?folder=camp_area');
 
+        // Auto compress if > 3MB (default)
+        const compressedFile = await compressImage(file, 3);
+
         const formData = new FormData();
-        formData.append("file", file);
+        formData.append("file", compressedFile);
         formData.append("api_key", signData.api_key);
         formData.append("timestamp", signData.timestamp.toString());
         formData.append("signature", signData.signature);
@@ -137,7 +146,14 @@ export default function AddCampArea() {
         });
 
         const data = await response.json();
-        if (!response.ok) throw new Error(data.error?.message || "Upload failed");
+        if (!response.ok) {
+            const errorMessage = data.error?.message || "Upload failed";
+            // Translate common Cloudinary errors
+            if (errorMessage.includes("File size too large")) {
+                throw new Error("Ukuran file terlalu besar setelah kompresi");
+            }
+            throw new Error(errorMessage);
+        }
         return data.secure_url;
     };
 

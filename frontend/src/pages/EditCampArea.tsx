@@ -15,6 +15,7 @@ import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
 import api from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
+import { compressImage } from '../lib/imageCompression';
 import type { CampArea } from '../types';
 
 const campAreaSchema = z.object({
@@ -121,9 +122,12 @@ export default function EditCampArea() {
     const handleCoverChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            if (file.size > 10 * 1024 * 1024) {
-                toast.error("Ukuran file maksimal 10MB");
+            if (file.size > 20 * 1024 * 1024) {
+                toast.error("Ukuran file maksimal 20MB");
                 return;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                toast.info("File cover cukup besar, akan dioptimasi otomatis.");
             }
             setImageFile(file);
             const reader = new FileReader();
@@ -137,9 +141,13 @@ export default function EditCampArea() {
         const files = Array.from(e.target.files || []);
 
         for (const file of files) {
-            if (file.size > 10 * 1024 * 1024) {
-                toast.error(`File ${file.name} terlalu besar (>10MB)`);
+            if (file.size > 20 * 1024 * 1024) {
+                toast.error(`File ${file.name} terlalu besar (>20MB)`);
                 continue;
+            }
+
+            if (file.size > 5 * 1024 * 1024) {
+                // Just logging/toast once per batch might be better, but per file is ok
             }
 
             const totalAdditional = existingImages.length + additionalFiles.length + 1;
@@ -176,8 +184,11 @@ export default function EditCampArea() {
     const uploadToCloudinary = async (file: File) => {
         const { data: signData } = await api.get('/utils/cloudinary-signature?folder=camp_area');
 
+        // Auto compress if > 3MB (default)
+        const compressedFile = await compressImage(file, 3);
+
         const formData = new FormData();
-        formData.append("file", file);
+        formData.append("file", compressedFile);
         formData.append("api_key", signData.api_key);
         formData.append("timestamp", signData.timestamp.toString());
         formData.append("signature", signData.signature);
@@ -190,7 +201,13 @@ export default function EditCampArea() {
         });
 
         const data = await response.json();
-        if (!response.ok) throw new Error(data.error?.message || "Upload failed");
+        if (!response.ok) {
+            const errorMessage = data.error?.message || "Upload failed";
+            if (errorMessage.includes("File size too large")) {
+                throw new Error("Ukuran file terlalu besar setelah kompresi");
+            }
+            throw new Error(errorMessage);
+        }
         return data.secure_url;
     };
 
