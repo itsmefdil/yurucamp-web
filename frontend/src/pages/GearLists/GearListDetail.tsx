@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Trash2, ArrowLeft, Copy, Check, Globe, Lock, Package, ChevronDown } from 'lucide-react';
+import { Plus, Trash2, ArrowLeft, Copy, Check, Globe, Lock, Package, ChevronDown, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -11,6 +11,8 @@ import { Footer } from '../../components/layout/Footer';
 import type { GearList, GearItem, ItemFormData } from '../../types/gear';
 import { GearListStats } from '../../components/gear/GearListStats';
 import { SortableItem } from '../../components/gear/SortableItem';
+import { DEFAULT_GEAR_CATEGORIES } from '../../lib/gearConstants';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../../components/ui/dialog';
 
 export default function GearListDetail() {
     const { id } = useParams();
@@ -20,6 +22,7 @@ export default function GearListDetail() {
     // States for various forms
     const [isAddingCategory, setIsAddingCategory] = useState(false);
     const [newCategoryName, setNewCategoryName] = useState('');
+    const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
 
     const [editingItemId, setEditingItemId] = useState<string | null>(null);
     const [addingItemToCatId, setAddingItemToCatId] = useState<string | null>(null);
@@ -121,6 +124,20 @@ export default function GearListDetail() {
         },
         onError: () => {
             toast.error('Gagal memperbarui daftar');
+        }
+    });
+
+    const applyTemplateMutation = useMutation({
+        mutationFn: async () => {
+            await api.post(`/gear/${id}/apply-template`, { categories: DEFAULT_GEAR_CATEGORIES });
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['gearList', id] });
+            toast.success('Template berhasil diterapkan');
+            setIsTemplateModalOpen(false);
+        },
+        onError: () => {
+            toast.error('Gagal menerapkan template');
         }
     });
 
@@ -507,18 +524,73 @@ export default function GearListDetail() {
                                         </div>
                                     </form>
                                 ) : (
-                                    <button
-                                        onClick={() => setIsAddingCategory(true)}
-                                        className="w-full py-5 rounded-2xl border-2 border-dashed border-gray-200 text-gray-400 hover:border-primary hover:text-primary hover:bg-primary/5 transition-all flex items-center justify-center gap-2"
-                                    >
-                                        <Plus className="w-5 h-5" />
-                                        <span className="font-medium">Tambah Kategori</span>
-                                    </button>
+                                    <div className="flex flex-col sm:flex-row gap-3">
+                                        <button
+                                            onClick={() => setIsAddingCategory(true)}
+                                            className="flex-1 py-5 rounded-2xl border-2 border-dashed border-gray-200 text-gray-400 hover:border-primary hover:text-primary hover:bg-primary/5 transition-all flex items-center justify-center gap-2"
+                                        >
+                                            <Plus className="w-5 h-5" />
+                                            <span className="font-medium">Tambah Kategori</span>
+                                        </button>
+
+                                        {/* Template Button - Show if list is empty or user wants to add more */}
+                                        <button
+                                            onClick={() => setIsTemplateModalOpen(true)}
+                                            className="flex-1 py-5 rounded-2xl border-2 border-dashed border-gray-200 text-gray-400 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all flex items-center justify-center gap-2"
+                                        >
+                                            <Package className="w-5 h-5" />
+                                            <span className="font-medium">Gunakan Template</span>
+                                        </button>
+                                    </div>
                                 ))}
                             </div>
                         </DndContext>
                     </div>
                 </div>
+
+                <Dialog open={isTemplateModalOpen} onOpenChange={setIsTemplateModalOpen}>
+                    <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                            <DialogTitle>Gunakan Template Default</DialogTitle>
+                            <DialogDescription>
+                                Ini akan menambahkan kategori umum pendakian ke daftar ini (Shelter, Masak, Pakaian, dll) beserta item dasar. Anda bisa mengeditnya nanti.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="py-4">
+                            <ul className="list-disc pl-5 space-y-1 text-sm text-gray-600">
+                                {DEFAULT_GEAR_CATEGORIES.slice(0, 5).map((cat, i) => (
+                                    <li key={i}>{cat.name}</li>
+                                ))}
+                                {DEFAULT_GEAR_CATEGORIES.length > 5 && (
+                                    <li>...dan {DEFAULT_GEAR_CATEGORIES.length - 5} lainnya</li>
+                                )}
+                            </ul>
+                        </div>
+                        <DialogFooter>
+                            <button
+                                onClick={() => setIsTemplateModalOpen(false)}
+                                className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                                disabled={applyTemplateMutation.isPending}
+                            >
+                                Batal
+                            </button>
+                            <button
+                                onClick={() => applyTemplateMutation.mutate()}
+                                disabled={applyTemplateMutation.isPending}
+                                className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-lg transition-colors flex items-center gap-2"
+                            >
+                                {applyTemplateMutation.isPending ? (
+                                    <>
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        <span>Menerapkan...</span>
+                                    </>
+                                ) : (
+                                    'Terapkan Template'
+                                )}
+                            </button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </main>
             <Footer />
         </div>
