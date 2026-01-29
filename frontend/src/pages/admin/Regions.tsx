@@ -11,7 +11,7 @@ import {
 } from "../../components/ui/table";
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
-import { Trash2, Edit, Plus, Users, Check, X } from 'lucide-react';
+import { Trash2, Edit, Plus, Users, Check, X, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '../../components/ui/badge';
 import {
@@ -43,6 +43,11 @@ export default function AdminRegions() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null); // For dialog mode
 
+    // Search & Pagination state
+    const [searchQuery, setSearchQuery] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 10;
+
     // Form state
     const [formData, setFormData] = useState({
         name: '',
@@ -65,6 +70,25 @@ export default function AdminRegions() {
             setLoading(false);
         }
     };
+
+    const filteredRegions = regions.filter(region => {
+        const query = searchQuery.toLowerCase();
+        return region.name.toLowerCase().includes(query) ||
+            region.slug.toLowerCase().includes(query) ||
+            (region.description || '').toLowerCase().includes(query);
+    });
+
+    const totalPages = Math.ceil(filteredRegions.length / ITEMS_PER_PAGE);
+
+    // Reset page when search changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery]);
+
+    const paginatedRegions = filteredRegions.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE
+    );
 
     const handleSave = async () => {
         if (!formData.name || !formData.slug) {
@@ -171,17 +195,27 @@ export default function AdminRegions() {
     }
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
+        <div className="space-y-6 pb-24 md:pb-8">
+            <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
                 <h1 className="text-3xl font-bold tracking-tight">Regions</h1>
                 <Button onClick={openAddDialog}>
                     <Plus className="h-4 w-4 mr-2" /> Add Region
                 </Button>
             </div>
 
+            <div className="relative w-full sm:w-64">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+                <Input
+                    placeholder="Search regions..."
+                    className="pl-8"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                />
+            </div>
+
             <Card>
                 <CardHeader>
-                    <CardTitle>All Regions ({regions.length})</CardTitle>
+                    <CardTitle>All Regions ({filteredRegions.length})</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <Table>
@@ -196,64 +230,100 @@ export default function AdminRegions() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {regions.map((region) => (
-                                <TableRow key={region.id}>
-                                    <TableCell>
-                                        <div className="font-medium">{region.name}</div>
-                                        <div className="text-xs text-gray-500">{region.slug}</div>
-                                    </TableCell>
-                                    <TableCell>{getStatusBadge(region.status)}</TableCell>
-                                    <TableCell>
-                                        <div className="flex items-center gap-1">
-                                            <Users className="w-3 h-3 text-gray-500" />
-                                            {region.memberCount || 0}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="text-sm">
-                                        {region.creator?.fullName || '-'}
-                                    </TableCell>
-                                    <TableCell className="text-gray-500 truncate max-w-[200px]">{region.description || '-'}</TableCell>
-                                    <TableCell>
-                                        <div className="flex items-center gap-1">
-                                            {region.status === 'pending' && (
-                                                <>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="text-green-600 hover:text-green-700 hover:bg-green-50"
-                                                        onClick={() => handleApprove(region.id)}
-                                                        title="Approve"
-                                                    >
-                                                        <Check className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                                        onClick={() => handleReject(region.id)}
-                                                        title="Reject"
-                                                    >
-                                                        <X className="h-4 w-4" />
-                                                    </Button>
-                                                </>
-                                            )}
-                                            <Button variant="ghost" size="icon" onClick={() => openEditDialog(region)}>
-                                                <Edit className="h-4 w-4" />
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                                                onClick={() => handleDelete(region.id)}
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </div>
+                            {paginatedRegions.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                                        No regions found matching your criteria
                                     </TableCell>
                                 </TableRow>
-                            ))}
+                            ) : (
+                                paginatedRegions.map((region) => (
+                                    <TableRow key={region.id}>
+                                        <TableCell>
+                                            <div className="font-medium">{region.name}</div>
+                                            <div className="text-xs text-gray-500">{region.slug}</div>
+                                        </TableCell>
+                                        <TableCell>{getStatusBadge(region.status)}</TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-1">
+                                                <Users className="w-3 h-3 text-gray-500" />
+                                                {region.memberCount || 0}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-sm">
+                                            {region.creator?.fullName || '-'}
+                                        </TableCell>
+                                        <TableCell className="text-gray-500 truncate max-w-[200px]">{region.description || '-'}</TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-1">
+                                                {region.status === 'pending' && (
+                                                    <>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                                                            onClick={() => handleApprove(region.id)}
+                                                            title="Approve"
+                                                        >
+                                                            <Check className="h-4 w-4" />
+                                                        </Button>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                            onClick={() => handleReject(region.id)}
+                                                            title="Reject"
+                                                        >
+                                                            <X className="h-4 w-4" />
+                                                        </Button>
+                                                    </>
+                                                )}
+                                                <Button variant="ghost" size="icon" onClick={() => openEditDialog(region)}>
+                                                    <Edit className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                                                    onClick={() => handleDelete(region.id)}
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
                         </TableBody>
                     </Table>
+                    {totalPages > 1 && (
+                        <div className="flex items-center justify-between px-4 py-4 border-t">
+                            <div className="text-sm text-gray-500">
+                                Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, filteredRegions.length)} of {filteredRegions.length} items
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                    disabled={currentPage === 1}
+                                >
+                                    <ChevronLeft className="h-4 w-4" />
+                                </Button>
+                                <span className="text-sm font-medium">
+                                    Page {currentPage} of {totalPages}
+                                </span>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                    disabled={currentPage === totalPages}
+                                >
+                                    <ChevronRight className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
 

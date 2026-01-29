@@ -99,20 +99,20 @@ export default function AdminDashboard() {
     if (!stats) return null;
 
     return (
-        <div className="space-y-8 p-1">
+        <div className="space-y-8 p-1 pb-24 md:pb-8">
             {/* Validated Header with Gradient */}
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 p-8 text-white shadow-lg">
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 p-6 md:p-8 text-white shadow-lg">
                 <div className="relative z-10">
-                    <h1 className="text-3xl font-bold tracking-tight mb-2">Admin Dashboard</h1>
-                    <p className="text-orange-50 opacity-90">
+                    <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">Admin Dashboard</h1>
+                    <p className="text-orange-50 opacity-90 text-sm md:text-base pr-8">
                         Selamat datang kembali! Berikut adalah ringkasan aktivitas di platform Yurucamp.
                     </p>
                 </div>
-                <Tent className="absolute right-[-20px] bottom-[-40px] h-64 w-64 text-white opacity-10 rotate-12" />
+                <Tent className="absolute right-[-20px] bottom-[-40px] h-48 w-48 md:h-64 md:w-64 text-white opacity-10 rotate-12 bg-blend-overlay" />
             </div>
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-2 gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                 <Link to="/admin/users">
                     <Card className="hover:shadow-lg transition-all duration-300 border-none shadow-sm hover:-translate-y-1">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -213,9 +213,9 @@ export default function AdminDashboard() {
                         ) : (
                             <div className="grid gap-4">
                                 {pendingRegions.map((region) => (
-                                    <div key={region.id} className="group relative bg-white border rounded-xl p-5 hover:shadow-md transition-all duration-200 hover:border-orange-200">
-                                        <div className="flex flex-col md:flex-row items-start gap-5">
-                                            <div className="w-20 h-20 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0 shadow-inner">
+                                    <div key={region.id} className="group relative bg-white border rounded-xl p-4 md:p-5 hover:shadow-md transition-all duration-200 hover:border-orange-200">
+                                        <div className="flex flex-col md:flex-row items-start gap-4 md:gap-5">
+                                            <div className="w-full md:w-20 h-32 md:h-20 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0 shadow-inner">
                                                 {region.imageUrl ? (
                                                     <img src={region.imageUrl} alt={region.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                                                 ) : (
@@ -224,15 +224,15 @@ export default function AdminDashboard() {
                                                     </div>
                                                 )}
                                             </div>
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-start justify-between">
+                                            <div className="flex-1 min-w-0 w-full">
+                                                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
                                                     <div>
                                                         <h4 className="font-bold text-lg text-gray-900 group-hover:text-orange-600 transition-colors">{region.name}</h4>
-                                                        <div className="flex items-center gap-2 mt-1 mb-2">
+                                                        <div className="flex flex-wrap items-center gap-2 mt-1 mb-2">
                                                             <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
                                                                 Region Baru
                                                             </span>
-                                                            <span className="text-xs text-gray-400">•</span>
+                                                            <span className="text-xs text-gray-400 hidden sm:inline">•</span>
                                                             <span className="text-xs text-gray-500">{new Date(region.createdAt).toLocaleDateString()}</span>
                                                         </div>
                                                     </div>
@@ -240,21 +240,21 @@ export default function AdminDashboard() {
                                                 <p className="text-sm text-gray-600 line-clamp-2 mb-3 leading-relaxed">
                                                     {region.description || "Tidak ada deskripsi yang diberikan oleh pengaju."}
                                                 </p>
-                                                <div className="flex items-center gap-4 text-sm text-gray-500 border-t pt-3 mt-1">
+                                                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 border-t pt-3 mt-1">
                                                     <div className="flex items-center gap-1.5">
                                                         <div className="w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center text-[10px] font-bold text-gray-600">
                                                             {region.creator?.fullName?.[0] || "?"}
                                                         </div>
-                                                        <span className="font-medium text-gray-700">{region.creator?.fullName || "Unknown"}</span>
+                                                        <span className="font-medium text-gray-700 truncate max-w-[120px]">{region.creator?.fullName || "Unknown"}</span>
                                                     </div>
-                                                    <span className="h-1 w-1 rounded-full bg-gray-300"></span>
+                                                    <span className="hidden sm:inline h-1 w-1 rounded-full bg-gray-300"></span>
                                                     <div className="flex items-center gap-1.5">
                                                         <Users className="w-4 h-4 text-gray-400" />
-                                                        <span>{region.memberCount || 1} Anggota Awal</span>
+                                                        <span>{region.memberCount || 1} Anggota</span>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="flex flex-row md:flex-col gap-2 w-full md:w-auto mt-4 md:mt-0">
+                                            <div className="flex flex-row md:flex-col gap-2 w-full md:w-auto mt-2 md:mt-0">
                                                 <button
                                                     onClick={() => handleApprove(region.id)}
                                                     className="flex-1 md:flex-none px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors shadow-sm hover:shadow active:scale-95 flex items-center justify-center gap-2"
