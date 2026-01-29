@@ -7,16 +7,16 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { ImagePlus, MapPin, Calendar, Loader2, X, Users, DollarSign, ArrowLeft, FileText, Tent, Mountain, TreePine, Globe } from 'lucide-react';
 
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Textarea } from '../components/ui/textarea';
-import RegionSelector from '../components/ui/RegionSelector';
-import { Dialog, DialogContent } from '../components/ui/dialog';
-import { Navbar } from '../components/layout/Navbar';
-import { Footer } from '../components/layout/Footer';
-import api from '../lib/api';
-import { useAuth } from '../contexts/AuthContext';
-import type { Event } from '../types';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Textarea } from '../../components/ui/textarea';
+import RegionSelector from '../../components/ui/RegionSelector';
+import { Dialog, DialogContent } from '../../components/ui/dialog';
+import { Navbar } from '../../components/layout/Navbar';
+import { Footer } from '../../components/layout/Footer';
+import api from '../../lib/api';
+import { useAuth } from '../../contexts/AuthContext';
+import type { Event } from '../../types';
 
 const eventSchema = z.object({
     title: z.string().min(3, "Judul minimal 3 karakter"),

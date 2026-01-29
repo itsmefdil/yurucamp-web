@@ -26,22 +26,22 @@ import Activities from './pages/Activities';
 import ActivityDetail from './pages/ActivityDetail';
 import CampAreas from './pages/CampAreas';
 import CampAreaDetail from './pages/CampAreaDetail';
-import AddCampArea from './pages/AddCampArea';
-import EditCampArea from './pages/EditCampArea';
+import AddCampArea from './pages/camp-area/AddCampArea';
+import EditCampArea from './pages/camp-area/EditCampArea';
 import Events from './pages/Events';
 import EventDetail from './pages/EventDetail';
-import AddEvent from './pages/AddEvent';
-import EditEvent from './pages/EditEvent';
+import AddEvent from './pages/events/AddEvent';
+import EditEvent from './pages/events/EditEvent';
 import EventParticipants from './pages/EventParticipants';
 import Watch from './pages/Watch';
 import WatchSeason from './pages/WatchSeason';
 import Dashboard from './pages/dashboard/Dashboard';
-import AddActivity from './pages/dashboard/AddActivity';
-import EditActivity from './pages/dashboard/EditActivity';
+import AddActivity from './pages/activity/AddActivity';
+import EditActivity from './pages/activity/EditActivity';
 import EditProfile from './pages/dashboard/EditProfile';
-import GearListDashboard from './pages/GearLists/GearListDashboard';
-import PublicGearLists from './pages/GearLists/PublicGearLists';
-import GearListDetail from './pages/GearLists/GearListDetail';
+import GearListDashboard from './pages/gear-lists/GearListDashboard';
+import PublicGearLists from './pages/gear-lists/PublicGearLists';
+import GearListDetail from './pages/gear-lists/GearListDetail';
 import RegionDetail from './pages/RegionDetail';
 import RegionManagement from './pages/RegionManagement';
 import CreateRegion from './pages/CreateRegion';
@@ -72,6 +72,22 @@ function App() {
                         <Route path="/auth/callback" element={<AuthCallback />} />
                         <Route path="/about" element={<About />} />
                         <Route path="/activities" element={<Activities />} />
+                        <Route
+                            path="/a/add"
+                            element={
+                                <ProtectedRoute>
+                                    <AddActivity />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/a/:id/edit"
+                            element={
+                                <ProtectedRoute>
+                                    <EditActivity />
+                                </ProtectedRoute>
+                            }
+                        />
                         <Route path="/a/:id" element={<ActivityDetail />} />
                         <Route path="/camp-areas" element={<CampAreas />} />
                         <Route path="/c/add" element={
@@ -124,22 +140,7 @@ function App() {
                                 </ProtectedRoute>
                             }
                         />
-                        <Route
-                            path="/dashboard/add-activity"
-                            element={
-                                <ProtectedRoute>
-                                    <AddActivity />
-                                </ProtectedRoute>
-                            }
-                        />
-                        <Route
-                            path="/dashboard/edit-activity/:id"
-                            element={
-                                <ProtectedRoute>
-                                    <EditActivity />
-                                </ProtectedRoute>
-                            }
-                        />
+
                         <Route
                             path="/dashboard/pengaturan"
                             element={

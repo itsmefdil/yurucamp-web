@@ -137,7 +137,7 @@ export default function Home() {
                                 {/* Row 1: 2 items */}
                                 <div className="md:col-span-3 p-8 rounded-3xl border border-gray-200 hover:border-orange-300 hover:shadow-lg transition-all duration-300 group">
                                     <Activity className="h-10 w-10 text-orange-500 mb-6 group-hover:scale-110 transition-transform" />
-                                    <h3 className="text-xl font-bold text-gray-900 mb-3">Berbagi Aktifitas</h3>
+                                    <h3 className="text-xl font-bold text-gray-900 mb-3">Berbagi Aktivitas</h3>
                                     <p className="text-gray-500 leading-relaxed">
                                         Bagikan momen seru saat camping, hiking, atau kegiatan outdoor lainnya. Inspirasi teman-temanmu dengan cerita petualangan yang tak terlupakan.
                                     </p>
@@ -192,10 +192,10 @@ export default function Home() {
                         </div>
                     </section>
 
-                    {/* Aktifitas Preview */}
+                    {/* Aktivitas Preview */}
                     <section className="py-12 md:py-32 container mx-auto px-4">
                         <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 md:mb-12">
-                            <h2 className="text-2xl md:text-4xl font-extrabold text-gray-800 tracking-tight text-center md:text-left">Aktifitas Terbaru</h2>
+                            <h2 className="text-2xl md:text-4xl font-extrabold text-gray-800 tracking-tight text-center md:text-left">Aktivitas Terbaru</h2>
                             <Button variant="ghost" className="text-base md:text-lg hover:bg-orange-50 rounded-full px-6 w-full md:w-auto" asChild>
                                 <Link to="/activities" className="flex items-center justify-center gap-2">
                                     Lihat Semua <ArrowRight className="h-5 w-5" />
@@ -208,7 +208,7 @@ export default function Home() {
                                     <Card className="overflow-hidden bg-white group-hover:-translate-y-2 transition-all duration-300 h-full flex flex-col border-2 border-transparent hover:border-orange-200 shadow-lg hover:shadow-2xl rounded-3xl">
                                         <div className="relative aspect-video bg-orange-50 overflow-hidden m-2 rounded-2xl">
                                             <img
-                                                src={activity.imageUrl || "/aktifitas.jpg"}
+                                                src={activity.imageUrl || "/aktivitas.jpg"}
                                                 alt={activity.title}
                                                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                             />
@@ -280,7 +280,7 @@ export default function Home() {
                             {(!activities || activities.length === 0) && (
                                 <div className="col-span-full text-center py-12 text-gray-500 bg-orange-50 rounded-[2rem] border-2 border-dashed border-orange-200">
                                     <Tent className="h-12 w-12 text-orange-300 mx-auto mb-3" />
-                                    <p className="font-medium">Belum ada aktifitas terbaru.</p>
+                                    <p className="font-medium">Belum ada aktivitas terbaru.</p>
                                 </div>
                             )}
                         </div>

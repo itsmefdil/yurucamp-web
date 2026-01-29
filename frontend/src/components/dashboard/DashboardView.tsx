@@ -9,7 +9,6 @@ import { Calendar, MapPin, Edit, Ticket, Plus, Mountain, LogOut, Trash2 } from '
 import { cn } from '../../lib/utils';
 import { useAuth } from '../../contexts/AuthContext';
 import type { User, Activity, Event } from '../../types';
-import { EditEventModal } from '../events/EditEventModal';
 import { DeleteEventDialog } from '../events/DeleteEventDialog';
 
 interface DashboardViewProps {
@@ -23,7 +22,6 @@ export function DashboardView({ profile, activities, joinedEvents, createdEvents
     const [activeTab, setActiveTab] = useState("activities");
     const { logout } = useAuth();
 
-    const [editingEvent, setEditingEvent] = useState<Event | null>(null);
     const [deletingEvent, setDeletingEvent] = useState<Event | null>(null);
 
     return (
@@ -71,7 +69,7 @@ export function DashboardView({ profile, activities, joinedEvents, createdEvents
             {/* Quick Stats */}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {[
-                    { icon: Mountain, label: "Aktifitas", count: activities.length, color: "text-orange-500", bg: "bg-orange-50" },
+                    { icon: Mountain, label: "Aktivitas", count: activities.length, color: "text-orange-500", bg: "bg-orange-50" },
                     { icon: Ticket, label: "Acara Diikuti", count: joinedEvents.length, color: "text-blue-500", bg: "bg-blue-50" },
                     { icon: Calendar, label: "Acara Dibuat", count: createdEvents.length, color: "text-green-500", bg: "bg-green-50" },
                 ].map((item, i) => (
@@ -95,7 +93,7 @@ export function DashboardView({ profile, activities, joinedEvents, createdEvents
                         variant={activeTab === "activities" ? "default" : "ghost"}
                         className={cn("rounded-full px-6 shadow-sm", activeTab !== "activities" && "text-gray-500 hover:text-primary hover:bg-orange-50")}
                     >
-                        Aktifitas Saya
+                        Aktivitas Saya
                     </Button>
                     <Button
                         onClick={() => setActiveTab("joined-events")}
@@ -119,10 +117,10 @@ export function DashboardView({ profile, activities, joinedEvents, createdEvents
                     {activeTab === "activities" && (
                         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             <div className="flex justify-between items-center">
-                                <h2 className="text-xl font-bold text-gray-800">Daftar Aktifitas</h2>
+                                <h2 className="text-xl font-bold text-gray-800">Daftar Aktivitas</h2>
                                 <Button className="rounded-full gap-2" asChild>
-                                    <Link to="/dashboard/add-activity">
-                                        <Plus className="h-4 w-4" /> Tambah Aktifitas
+                                    <Link to="/a/add">
+                                        <Plus className="h-4 w-4" /> Tambah Aktivitas
                                     </Link>
                                 </Button>
                             </div>
@@ -132,10 +130,10 @@ export function DashboardView({ profile, activities, joinedEvents, createdEvents
                                     <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
                                         <Mountain className="h-8 w-8" />
                                     </div>
-                                    <h3 className="text-lg font-bold text-gray-700 mb-2">Belum ada Aktifitas</h3>
+                                    <h3 className="text-lg font-bold text-gray-700 mb-2">Belum ada Aktivitas</h3>
                                     <p className="text-gray-500 mb-6">Bagikan pengalaman seru campingmu</p>
                                     <Button variant="outline" className="rounded-full" asChild>
-                                        <Link to="/dashboard/add-activity">Buat Aktifitas Baru</Link>
+                                        <Link to="/a/add">Buat Aktivitas Baru</Link>
                                     </Button>
                                 </div>
                             ) : (
@@ -179,7 +177,7 @@ export function DashboardView({ profile, activities, joinedEvents, createdEvents
                                                         <Link to={`/a/${activity.id}`}>Lihat</Link>
                                                     </Button>
                                                     <Button size="sm" className="flex-1 rounded-full text-xs font-bold gap-1 bg-gray-900 hover:bg-orange-600 transition-colors" asChild>
-                                                        <Link to={`/dashboard/edit-activity/${activity.id}`}>
+                                                        <Link to={`/a/${activity.id}/edit`}>
                                                             <Edit className="h-3 w-3" /> Edit
                                                         </Link>
                                                     </Button>
@@ -275,7 +273,7 @@ export function DashboardView({ profile, activities, joinedEvents, createdEvents
                             <div className="flex justify-between items-center">
                                 <h2 className="text-xl font-bold text-gray-800">Acara Saya (Organizer)</h2>
                                 <Button className="rounded-full gap-2" asChild>
-                                    <Link to="/dashboard/add-event">
+                                    <Link to="/e/add">
                                         <Plus className="h-4 w-4" /> Buat Acara
                                     </Link>
                                 </Button>
@@ -289,7 +287,7 @@ export function DashboardView({ profile, activities, joinedEvents, createdEvents
                                     <h3 className="text-lg font-bold text-gray-700 mb-2">Belum ada Acara yang Dibuat</h3>
                                     <p className="text-gray-500 mb-6">Kamu belum membuat acara apapun.</p>
                                     <Button variant="outline" className="rounded-full" asChild>
-                                        <Link to="/dashboard/add-event">Buat Acara Baru</Link>
+                                        <Link to="/e/add">Buat Acara Baru</Link>
                                     </Button>
                                 </div>
                             ) : (
@@ -337,13 +335,10 @@ export function DashboardView({ profile, activities, joinedEvents, createdEvents
                                                     <Button variant="outline" size="sm" className="flex-1 rounded-full text-xs font-bold hover:bg-green-50 hover:text-green-600 hover:border-green-200" asChild>
                                                         <Link to={`/e/${event.id}`}>Lihat</Link>
                                                     </Button>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="ghost"
-                                                        className="rounded-full text-xs font-bold gap-1 hover:bg-green-50 hover:text-green-600"
-                                                        onClick={() => setEditingEvent(event)}
-                                                    >
-                                                        <Edit className="h-3 w-3" /> Edit
+                                                    <Button size="sm" className="rounded-full text-xs font-bold gap-1 hover:bg-green-50 hover:text-green-600" asChild>
+                                                        <Link to={`/e/${event.id}/edit`}>
+                                                            <Edit className="h-3 w-3" /> Edit
+                                                        </Link>
                                                     </Button>
                                                     <Button
                                                         size="sm"
@@ -364,12 +359,6 @@ export function DashboardView({ profile, activities, joinedEvents, createdEvents
                 </div>
             </div>
 
-            {/* Modals */}
-            <EditEventModal
-                open={!!editingEvent}
-                onOpenChange={(open) => !open && setEditingEvent(null)}
-                event={editingEvent}
-            />
             <DeleteEventDialog
                 open={!!deletingEvent}
                 onOpenChange={(open) => !open && setDeletingEvent(null)}

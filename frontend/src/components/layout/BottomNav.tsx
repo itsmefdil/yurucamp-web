@@ -4,7 +4,7 @@ import { cn } from '../../lib/utils';
 
 const navItems = [
     { path: '/', icon: Home, label: 'Beranda' },
-    { path: '/activities', icon: Mountain, label: 'Aktifitas' },
+    { path: '/activities', icon: Mountain, label: 'Aktivitas' },
     { path: '/camp-areas', icon: Tent, label: 'Camp' },
     { path: '/events', icon: Calendar, label: 'Acara' },
     { path: '/community', icon: Users, label: 'Komunitas' },
@@ -15,6 +15,17 @@ export function BottomNav() {
 
     // Don't show on login/register pages
     if (location.pathname === '/login' || location.pathname === '/register') {
+        return null;
+    }
+
+    // Hide on form pages (add/edit) to prevent keyboard issues on mobile
+    const isFormPage =
+        location.pathname.includes('/add') ||
+        location.pathname.includes('/edit') ||
+        location.pathname.includes('/create') ||
+        location.pathname === '/dashboard/pengaturan';
+
+    if (isFormPage) {
         return null;
     }
 

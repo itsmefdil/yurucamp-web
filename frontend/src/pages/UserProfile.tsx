@@ -232,12 +232,12 @@ export default function UserProfile() {
                     <div className="md:col-span-2">
                         <h3 className="font-semibold text-gray-900 flex items-center gap-2 mb-4">
                             <Mountain className="w-4 h-4 text-green-500" />
-                            Aktifitas ({activities.length})
+                            Aktivitas ({activities.length})
                         </h3>
                         {activities.length === 0 ? (
                             <Card className="border-none shadow-sm">
                                 <CardContent className="p-8 text-center text-gray-500">
-                                    Belum ada aktifitas
+                                    Belum ada aktivitas
                                 </CardContent>
                             </Card>
                         ) : (

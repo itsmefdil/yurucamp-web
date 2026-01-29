@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Footer } from '../components/layout/Footer';
 import { Navbar } from '../components/layout/Navbar';
 import { Plus, MapPin, Calendar, Tent, ChevronLeft, ChevronRight, Search, X } from 'lucide-react';
-import { AddActivityModal } from '../components/activities/AddActivityModal';
+
 import RegionSelector from '../components/ui/RegionSelector';
 import api from '../lib/api';
 import type { Activity } from '../types';
@@ -19,7 +19,6 @@ const ITEMS_PER_PAGE = 20;
 
 export default function Activities() {
     const { user } = useAuth();
-    const [isAddActivityOpen, setIsAddActivityOpen] = useState(false);
     const [selectedRegionId, setSelectedRegionId] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [searchQuery, setSearchQuery] = useState('');
@@ -80,7 +79,7 @@ export default function Activities() {
                     <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                         <div className="text-center md:text-left">
                             <h1 className="text-2xl md:text-4xl font-black mb-2 leading-tight text-gray-900">
-                                Aktifitas <span className="text-orange-500">Camping</span>
+                                Aktivitas <span className="text-orange-500">Camping</span>
                             </h1>
                             <p className="text-sm md:text-base text-gray-600">
                                 Temukan dan bagikan momen petualanganmu
@@ -90,9 +89,11 @@ export default function Activities() {
                             <Button
                                 size="sm"
                                 className="rounded-xl bg-orange-500 text-white hover:bg-orange-600 font-bold px-6 shadow-lg hover:shadow-orange-200 hover:scale-105 transition-all"
-                                onClick={() => setIsAddActivityOpen(true)}
+                                asChild
                             >
-                                <Plus className="mr-2 h-4 w-4" /> Buat Aktifitas
+                                <Link to="/a/add">
+                                    <Plus className="mr-2 h-4 w-4" /> Buat Aktivitas
+                                </Link>
                             </Button>
                         ) : (
                             <Button size="sm" className="rounded-xl bg-orange-500 text-white hover:bg-orange-600 font-bold px-6 shadow-lg" asChild>
@@ -117,7 +118,7 @@ export default function Activities() {
                                 </div>
                                 <input
                                     type="text"
-                                    placeholder="Cari aktifitas, lokasi, atau pengguna..."
+                                    placeholder="Cari aktivitas, lokasi, atau pengguna..."
                                     value={searchQuery}
                                     onChange={(e) => handleSearch(e.target.value)}
                                     className="w-full pl-11 pr-10 py-2.5 bg-transparent rounded-2xl focus:outline-none focus:bg-orange-50/50 text-gray-800 placeholder-gray-400 font-medium transition-all"
@@ -195,7 +196,7 @@ export default function Activities() {
                                         <Card className="overflow-hidden bg-white group-hover:-translate-y-2 transition-all duration-300 h-full flex flex-col border-2 border-transparent hover:border-orange-200 shadow-lg hover:shadow-2xl rounded-3xl">
                                             <div className="relative aspect-video bg-orange-50 overflow-hidden m-2 rounded-2xl">
                                                 <img
-                                                    src={activity.imageUrl || "/aktifitas.jpg"}
+                                                    src={activity.imageUrl || "/aktivitas.jpg"}
                                                     alt={activity.title}
                                                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                                 />
@@ -329,14 +330,13 @@ export default function Activities() {
                     ) : (
                         <div className="col-span-full text-center py-12 text-gray-500 bg-orange-50 rounded-3xl border-2 border-dashed border-orange-200">
                             <Tent className="h-12 w-12 text-orange-300 mx-auto mb-3" />
-                            <p className="font-medium">Belum ada aktifitas.</p>
+                            <p className="font-medium">Belum ada aktivitas.</p>
                         </div>
                     )
                 }
             </main >
 
             <Footer />
-            <AddActivityModal open={isAddActivityOpen} onOpenChange={setIsAddActivityOpen} />
         </div >
     );
 }

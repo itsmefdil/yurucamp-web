@@ -7,14 +7,14 @@ import { toast } from 'sonner';
 import { Image, MapPin, DollarSign, Loader2, X, Wifi, Car, Coffee, Tent, Info, ArrowLeft } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Textarea } from '../components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Navbar } from '../components/layout/Navbar';
-import { Footer } from '../components/layout/Footer';
-import api from '../lib/api';
-import { compressImage } from '../lib/imageCompression';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Textarea } from '../../components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { Navbar } from '../../components/layout/Navbar';
+import { Footer } from '../../components/layout/Footer';
+import api from '../../lib/api';
+import { compressImage } from '../../lib/imageCompression';
 
 
 const campAreaSchema = z.object({
@@ -59,6 +59,7 @@ export default function AddCampArea() {
             location: '',
             price: '',
         },
+        mode: 'onSubmit',
     });
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -241,7 +242,19 @@ export default function AddCampArea() {
                         </CardHeader>
 
                         <CardContent className="p-6 md:p-8">
-                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                            <form
+                                onSubmit={form.handleSubmit(onSubmit, (errors) => {
+                                    const errorFields = Object.keys(errors);
+                                    if (errorFields.length > 0) {
+                                        const firstError = errors[errorFields[0] as keyof CampAreaFormValues];
+                                        toast.error("Mohon lengkapi form", {
+                                            description: firstError?.message || "Beberapa field belum diisi dengan benar",
+                                            duration: 4000,
+                                        });
+                                    }
+                                })}
+                                className="space-y-8"
+                            >
                                 {/* Photo Upload */}
                                 <div className="space-y-4">
                                     <label className="block text-sm font-bold text-gray-700">

@@ -7,16 +7,16 @@ import { toast } from 'sonner';
 import { Image, MapPin, DollarSign, Loader2, X, Wifi, Car, Coffee, Tent, Info, Upload, ArrowLeft } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Textarea } from '../components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Navbar } from '../components/layout/Navbar';
-import { Footer } from '../components/layout/Footer';
-import api from '../lib/api';
-import { useAuth } from '../contexts/AuthContext';
-import { compressImage } from '../lib/imageCompression';
-import type { CampArea } from '../types';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Textarea } from '../../components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { Navbar } from '../../components/layout/Navbar';
+import { Footer } from '../../components/layout/Footer';
+import api from '../../lib/api';
+import { useAuth } from '../../contexts/AuthContext';
+import { compressImage } from '../../lib/imageCompression';
+import type { CampArea } from '../../types';
 
 const campAreaSchema = z.object({
     name: z.string().min(3, "Nama minimal 3 karakter"),
