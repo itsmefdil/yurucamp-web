@@ -209,9 +209,9 @@ export default function RegionDetail() {
     return (
         <div className="min-h-screen flex flex-col bg-gray-50 relative pb-20 md:pb-0">
             {/* Background Decorations */}
-            <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                <div className="absolute -top-20 -right-20 w-96 h-96 bg-gradient-to-br from-orange-200/40 to-amber-200/40 rounded-full blur-3xl" />
-                <div className="absolute top-1/3 -left-20 w-72 h-72 bg-gradient-to-br from-orange-100/40 to-yellow-100/40 rounded-full blur-3xl" />
+            <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-30">
+                <div className="absolute -top-20 -right-20 w-96 h-96 bg-orange-100 rounded-full" />
+                <div className="absolute top-1/3 -left-20 w-72 h-72 bg-yellow-50 rounded-full" />
             </div>
 
             <Navbar />
@@ -284,7 +284,7 @@ export default function RegionDetail() {
                             {isAdmin && (
                                 <div className="flex gap-2 w-full md:w-auto col-span-2 md:col-span-1">
                                     <Link to={`/r/${slug}/manage`} className="flex-1 md:flex-none">
-                                        <Button variant="secondary" className="w-full bg-white/90 backdrop-blur hover:bg-white text-gray-900 shadow-lg whitespace-nowrap">
+                                        <Button variant="secondary" className="w-full bg-white hover:bg-gray-50 text-gray-900 shadow-lg whitespace-nowrap">
                                             <Settings className="w-4 h-4 mr-2" />
                                             Kelola
                                         </Button>
@@ -308,7 +308,7 @@ export default function RegionDetail() {
                                                 <Button
                                                     variant="destructive"
                                                     disabled={leaveMutation.isPending}
-                                                    className="w-full md:w-auto bg-red-500/80 backdrop-blur hover:bg-red-600 shadow-lg col-span-1"
+                                                    className="w-full md:w-auto bg-red-500 hover:bg-red-600 shadow-lg col-span-1"
                                                 >
                                                     <LogOut className="w-4 h-4 mr-2" />
                                                     Keluar
@@ -489,7 +489,7 @@ export default function RegionDetail() {
                                                         />
                                                         <div className="absolute top-4 left-4 z-10">
                                                             {isPast ? (
-                                                                <span className="bg-gray-900/90 text-white text-[10px] font-bold px-3 py-1.5 rounded-full backdrop-blur-md shadow-lg border border-white/10 tracking-wide">
+                                                                <span className="bg-gray-900 text-white text-[10px] font-bold px-3 py-1.5 rounded-full shadow-lg border border-white/10 tracking-wide">
                                                                     SELESAI
                                                                 </span>
                                                             ) : (

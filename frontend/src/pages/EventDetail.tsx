@@ -180,10 +180,10 @@ export default function EventDetail() {
     return (
         <div className="min-h-screen flex flex-col relative bg-[#FDFBF7] overflow-x-hidden">
             {/* Abstract Background Elements */}
-            <div className="fixed inset-0 z-0 pointer-events-none">
-                <div className="absolute -top-[10%] -right-[10%] w-[70vw] h-[70vw] rounded-full bg-gradient-to-br from-orange-100/40 to-amber-100/40 blur-[120px]" />
-                <div className="absolute top-[20%] -left-[10%] w-[50vw] h-[50vw] rounded-full bg-gradient-to-tr from-orange-50/50 to-yellow-50/50 blur-[100px]" />
-                <div className="absolute -bottom-[10%] right-[20%] w-[60vw] h-[60vw] rounded-full bg-gradient-to-t from-orange-50/30 to-amber-50/30 blur-[140px]" />
+            {/* Abstract Background Elements - Simplified */}
+            <div className="fixed inset-0 z-0 pointer-events-none opacity-30">
+                <div className="absolute top-0 right-0 w-[70vw] h-[70vw] rounded-full bg-orange-100" />
+                <div className="absolute bottom-0 left-0 w-[60vw] h-[60vw] rounded-full bg-amber-50" />
             </div>
 
             <div className="relative z-10 flex flex-col min-h-screen">
@@ -276,11 +276,11 @@ export default function EventDetail() {
                                     <div className="absolute top-4 left-4 pointer-events-none">
                                         <div className="flex items-center gap-2">
                                             {isPast ? (
-                                                <span className="bg-gray-800/90 backdrop-blur-md px-3 py-1.5 rounded-full text-white text-xs font-bold border border-white/10 flex items-center gap-1.5 shadow-lg">
+                                                <span className="bg-gray-800/90 px-3 py-1.5 rounded-full text-white text-xs font-bold border border-white/10 flex items-center gap-1.5 shadow-lg">
                                                     <Info className="h-3.5 w-3.5" /> Event Selesai
                                                 </span>
                                             ) : (
-                                                <span className="bg-green-500/90 backdrop-blur-md px-3 py-1.5 rounded-full text-white text-xs font-bold shadow-lg animate-pulse flex items-center gap-1.5 border border-white/20">
+                                                <span className="bg-green-600/90 px-3 py-1.5 rounded-full text-white text-xs font-bold shadow-lg animate-pulse flex items-center gap-1.5 border border-white/20">
                                                     <div className="w-2 h-2 bg-white rounded-full animate-ping" />
                                                     Open Registration
                                                 </span>
@@ -648,7 +648,7 @@ export default function EventDetail() {
                             {!isJoined ? (
                                 <div className="space-y-2">
                                     {(!isPast && ((event.maxParticipants ?? 0) === 0 || totalParticipantsCount < (event.maxParticipants ?? 0))) && (
-                                        <div className="bg-white/95 backdrop-blur-md p-2 rounded-xl border border-orange-100 shadow-xl flex items-center justify-between ring-1 ring-black/5 animate-in fade-in slide-in-from-bottom-2">
+                                        <div className="bg-white p-2 rounded-xl border border-orange-100 shadow-xl flex items-center justify-between ring-1 ring-black/5 animate-in fade-in slide-in-from-bottom-2">
                                             <span className="text-xs font-bold text-gray-700 pl-2">Jumlah</span>
                                             <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-0.5 shadow-inner">
                                                 <Button
@@ -707,7 +707,7 @@ export default function EventDetail() {
                 {
                     isLightboxOpen && event.imageUrl && (
                         <div
-                            className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+                            className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4 animate-in fade-in duration-200"
                             onClick={() => setIsLightboxOpen(false)}
                         >
                             <div className="relative max-w-7xl max-h-[90vh] w-full flex items-center justify-center">
