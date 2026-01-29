@@ -6,7 +6,7 @@ import { Card, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
-import { Plus, MapPin, Calendar, Users, DollarSign, Clock, History, Search, X } from 'lucide-react';
+import { Plus, MapPin, Calendar, Users, DollarSign, Clock, History, Search, X, Filter } from 'lucide-react';
 import RegionSelector from '../components/ui/RegionSelector';
 import api from '../lib/api';
 import type { Event } from '../types';
@@ -101,10 +101,10 @@ export default function Events() {
                 {/* Unified Search & Filter Bar */}
                 <div className="mb-6 space-y-6">
                     {/* Search & Region Combined */}
-                    <div className="bg-white rounded-2xl shadow-lg border border-orange-100 p-2">
-                        <div className="flex flex-col md:flex-row gap-2">
+                    <div className="bg-white rounded-2xl shadow-lg border border-orange-100 overflow-hidden">
+                        <div className="flex flex-col md:flex-row">
                             {/* Search Input */}
-                            <div className="relative flex-1 group">
+                            <div className="relative flex-1 group border-b md:border-b-0 md:border-r border-gray-100">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                     <Search className="h-5 w-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
                                 </div>
@@ -113,30 +113,41 @@ export default function Events() {
                                     placeholder="Cari event seru..."
                                     value={searchQuery}
                                     onChange={(e) => handleSearch(e.target.value)}
-                                    className="w-full pl-11 pr-10 py-2.5 bg-transparent rounded-2xl focus:outline-none focus:bg-orange-50/50 text-gray-800 placeholder-gray-400 font-medium transition-all"
+                                    className="w-full pl-11 pr-10 py-3.5 bg-transparent focus:outline-none focus:bg-orange-50/30 text-gray-800 placeholder-gray-400 font-medium transition-all"
                                 />
                                 {searchQuery && (
                                     <button
                                         onClick={() => handleSearch('')}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors"
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1.5 rounded-full hover:bg-gray-100 transition-all hover:scale-110"
                                     >
                                         <X className="h-4 w-4" />
                                     </button>
                                 )}
                             </div>
 
-                            <div className="hidden md:block w-px bg-gray-100 my-2" />
-
                             {/* Region Filter */}
-                            <div className="w-full md:w-[280px]">
-                                <RegionSelector
-                                    value={selectedRegionId}
-                                    onChange={setSelectedRegionId}
-                                    showLabel={false}
-                                    variant="ghost"
-                                    className="h-full"
-                                    placeholder="Semua Lokasi"
-                                />
+                            <div className="min-w-[280px] relative group">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+                                    <Filter className="h-4 w-4 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                                </div>
+                                <div className="pl-7">
+                                    <RegionSelector
+                                        value={selectedRegionId}
+                                        onChange={setSelectedRegionId}
+                                        showLabel={false}
+                                        variant="ghost"
+                                        className="h-full"
+                                        placeholder="Semua Lokasi"
+                                    />
+                                </div>
+                                {selectedRegionId && (
+                                    <button
+                                        onClick={() => setSelectedRegionId(null)}
+                                        className="absolute right-10 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-all hover:scale-110 z-20"
+                                    >
+                                        <X className="h-3.5 w-3.5" />
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>

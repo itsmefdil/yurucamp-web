@@ -15,7 +15,7 @@ router.get('/', async (req: Request, res: Response) => {
     try {
         const { getLevelName } = await import('../utils/exp');
 
-        const { regionId } = req.query;
+        const { regionId, categoryId } = req.query;
 
         let query = db.select({
             id: activities.id,
@@ -49,6 +49,11 @@ router.get('/', async (req: Request, res: Response) => {
         if (regionId) {
             // @ts-ignore
             query.where(eq(activities.regionId, regionId));
+        }
+
+        if (categoryId) {
+            // @ts-ignore
+            query.where(eq(activities.categoryId, categoryId));
         }
 
         const result = await query.orderBy(desc(activities.createdAt));
