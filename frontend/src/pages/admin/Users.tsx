@@ -13,7 +13,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '../../components/ui/avatar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { Pencil } from 'lucide-react';
+import { Pencil, Search, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
     Dialog,
     DialogContent,
@@ -44,6 +44,15 @@ export default function AdminUsers() {
         level: 1,
         exp: 0
     });
+
+    // Valid role type for filter
+    type RoleFilterType = 'all' | 'user' | 'admin';
+
+    // Filter & Pagination state
+    const [searchQuery, setSearchQuery] = useState('');
+    const [roleFilter, setRoleFilter] = useState<RoleFilterType>('all');
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 10;
 
     useEffect(() => {
         fetchUsers();
@@ -85,17 +94,64 @@ export default function AdminUsers() {
         }
     };
 
+    const filteredUsers = users.filter(user => {
+        const matchesSearch = user.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            user.email?.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesRole = roleFilter === 'all' || user.role === roleFilter;
+        return matchesSearch && matchesRole;
+    });
+
+    const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
+
+    // Reset page when filter changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery, roleFilter]);
+
+    const paginatedUsers = filteredUsers.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE
+    );
+
     if (loading) {
         return <div>Loading users...</div>;
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 pb-24 md:pb-8">
             <h1 className="text-3xl font-bold tracking-tight">Users</h1>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+                <div className="relative w-full sm:w-64">
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+                    <Input
+                        placeholder="Search users..."
+                        className="pl-8"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                </div>
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <Filter className="h-4 w-4 text-gray-500 hidden sm:block" />
+                    <Select
+                        value={roleFilter}
+                        onValueChange={(value) => setRoleFilter(value as RoleFilterType)}
+                    >
+                        <SelectTrigger className="w-full sm:w-[180px]">
+                            <SelectValue placeholder="Filter by role" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Roles</SelectItem>
+                            <SelectItem value="user">User</SelectItem>
+                            <SelectItem value="admin">Admin</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+            </div>
 
             <Card>
                 <CardHeader>
-                    <CardTitle>All Users</CardTitle>
+                    <CardTitle>All Users ({filteredUsers.length})</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <Table>
@@ -111,33 +167,68 @@ export default function AdminUsers() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {users.map((user) => (
-                                <TableRow key={user.id}>
-                                    <TableCell>
-                                        <Avatar>
-                                            <AvatarImage src={user.avatarUrl} alt={user.fullName} />
-                                            <AvatarFallback>{user.fullName ? user.fullName[0].toUpperCase() : 'U'}</AvatarFallback>
-                                        </Avatar>
-                                    </TableCell>
-                                    <TableCell className="font-medium">{user.fullName}</TableCell>
-                                    <TableCell>{user.email}</TableCell>
-                                    <TableCell>
-                                        <Badge variant={user.role === 'admin' ? 'destructive' : 'secondary'}>
-                                            {user.role}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell>{user.level}</TableCell>
-                                    <TableCell className="text-right">{user.exp}</TableCell>
-                                    <TableCell>
-                                        <Button variant="ghost" size="icon" onClick={() => handleEditClick(user)}>
-                                            <Pencil className="h-4 w-4" />
-                                        </Button>
+                            {paginatedUsers.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                                        No users found matching your criteria
                                     </TableCell>
                                 </TableRow>
-                            ))}
+                            ) :
+                                paginatedUsers.map((user) => (
+                                    <TableRow key={user.id}>
+                                        <TableCell>
+                                            <Avatar>
+                                                <AvatarImage src={user.avatarUrl} alt={user.fullName} />
+                                                <AvatarFallback>{user.fullName ? user.fullName[0].toUpperCase() : 'U'}</AvatarFallback>
+                                            </Avatar>
+                                        </TableCell>
+                                        <TableCell className="font-medium">{user.fullName}</TableCell>
+                                        <TableCell>{user.email}</TableCell>
+                                        <TableCell>
+                                            <Badge variant={user.role === 'admin' ? 'destructive' : 'secondary'}>
+                                                {user.role}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell>{user.level}</TableCell>
+                                        <TableCell className="text-right">{user.exp}</TableCell>
+                                        <TableCell>
+                                            <Button variant="ghost" size="icon" onClick={() => handleEditClick(user)}>
+                                                <Pencil className="h-4 w-4" />
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
                         </TableBody>
                     </Table>
                 </CardContent>
+                {totalPages > 1 && (
+                    <div className="flex items-center justify-between px-4 py-4 border-t">
+                        <div className="text-sm text-gray-500">
+                            Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, filteredUsers.length)} of {filteredUsers.length} users
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                disabled={currentPage === 1}
+                            >
+                                <ChevronLeft className="h-4 w-4" />
+                            </Button>
+                            <span className="text-sm font-medium">
+                                Page {currentPage} of {totalPages}
+                            </span>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                disabled={currentPage === totalPages}
+                            >
+                                <ChevronRight className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    </div>
+                )}
             </Card>
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
