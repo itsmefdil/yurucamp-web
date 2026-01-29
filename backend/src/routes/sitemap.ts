@@ -21,7 +21,7 @@ const STATIC_ROUTES = [
     '/w/season-3',
 ];
 
-const BASE_URL = 'https://yurucamp.my.id'; // Adjust as needed or use env var
+const BASE_URL = 'https://www.yurucamp.my.id'; // Adjust as needed or use env var
 
 router.get('/', async (req, res) => {
     try {
