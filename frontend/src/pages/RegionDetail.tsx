@@ -12,7 +12,7 @@ import { Footer } from '../components/layout/Footer';
 import { Button } from '../components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
+
 import {
     AlertDialog,
     AlertDialogAction,
@@ -79,7 +79,7 @@ export default function RegionDetail() {
     const { slug } = useParams<{ slug: string }>();
     const { user } = useAuth();
     const queryClient = useQueryClient();
-    const [showMembersModal, setShowMembersModal] = useState(false);
+    // const [showMembersModal, setShowMembersModal] = useState(false); // Removed
 
     // Fetch region details
     const { data: region, isLoading: loadingRegion } = useQuery<Region>({
@@ -581,20 +581,22 @@ export default function RegionDetail() {
                                         </Link>
                                     ))}
                                     {members.length > 5 && (
-                                        <div
-                                            onClick={() => setShowMembersModal(true)}
+                                        <Link
+                                            to={`/r/${slug}/members`}
                                             className="w-9 h-9 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center text-xs text-gray-500 font-medium cursor-pointer hover:bg-gray-100 transition-colors"
                                         >
                                             +{members.length - 5}
-                                        </div>
+                                        </Link>
                                     )}
                                 </div>
                                 <Button
                                     variant="ghost"
                                     className="w-full text-xs text-gray-500 hover:text-orange-600 h-8 mt-2"
-                                    onClick={() => setShowMembersModal(true)}
+                                    asChild
                                 >
-                                    Lihat Semua Anggota
+                                    <Link to={`/r/${slug}/members`}>
+                                        Lihat Semua Anggota
+                                    </Link>
                                 </Button>
                             </div>
                         </CardContent>
@@ -629,38 +631,7 @@ export default function RegionDetail() {
 
             <Footer />
 
-            {/* Members Modal */}
-            <Dialog open={showMembersModal} onOpenChange={setShowMembersModal}>
-                <DialogContent className="max-w-md max-h-[80vh] flex flex-col p-0 overflow-hidden gap-0">
-                    <DialogHeader className="p-4 border-b border-gray-100 bg-gray-50">
-                        <DialogTitle className="flex items-center gap-2">
-                            <Users className="w-5 h-5 text-orange-500" />
-                            Anggota ({members.length})
-                        </DialogTitle>
-                    </DialogHeader>
-                    <div className="flex-1 overflow-y-auto p-2 space-y-1">
-                        {members.map((member) => (
-                            <Link key={member.id} to={`/u/${member.id}`} className="flex items-center gap-3 p-3 rounded-xl hover:bg-orange-50 transition-colors group">
-                                <Avatar className="w-10 h-10 border border-gray-200 group-hover:border-orange-200">
-                                    <AvatarImage src={member.avatarUrl} alt={member.fullName} />
-                                    <AvatarFallback className="bg-gray-100 text-gray-600 group-hover:bg-orange-100 group-hover:text-orange-600">
-                                        {getInitials(member.fullName)}
-                                    </AvatarFallback>
-                                </Avatar>
-                                <div className="flex-1">
-                                    <p className="font-semibold text-gray-900 text-sm flex items-center gap-2">
-                                        {member.fullName}
-                                        {member.role === 'admin' && (
-                                            <span className="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold">ADMIN</span>
-                                        )}
-                                    </p>
-                                    <p className="text-xs text-gray-400">Bergabung {new Date(member.joinedAt).toLocaleDateString()}</p>
-                                </div>
-                            </Link>
-                        ))}
-                    </div>
-                </DialogContent>
-            </Dialog>
+
         </div >
     );
 }

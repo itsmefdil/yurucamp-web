@@ -61,12 +61,15 @@ router.get('/', async (req, res) => {
             imageUrl: regions.imageUrl,
             coverUrl: regions.coverUrl,
             createdAt: regions.createdAt,
-            memberCount: sql<number>`(SELECT COUNT(*)::int FROM ${regionMembers} WHERE ${regionMembers.regionId} = ${regions.id})`,
+            memberCount: sql<number>`count(${regionMembers.id})::int`,
         }).from(regions)
+            .leftJoin(regionMembers, eq(regionMembers.regionId, regions.id))
             .where(eq(regions.status, 'active')) // Only show active regions by default
+            .groupBy(regions.id)
             .orderBy(regions.name);
         res.json(result);
     } catch (error) {
+        console.error('Failed to fetch regions:', error);
         res.status(500).json({ error: 'Failed to fetch regions' });
     }
 });

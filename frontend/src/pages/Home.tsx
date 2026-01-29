@@ -333,7 +333,7 @@ export default function Home() {
                                                 </h3>
                                                 <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
                                                     <Users className="w-3.5 h-3.5" />
-                                                    <span>{region.memberCount} anggota</span>
+                                                    <span className="font-medium">{region.memberCount || 0} anggota</span>
                                                 </div>
                                             </CardContent>
                                         </Card>

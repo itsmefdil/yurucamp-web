@@ -14,7 +14,7 @@ export function Navbar() {
                 <div className="flex h-14 lg:h-20 items-center justify-between px-4 lg:px-8">
                     <div className="flex items-center gap-2">
                         <Link to="/">
-                            <img src="/logo.png" alt="YuruCamp Logo" className="h-8 lg:h-10 w-auto object-contain hover:scale-105 transition-transform" />
+                            <img src="/yc-id.png" alt="YuruCamp Logo" className="h-8 lg:h-10 w-auto object-contain hover:scale-105 transition-transform" />
                         </Link>
                     </div>
 

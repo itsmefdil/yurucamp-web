@@ -32,6 +32,7 @@ import Events from './pages/Events';
 import EventDetail from './pages/EventDetail';
 import AddEvent from './pages/AddEvent';
 import EditEvent from './pages/EditEvent';
+import EventParticipants from './pages/EventParticipants';
 import Watch from './pages/Watch';
 import WatchSeason from './pages/WatchSeason';
 import Dashboard from './pages/dashboard/Dashboard';
@@ -45,6 +46,7 @@ import RegionManagement from './pages/RegionManagement';
 import CreateRegion from './pages/CreateRegion';
 import Community from './pages/Community';
 import UserProfile from './pages/UserProfile';
+import RegionMembers from './pages/RegionMembers';
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -94,6 +96,7 @@ function App() {
                                 <EditEvent />
                             </ProtectedRoute>
                         } />
+                        <Route path="/e/:id/participants" element={<EventParticipants />} />
                         <Route path="/watch" element={<Watch />} />
                         <Route path="/w/:seasonId" element={<WatchSeason />} />
                         <Route path="/r/create" element={
@@ -102,6 +105,7 @@ function App() {
                             </ProtectedRoute>
                         } />
                         <Route path="/r/:slug" element={<RegionDetail />} />
+                        <Route path="/r/:slug/members" element={<RegionMembers />} />
                         <Route path="/r/:slug/manage" element={
                             <ProtectedRoute>
                                 <RegionManagement />
