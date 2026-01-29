@@ -85,6 +85,7 @@ router.get('/:id', async (req: Request, res: Response) => {
             imageUrl: activities.imageUrl,
             additionalImages: activities.additionalImages,
             userId: activities.userId,
+            regionId: activities.regionId,
             createdAt: activities.createdAt,
             user: {
                 id: users.id,
