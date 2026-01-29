@@ -24,6 +24,34 @@ router.get('/', authenticate, async (req: Request, res: Response) => {
     }
 });
 
+// GET all public gear lists
+router.get('/public', optionalAuthenticate, async (req: Request, res: Response) => {
+    try {
+        const result = await db.select({
+            id: gearLists.id,
+            name: gearLists.name,
+            description: gearLists.description,
+            isPublic: gearLists.isPublic,
+            createdAt: gearLists.createdAt,
+            userId: gearLists.userId,
+            user: {
+                id: users.id,
+                fullName: users.fullName,
+                avatarUrl: users.avatarUrl
+            }
+        })
+            .from(gearLists)
+            .leftJoin(users, eq(gearLists.userId, users.id))
+            .where(eq(gearLists.isPublic, true))
+            .orderBy(desc(gearLists.createdAt));
+
+        res.json(result);
+    } catch (error) {
+        console.error("Error fetching public gear lists:", error);
+        res.status(500).json({ error: 'Failed to fetch public gear lists' });
+    }
+});
+
 // GET single gear list with categories and items (Public or Owner)
 router.get('/:id', optionalAuthenticate, async (req: Request, res: Response) => {
     try {
