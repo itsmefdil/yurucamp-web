@@ -11,7 +11,6 @@ import type { Event } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { formatDate } from '../lib/utils';
 import { toast } from 'sonner';
-import { EventParticipantsModal } from '../components/events/EventParticipantsModal';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/avatar';
 import ReactMarkdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
@@ -22,7 +21,6 @@ export default function EventDetail() {
     const { user } = useAuth();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
-    const [isParticipantsModalOpen, setIsParticipantsModalOpen] = useState(false);
     const [isLightboxOpen, setIsLightboxOpen] = useState(false);
     const [seatCount, setSeatCount] = useState(1);
 
@@ -398,8 +396,10 @@ export default function EventDetail() {
                                             </div>
                                         )}
                                     </div>
-                                    <Button variant="outline" className="w-full rounded-full h-8 md:h-10 text-xs md:text-sm" onClick={() => setIsParticipantsModalOpen(true)}>
-                                        Lihat Semua
+                                    <Button variant="outline" className="w-full rounded-full h-8 md:h-10 text-xs md:text-sm" asChild>
+                                        <Link to={`/e/${id}/participants`}>
+                                            Lihat Semua
+                                        </Link>
                                     </Button>
                                 </div>
                             </div>
@@ -639,12 +639,7 @@ export default function EventDetail() {
 
                 {/* Modals & Overlays */}
 
-                <EventParticipantsModal
-                    open={isParticipantsModalOpen}
-                    onOpenChange={setIsParticipantsModalOpen}
-                    participants={allParticipants}
-                    title={event.title}
-                />
+
 
                 {/* Mobile Floating Action Bar */}
                 {

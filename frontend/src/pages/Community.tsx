@@ -5,8 +5,7 @@ import { Loader2, Users, Globe, Plus } from 'lucide-react';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
 import { Card, CardContent } from '../components/ui/card';
-import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/avatar';
-import { Badge } from '../components/ui/badge';
+
 import { Button } from '../components/ui/button';
 import api from '../lib/api';
 
@@ -107,7 +106,7 @@ export default function Komunitas() {
                                         </h3>
                                         <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
                                             <Users className="w-4 h-4" />
-                                            <span>{region.memberCount} anggota</span>
+                                            <span className="font-medium">{region.memberCount || 0} anggota</span>
                                         </div>
                                         {region.description && (
                                             <p className="text-sm text-gray-400 line-clamp-2 mt-2">
