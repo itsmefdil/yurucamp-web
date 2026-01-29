@@ -282,8 +282,8 @@ export default function AdminDashboard() {
                 {/* User Growth Chart */}
                 <Card className="col-span-4 border-none shadow-md">
                     <CardHeader>
-                        <CardTitle className="text-gray-800">User Growth</CardTitle>
-                        <CardDescription>Pertumbuhan pengguna baru seiring waktu</CardDescription>
+                        <CardTitle className="text-gray-800">Pertumbuhan Pengguna</CardTitle>
+                        <CardDescription>Jumlah user baru per hari (30 hari terakhir)</CardDescription>
                     </CardHeader>
                     <CardContent className="pl-0">
                         <div className="h-[300px] w-full">
@@ -300,9 +300,13 @@ export default function AdminDashboard() {
                                         dataKey="date"
                                         stroke="#9ca3af"
                                         fontSize={12}
-                                        tickLine={false}
-                                        axisLine={false}
-                                        dy={10}
+                                        interval="preserveStartEnd"
+                                        minTickGap={50}
+                                        tickFormatter={(value) => {
+                                            if (!value) return '';
+                                            const date = new Date(value);
+                                            return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+                                        }}
                                     />
                                     <YAxis
                                         stroke="#9ca3af"
@@ -311,6 +315,7 @@ export default function AdminDashboard() {
                                         axisLine={false}
                                         tickFormatter={(value) => `${value}`}
                                         dx={-10}
+                                        allowDecimals={false}
                                     />
                                     <Tooltip
                                         contentStyle={{
@@ -319,6 +324,12 @@ export default function AdminDashboard() {
                                             border: 'none',
                                             boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
                                         }}
+                                        labelFormatter={(value) => {
+                                            if (!value) return '';
+                                            const date = new Date(value);
+                                            return date.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+                                        }}
+                                        formatter={(value: number | undefined) => [`${value ?? 0} user baru`, 'Jumlah']}
                                     />
                                     <Line
                                         type="monotone"

@@ -96,24 +96,41 @@ router.get('/stats', async (req: Request, res: Response) => {
         // Actually, let's keep it simple: just return the counts for now, and maybe a mocked growth if empty?
         // No, let's try to get actual data.
 
-        // Fetch last 50 users created_at to generate a simple growth chart client side or server side
-        const lastUsers = await db.select({ createdAt: users.createdAt })
-            .from(users)
-            .orderBy(desc(users.createdAt))
-            .limit(100);
+        // Fetch users from last 30 days for daily growth chart
+        const today = new Date();
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(today.getDate() - 30);
 
-        // Process into daily counts
+        const recentUsers = await db.select({ createdAt: users.createdAt })
+            .from(users);
+
+        // Count users per day
         const growthMap = new Map<string, number>();
-        lastUsers.forEach(u => {
+        recentUsers.forEach(u => {
             if (!u.createdAt) return;
-            const date = u.createdAt.split('T')[0];
-            growthMap.set(date, (growthMap.get(date) || 0) + 1);
+            // Handle PostgreSQL timestamp: "2026-01-29 12:39:22.063728+00"
+            const dateStr = String(u.createdAt);
+            if (dateStr < thirtyDaysAgo.toISOString()) return;
+
+            const date = dateStr.split('T')[0]; // YYYY-MM-DD
+            // If format is like "2026-01-29 12:..." splitting by T might verify if it is ISO or space separated
+            // Postgres default might be space. Let's handle both.
+            const cleanDate = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr.split(' ')[0];
+
+            growthMap.set(cleanDate, (growthMap.get(cleanDate) || 0) + 1);
         });
 
-        // Convert map to array
-        const userGrowth = Array.from(growthMap.entries())
-            .map(([date, count]) => ({ date, count }))
-            .sort((a, b) => a.date.localeCompare(b.date));
+        // Generate last 30 days with 0 for days without new users
+        const userGrowth: Array<{ date: string; count: number }> = [];
+        for (let i = 30; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(today.getDate() - i);
+            const dateStr = d.toISOString().split('T')[0];
+            userGrowth.push({
+                date: dateStr,
+                count: growthMap.get(dateStr) || 0
+            });
+        }
 
         res.json({
             userCount,
