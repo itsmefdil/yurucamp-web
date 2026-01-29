@@ -202,11 +202,11 @@ export default function Activities() {
                                                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-60" />
                                                 <div className="absolute bottom-3 left-3 right-3 text-white flex flex-col gap-1.5 items-start">
                                                     {activity.region && (
-                                                        <div className="px-2 py-0.5 rounded-md bg-black/40 backdrop-blur-sm text-[10px] font-medium border border-white/10">
+                                                        <div className="px-2 py-0.5 rounded-md bg-black/60 text-[10px] font-medium border border-white/10">
                                                             {activity.region.name}
                                                         </div>
                                                     )}
-                                                    <div className="flex items-center gap-1 text-xs font-bold bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-full w-fit max-w-full">
+                                                    <div className="flex items-center gap-1 text-xs font-bold bg-black/50 px-3 py-1.5 rounded-full w-fit max-w-full">
                                                         <MapPin className="h-3 w-3 flex-shrink-0" />
                                                         <span className="truncate">{activity.location || "Lokasi tidak tersedia"}</span>
                                                     </div>

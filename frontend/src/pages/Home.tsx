@@ -98,7 +98,7 @@ export default function Home() {
                         </div>
 
                         {/* Image Strip */}
-                        <div className="pb-12 px-4 overflow-hidden md:overflow-x-auto no-scrollbar mask-linear-fade">
+                        <div className="pb-12 px-4 overflow-hidden md:overflow-x-auto no-scrollbar">
                             <div className="flex w-max md:w-auto md:justify-center gap-4 md:gap-8 animate-marquee md:animate-none hover:[animation-play-state:paused]">
                                 {[...heroImages, ...heroImages].map((img: string, i: number) => (
                                     <div
@@ -112,7 +112,7 @@ export default function Home() {
                                         ][i % 5]} rounded-2xl shadow-lg transform hover:scale-105 hover:z-10 transition-all duration-300 border-4 border-white overflow-hidden`}
                                     >
                                         <div
-                                            className="w-full h-full opacity-50 mix-blend-multiply bg-cover bg-center"
+                                            className="w-full h-full bg-cover bg-center"
                                             style={{ backgroundImage: `url('${img}')` }}
                                         />
                                     </div>
@@ -212,9 +212,9 @@ export default function Home() {
                                                 alt={activity.title}
                                                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                             />
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-60" />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                                             <div className="absolute bottom-3 left-3 right-3 text-white">
-                                                <div className="flex items-center gap-1 text-xs font-bold bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-full w-fit">
+                                                <div className="flex items-center gap-1 text-xs font-bold bg-black/50 px-3 py-1.5 rounded-full w-fit">
                                                     <MapPin className="h-3 w-3" />
                                                     <span className="truncate max-w-[150px]">{activity.location || "Lokasi tidak tersedia"}</span>
                                                 </div>
@@ -381,7 +381,7 @@ export default function Home() {
                                                 {/* Bottom Overlay: Location + Facilities */}
                                                 <div className="absolute bottom-0 left-0 right-0 p-3">
                                                     <div className="flex items-center justify-between">
-                                                        <div className="flex items-center gap-1.5 text-white text-xs font-medium bg-black/30 backdrop-blur-sm px-2.5 py-1 rounded-full">
+                                                        <div className="flex items-center gap-1.5 text-white text-xs font-medium bg-black/50 px-2.5 py-1 rounded-full">
                                                             <MapPin className="h-3 w-3" />
                                                             <span className="truncate max-w-[120px]">{campArea.location || "Lokasi"}</span>
                                                         </div>
@@ -390,7 +390,7 @@ export default function Home() {
                                                         {campArea.facilities && campArea.facilities.length > 0 && (
                                                             <div className="flex items-center gap-1">
                                                                 {campArea.facilities.slice(0, 3).map((facility, idx) => (
-                                                                    <div key={idx} className="bg-white/90 backdrop-blur-sm p-1.5 rounded-full text-orange-600" title={facility}>
+                                                                    <div key={idx} className="bg-white p-1.5 rounded-full text-orange-600" title={facility}>
                                                                         {getFacilityIcon(facility)}
                                                                     </div>
                                                                 ))}
@@ -491,7 +491,7 @@ export default function Home() {
                                                     </div>
 
                                                     <div className="absolute bottom-3 left-3 right-3 text-white">
-                                                        <div className="flex items-center gap-1 text-xs font-bold bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-full w-fit">
+                                                        <div className="flex items-center gap-1 text-xs font-bold bg-black/50 px-3 py-1.5 rounded-full w-fit">
                                                             <MapPin className="h-3 w-3" />
                                                             <span className="truncate max-w-[150px]">{event.location || "Lokasi tidak tersedia"}</span>
                                                         </div>

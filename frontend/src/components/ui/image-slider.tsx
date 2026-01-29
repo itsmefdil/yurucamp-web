@@ -49,12 +49,7 @@ export function ImageSlider({ images, className }: ImageSliderProps) {
                 className="relative aspect-video w-full overflow-hidden rounded-2xl bg-gray-100 group cursor-pointer"
                 onClick={() => setIsLightboxOpen(true)}
             >
-                {/* Blurred Background */}
-                <img
-                    src={images[currentIndex]}
-                    alt={`Slide ${currentIndex + 1} Background`}
-                    className="absolute inset-0 w-full h-full object-cover blur-xl opacity-50 scale-110"
-                />
+
 
                 {/* Main Image */}
                 <img
@@ -65,7 +60,7 @@ export function ImageSlider({ images, className }: ImageSliderProps) {
 
                 {/* Overlay with count and expand icon */}
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center z-20">
-                    <div className="absolute top-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm">
+                    <div className="absolute top-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-xs font-medium">
                         {currentIndex + 1} / {images.length}
                     </div>
                     <Maximize2 className="text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg h-10 w-10" />
@@ -77,7 +72,7 @@ export function ImageSlider({ images, className }: ImageSliderProps) {
                         <Button
                             variant="secondary"
                             size="icon"
-                            className="absolute top-1/2 left-4 -translate-y-1/2 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity shadow-md z-30"
+                            className="absolute top-1/2 left-4 -translate-y-1/2 rounded-full bg-white/90 hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity shadow-md z-30"
                             onClick={(e) => {
                                 e.stopPropagation()
                                 prevSlide()
@@ -88,7 +83,7 @@ export function ImageSlider({ images, className }: ImageSliderProps) {
                         <Button
                             variant="secondary"
                             size="icon"
-                            className="absolute top-1/2 right-4 -translate-y-1/2 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity shadow-md z-30"
+                            className="absolute top-1/2 right-4 -translate-y-1/2 rounded-full bg-white/90 hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity shadow-md z-30"
                             onClick={(e) => {
                                 e.stopPropagation()
                                 nextSlide()
@@ -128,7 +123,7 @@ export function ImageSlider({ images, className }: ImageSliderProps) {
             {isLightboxOpen && (
                 <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="absolute top-4 right-4 z-50 flex gap-4 items-center">
-                        <div className="text-white/80 font-medium px-4 py-2 bg-black/20 rounded-full backdrop-blur-md">
+                        <div className="text-white/80 font-medium px-4 py-2 bg-black/50 rounded-full">
                             {currentIndex + 1} / {images.length}
                         </div>
                         <Button

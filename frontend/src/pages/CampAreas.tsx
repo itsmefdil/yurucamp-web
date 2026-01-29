@@ -170,7 +170,7 @@ export default function CampAreas() {
                                             {/* Bottom Overlay: Location + Facilities */}
                                             <div className="absolute bottom-0 left-0 right-0 p-3">
                                                 <div className="flex items-center justify-between">
-                                                    <div className="flex items-center gap-1.5 text-white text-xs font-medium bg-black/30 backdrop-blur-sm px-2.5 py-1 rounded-full">
+                                                    <div className="flex items-center gap-1.5 text-white text-xs font-medium bg-black/50 px-2.5 py-1 rounded-full">
                                                         <MapPin className="h-3 w-3" />
                                                         <span className="truncate max-w-[120px]">{campArea.location || "Lokasi"}</span>
                                                     </div>
@@ -179,7 +179,7 @@ export default function CampAreas() {
                                                     {campArea.facilities && campArea.facilities.length > 0 && (
                                                         <div className="flex items-center gap-1">
                                                             {campArea.facilities.slice(0, 3).map((facility, idx) => (
-                                                                <div key={idx} className="bg-white/90 backdrop-blur-sm p-1.5 rounded-full text-orange-600" title={facility}>
+                                                                <div key={idx} className="bg-white p-1.5 rounded-full text-orange-600" title={facility}>
                                                                     {getFacilityIcon(facility)}
                                                                 </div>
                                                             ))}

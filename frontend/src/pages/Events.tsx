@@ -226,7 +226,7 @@ export default function Events() {
                                             </div>
 
                                             <div className="absolute bottom-3 left-3 right-3 text-white">
-                                                <div className="flex items-center gap-1 text-xs font-bold bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-full w-fit">
+                                                <div className="flex items-center gap-1 text-xs font-bold bg-black/50 px-3 py-1.5 rounded-full w-fit">
                                                     <MapPin className="h-3 w-3" />
                                                     <span className="truncate max-w-[150px]">{event.location || "Lokasi tidak tersedia"}</span>
                                                 </div>
