@@ -40,6 +40,7 @@ import AddActivity from './pages/dashboard/AddActivity';
 import EditActivity from './pages/dashboard/EditActivity';
 import EditProfile from './pages/dashboard/EditProfile';
 import GearListDashboard from './pages/GearLists/GearListDashboard';
+import PublicGearLists from './pages/GearLists/PublicGearLists';
 import GearListDetail from './pages/GearLists/GearListDetail';
 import RegionDetail from './pages/RegionDetail';
 import RegionManagement from './pages/RegionManagement';
@@ -157,6 +158,7 @@ function App() {
                         />
 
                         {/* Public Gear List View (for shared lists) */}
+                        <Route path="/gear/public" element={<PublicGearLists />} />
                         <Route path="/g/:id" element={<GearListDetail />} />
 
                         {/* Admin Routes */}

@@ -75,13 +75,22 @@ export default function GearListDashboard() {
                         <h1 className="text-2xl sm:text-3xl font-bold font-display text-text-primary">Daftar Perlengkapan</h1>
                         <p className="text-text-secondary mt-1 text-sm sm:text-base">Kelola daftar perlengkapan hiking dan camping Anda.</p>
                     </div>
-                    <button
-                        onClick={() => setIsCreating(true)}
-                        className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-semibold rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all"
-                    >
-                        <Plus className="w-5 h-5" />
-                        <span>Buat Daftar Baru</span>
-                    </button>
+                    <div className="flex gap-2">
+                        <Link
+                            to="/gear/public"
+                            className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-white text-primary border border-primary/20 font-semibold rounded-xl shadow-sm hover:bg-gray-50 hover:border-primary/40 active:scale-[0.98] transition-all"
+                        >
+                            <Backpack className="w-5 h-5" />
+                            <span className="hidden sm:inline">Jelajahi Publik</span>
+                        </Link>
+                        <button
+                            onClick={() => setIsCreating(true)}
+                            className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-semibold rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                        >
+                            <Plus className="w-5 h-5" />
+                            <span>Buat Daftar Baru</span>
+                        </button>
+                    </div>
                 </div>
 
                 {/* Create Form */}
