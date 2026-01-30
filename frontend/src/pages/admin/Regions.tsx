@@ -36,6 +36,10 @@ interface Region {
     creator?: {
         fullName: string;
     };
+    creators?: {
+        fullName: string;
+        email?: string;
+    }[];
 }
 
 export default function AdminRegions() {
@@ -55,6 +59,9 @@ export default function AdminRegions() {
         slug: '',
         description: ''
     });
+
+    const [creatorModalOpen, setCreatorModalOpen] = useState(false);
+    const [selectedCreators, setSelectedCreators] = useState<{ fullName: string, email?: string }[]>([]);
 
     useEffect(() => {
         fetchRegions();
@@ -194,6 +201,11 @@ export default function AdminRegions() {
         setIsDialogOpen(true);
     };
 
+    const openCreatorsDialog = (creators: Region['creators']) => {
+        setSelectedCreators(creators || []);
+        setCreatorModalOpen(true);
+    };
+
     const resetForm = () => {
         setFormData({ name: '', slug: '', description: '' });
     };
@@ -278,7 +290,17 @@ export default function AdminRegions() {
                                             </div>
                                         </TableCell>
                                         <TableCell className="text-sm">
-                                            {region.creator?.fullName || '-'}
+                                            {region.creators && region.creators.length > 1 ? (
+                                                <Button
+                                                    variant="link"
+                                                    className="p-0 h-auto font-normal text-primary hover:underline"
+                                                    onClick={() => openCreatorsDialog(region.creators)}
+                                                >
+                                                    {region.creators.length} Admins
+                                                </Button>
+                                            ) : (
+                                                region.creators?.[0]?.fullName || '-'
+                                            )}
                                         </TableCell>
                                         <TableCell className="text-gray-500 truncate max-w-[200px]">{region.description || '-'}</TableCell>
                                         <TableCell>
@@ -430,6 +452,36 @@ export default function AdminRegions() {
                         <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
                         <Button onClick={handleSave}>Save changes</Button>
                     </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Creators List Modal */}
+            <Dialog open={creatorModalOpen} onOpenChange={setCreatorModalOpen}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>Region Admins</DialogTitle>
+                    </DialogHeader>
+                    <div className="max-h-[300px] overflow-y-auto pr-2">
+                        {selectedCreators.length > 0 ? (
+                            <ul className="space-y-3">
+                                {selectedCreators.map((creator, i) => (
+                                    <li key={i} className="flex items-center gap-3 p-2 rounded-md hover:bg-slate-50">
+                                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
+                                            {creator.fullName.substring(0, 2).toUpperCase()}
+                                        </div>
+                                        <div>
+                                            <div className="text-sm font-medium">{creator.fullName}</div>
+                                            {creator.email && (
+                                                <div className="text-xs text-gray-500">{creator.email}</div>
+                                            )}
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <div className="text-center py-4 text-gray-500">No admin information available</div>
+                        )}
+                    </div>
                 </DialogContent>
             </Dialog>
         </div >

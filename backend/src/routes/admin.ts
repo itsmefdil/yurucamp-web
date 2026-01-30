@@ -188,7 +188,7 @@ router.delete('/camp-areas/:id', async (req: Request, res: Response) => {
 // GET /admin/regions - List all regions (active, pending, rejected)
 router.get('/regions', async (req: Request, res: Response) => {
     try {
-        const query = db.select({
+        const rows = await db.select({
             id: regions.id,
             name: regions.name,
             slug: regions.slug,
@@ -208,7 +208,25 @@ router.get('/regions', async (req: Request, res: Response) => {
             .leftJoin(users, eq(regionMembers.userId, users.id))
             .orderBy(desc(regions.createdAt));
 
-        const allRegions = await query;
+        // Group by region ID to handle multiple creators
+        const regionMap = new Map<string, any>();
+
+        for (const row of rows) {
+            if (!regionMap.has(row.id)) {
+                regionMap.set(row.id, {
+                    ...row,
+                    creators: []
+                });
+            }
+            const region = regionMap.get(row.id);
+            if (row.creator && row.creator.id) {
+                region.creators.push(row.creator);
+            }
+            // Remove the single 'creator' field as we use 'creators' array now
+            delete region.creator;
+        }
+
+        const allRegions = Array.from(regionMap.values());
         res.json(allRegions);
     } catch (error) {
         console.error('Error fetching admin regions:', error);
