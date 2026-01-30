@@ -9,8 +9,8 @@ import { Image, Loader2, X, Upload, ArrowLeft } from 'lucide-react';
 
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
-import { Textarea } from '../../components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import RichTextEditor from '../../components/ui/RichTextEditor';
 import {
     Select,
     SelectContent,
@@ -465,10 +465,11 @@ export default function AddActivity() {
                                             <FormItem>
                                                 <FormLabel>Deskripsi</FormLabel>
                                                 <FormControl>
-                                                    <Textarea
-                                                        placeholder="Ceritakan pengalaman anda..."
-                                                        className="min-h-[150px] rounded-xl"
-                                                        {...field}
+                                                    <RichTextEditor
+                                                        placeholder="Ceritakan pengalaman anda... (Support Markdown)"
+                                                        className="min-h-[300px]"
+                                                        value={field.value}
+                                                        onChange={field.onChange}
                                                     />
                                                 </FormControl>
                                                 <FormMessage />

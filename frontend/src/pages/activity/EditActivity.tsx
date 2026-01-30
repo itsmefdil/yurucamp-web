@@ -10,7 +10,7 @@ import { compressImage } from '../../lib/imageCompression';
 
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
-import { Textarea } from '../../components/ui/textarea';
+import RichTextEditor from '../../components/ui/RichTextEditor';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import {
     Select,
@@ -524,10 +524,11 @@ export default function EditActivity() {
                                             <FormItem>
                                                 <FormLabel>Deskripsi</FormLabel>
                                                 <FormControl>
-                                                    <Textarea
-                                                        placeholder="Ceritakan pengalaman anda..."
-                                                        className="min-h-[150px] rounded-xl"
-                                                        {...field}
+                                                    <RichTextEditor
+                                                        placeholder="Ceritakan pengalaman anda... (Support Markdown)"
+                                                        className="min-h-[300px]"
+                                                        value={field.value}
+                                                        onChange={field.onChange}
                                                     />
                                                 </FormControl>
                                                 <FormMessage />

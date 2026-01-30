@@ -480,4 +480,42 @@ router.post('/:id/reject', authenticate, async (req, res) => {
         res.status(500).json({ error: 'Failed to reject region' });
     }
 });
+// POST suspend region (Superadmin)
+router.post('/:id/suspend', authenticate, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const requesterId = req.user.sub || req.user.id;
+
+        const superAdmin = await db.select().from(users).where(and(eq(users.id, requesterId), eq(users.role, 'admin'))).limit(1);
+        if (superAdmin.length === 0) {
+            res.status(403).json({ error: 'Unauthorized' });
+            return;
+        }
+
+        await db.update(regions).set({ status: 'suspended' }).where(eq(regions.id, id));
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to suspend region' });
+    }
+});
+
+// POST activate region (Superadmin)
+router.post('/:id/activate', authenticate, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const requesterId = req.user.sub || req.user.id;
+
+        const superAdmin = await db.select().from(users).where(and(eq(users.id, requesterId), eq(users.role, 'admin'))).limit(1);
+        if (superAdmin.length === 0) {
+            res.status(403).json({ error: 'Unauthorized' });
+            return;
+        }
+
+        await db.update(regions).set({ status: 'active' }).where(eq(regions.id, id));
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to activate region' });
+    }
+});
+
 export default router;

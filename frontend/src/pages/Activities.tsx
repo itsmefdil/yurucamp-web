@@ -15,7 +15,7 @@ import type { Activity } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { formatDate } from '../lib/utils';
 
-const ITEMS_PER_PAGE = 20;
+const ITEMS_PER_PAGE = 8;
 
 export default function Activities() {
     const { user } = useAuth();

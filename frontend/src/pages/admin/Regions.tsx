@@ -11,9 +11,10 @@ import {
 } from "../../components/ui/table";
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
-import { Trash2, Edit, Plus, Users, Check, X, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Trash2, Edit, Plus, Users, Check, X, Search, ChevronLeft, ChevronRight, Ban, PlayCircle, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '../../components/ui/badge';
+import { Link } from 'react-router-dom';
 import {
     Dialog,
     DialogContent,
@@ -30,11 +31,15 @@ interface Region {
     description?: string;
     imageUrl?: string;
     coverUrl?: string; // Added coverUrl
-    status: 'active' | 'pending' | 'rejected';
+    status: 'active' | 'pending' | 'rejected' | 'suspended';
     memberCount?: number;
     creator?: {
         fullName: string;
     };
+    creators?: {
+        fullName: string;
+        email?: string;
+    }[];
 }
 
 export default function AdminRegions() {
@@ -54,6 +59,9 @@ export default function AdminRegions() {
         slug: '',
         description: ''
     });
+
+    const [creatorModalOpen, setCreatorModalOpen] = useState(false);
+    const [selectedCreators, setSelectedCreators] = useState<{ fullName: string, email?: string }[]>([]);
 
     useEffect(() => {
         fetchRegions();
@@ -153,6 +161,30 @@ export default function AdminRegions() {
         }
     };
 
+    const handleSuspend = async (id: string) => {
+        if (!confirm('Suspend region ini? Region tidak akan bisa diakses publik.')) return;
+        try {
+            await api.post(`/regions/${id}/suspend`);
+            fetchRegions();
+            toast.success('Region disuspend');
+        } catch (error) {
+            console.error('Failed to suspend region:', error);
+            toast.error('Gagal suspend region');
+        }
+    };
+
+    const handleActivate = async (id: string) => {
+        if (!confirm('Aktifkan kembali region ini?')) return;
+        try {
+            await api.post(`/regions/${id}/activate`);
+            fetchRegions();
+            toast.success('Region diaktifkan kembali');
+        } catch (error) {
+            console.error('Failed to activate region:', error);
+            toast.error('Gagal mengaktifkan region');
+        }
+    };
+
     const openAddDialog = () => {
         setEditingId(null);
         resetForm();
@@ -167,6 +199,11 @@ export default function AdminRegions() {
             description: region.description || ''
         });
         setIsDialogOpen(true);
+    };
+
+    const openCreatorsDialog = (creators: Region['creators']) => {
+        setSelectedCreators(creators || []);
+        setCreatorModalOpen(true);
     };
 
     const resetForm = () => {
@@ -185,6 +222,8 @@ export default function AdminRegions() {
                 return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">Pending</Badge>;
             case 'rejected':
                 return <Badge variant="destructive">Rejected</Badge>;
+            case 'suspended':
+                return <Badge variant="destructive" className="bg-red-800 hover:bg-red-800 text-white">Suspended</Badge>;
             default:
                 return <Badge variant="secondary">{status}</Badge>;
         }
@@ -251,7 +290,17 @@ export default function AdminRegions() {
                                             </div>
                                         </TableCell>
                                         <TableCell className="text-sm">
-                                            {region.creator?.fullName || '-'}
+                                            {region.creators && region.creators.length > 1 ? (
+                                                <Button
+                                                    variant="link"
+                                                    className="p-0 h-auto font-normal text-primary hover:underline"
+                                                    onClick={() => openCreatorsDialog(region.creators)}
+                                                >
+                                                    {region.creators.length} Admins
+                                                </Button>
+                                            ) : (
+                                                region.creators?.[0]?.fullName || '-'
+                                            )}
                                         </TableCell>
                                         <TableCell className="text-gray-500 truncate max-w-[200px]">{region.description || '-'}</TableCell>
                                         <TableCell>
@@ -277,6 +326,38 @@ export default function AdminRegions() {
                                                             <X className="h-4 w-4" />
                                                         </Button>
                                                     </>
+                                                )}
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    asChild
+                                                    title="View Region"
+                                                >
+                                                    <Link to={`/r/${region.slug}`} target="_blank">
+                                                        <ExternalLink className="h-4 w-4" />
+                                                    </Link>
+                                                </Button>
+                                                {region.status === 'active' && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                                                        onClick={() => handleSuspend(region.id)}
+                                                        title="Suspend"
+                                                    >
+                                                        <Ban className="h-4 w-4" />
+                                                    </Button>
+                                                )}
+                                                {region.status === 'suspended' && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                                                        onClick={() => handleActivate(region.id)}
+                                                        title="Activate"
+                                                    >
+                                                        <PlayCircle className="h-4 w-4" />
+                                                    </Button>
                                                 )}
                                                 <Button variant="ghost" size="icon" onClick={() => openEditDialog(region)}>
                                                     <Edit className="h-4 w-4" />
@@ -373,6 +454,36 @@ export default function AdminRegions() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </div>
+
+            {/* Creators List Modal */}
+            <Dialog open={creatorModalOpen} onOpenChange={setCreatorModalOpen}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>Region Admins</DialogTitle>
+                    </DialogHeader>
+                    <div className="max-h-[300px] overflow-y-auto pr-2">
+                        {selectedCreators.length > 0 ? (
+                            <ul className="space-y-3">
+                                {selectedCreators.map((creator, i) => (
+                                    <li key={i} className="flex items-center gap-3 p-2 rounded-md hover:bg-slate-50">
+                                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
+                                            {creator.fullName.substring(0, 2).toUpperCase()}
+                                        </div>
+                                        <div>
+                                            <div className="text-sm font-medium">{creator.fullName}</div>
+                                            {creator.email && (
+                                                <div className="text-xs text-gray-500">{creator.email}</div>
+                                            )}
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <div className="text-center py-4 text-gray-500">No admin information available</div>
+                        )}
+                    </div>
+                </DialogContent>
+            </Dialog>
+        </div >
     );
 }
