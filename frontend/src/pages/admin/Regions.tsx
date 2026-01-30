@@ -11,9 +11,10 @@ import {
 } from "../../components/ui/table";
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
-import { Trash2, Edit, Plus, Users, Check, X, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Trash2, Edit, Plus, Users, Check, X, Search, ChevronLeft, ChevronRight, Ban, PlayCircle, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '../../components/ui/badge';
+import { Link } from 'react-router-dom';
 import {
     Dialog,
     DialogContent,
@@ -30,7 +31,7 @@ interface Region {
     description?: string;
     imageUrl?: string;
     coverUrl?: string; // Added coverUrl
-    status: 'active' | 'pending' | 'rejected';
+    status: 'active' | 'pending' | 'rejected' | 'suspended';
     memberCount?: number;
     creator?: {
         fullName: string;
@@ -153,6 +154,30 @@ export default function AdminRegions() {
         }
     };
 
+    const handleSuspend = async (id: string) => {
+        if (!confirm('Suspend region ini? Region tidak akan bisa diakses publik.')) return;
+        try {
+            await api.post(`/regions/${id}/suspend`);
+            fetchRegions();
+            toast.success('Region disuspend');
+        } catch (error) {
+            console.error('Failed to suspend region:', error);
+            toast.error('Gagal suspend region');
+        }
+    };
+
+    const handleActivate = async (id: string) => {
+        if (!confirm('Aktifkan kembali region ini?')) return;
+        try {
+            await api.post(`/regions/${id}/activate`);
+            fetchRegions();
+            toast.success('Region diaktifkan kembali');
+        } catch (error) {
+            console.error('Failed to activate region:', error);
+            toast.error('Gagal mengaktifkan region');
+        }
+    };
+
     const openAddDialog = () => {
         setEditingId(null);
         resetForm();
@@ -185,6 +210,8 @@ export default function AdminRegions() {
                 return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">Pending</Badge>;
             case 'rejected':
                 return <Badge variant="destructive">Rejected</Badge>;
+            case 'suspended':
+                return <Badge variant="destructive" className="bg-red-800 hover:bg-red-800 text-white">Suspended</Badge>;
             default:
                 return <Badge variant="secondary">{status}</Badge>;
         }
@@ -277,6 +304,38 @@ export default function AdminRegions() {
                                                             <X className="h-4 w-4" />
                                                         </Button>
                                                     </>
+                                                )}
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    asChild
+                                                    title="View Region"
+                                                >
+                                                    <Link to={`/r/${region.slug}`} target="_blank">
+                                                        <ExternalLink className="h-4 w-4" />
+                                                    </Link>
+                                                </Button>
+                                                {region.status === 'active' && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                                                        onClick={() => handleSuspend(region.id)}
+                                                        title="Suspend"
+                                                    >
+                                                        <Ban className="h-4 w-4" />
+                                                    </Button>
+                                                )}
+                                                {region.status === 'suspended' && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                                                        onClick={() => handleActivate(region.id)}
+                                                        title="Activate"
+                                                    >
+                                                        <PlayCircle className="h-4 w-4" />
+                                                    </Button>
                                                 )}
                                                 <Button variant="ghost" size="icon" onClick={() => openEditDialog(region)}>
                                                     <Edit className="h-4 w-4" />
@@ -373,6 +432,6 @@ export default function AdminRegions() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </div>
+        </div >
     );
 }
