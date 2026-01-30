@@ -92,7 +92,7 @@ export default function RegionMembers() {
         <div className="min-h-screen flex flex-col bg-gray-50">
             <Navbar />
 
-            <div className="flex-1 container mx-auto px-4 py-24 pb-24 md:pb-8">
+            <div className="flex-1 container mx-auto px-6 py-24 pb-24 md:pb-8">
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                     <div>
@@ -109,7 +109,7 @@ export default function RegionMembers() {
                             Anggota Region
                         </h1>
                         <p className="text-gray-500 mt-1">
-                            {members.length} orang bergabung di {region.name}
+                            {members.length} anggota di {region.name}
                         </p>
                     </div>
 
@@ -141,20 +141,22 @@ export default function RegionMembers() {
                                 </h2>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {admins.map(member => (
-                                        <div key={member.id} className="bg-white p-4 rounded-xl shadow-sm border border-orange-100 flex items-center gap-4">
-                                            <Avatar className="w-12 h-12 border-2 border-orange-100">
-                                                <AvatarImage src={member.avatarUrl} />
-                                                <AvatarFallback className="bg-orange-50 text-orange-600 font-bold">
-                                                    {getInitials(member.fullName)}
-                                                </AvatarFallback>
-                                            </Avatar>
-                                            <div>
-                                                <h3 className="font-bold text-gray-900">{member.fullName}</h3>
-                                                <p className="text-xs text-orange-600 font-medium bg-orange-50 px-2 py-0.5 rounded-full w-fit mt-1">
-                                                    Admin
-                                                </p>
+                                        <Link key={member.id} to={`/u/${member.id}`} className="group">
+                                            <div className="bg-white p-4 rounded-xl shadow-sm border border-orange-100 flex items-center gap-4">
+                                                <Avatar className="w-12 h-12 border-2 border-orange-100">
+                                                    <AvatarImage src={member.avatarUrl} />
+                                                    <AvatarFallback className="bg-orange-50 text-orange-600 font-bold">
+                                                        {getInitials(member.fullName)}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                <div>
+                                                    <h3 className="font-bold text-gray-900">{member.fullName}</h3>
+                                                    <p className="text-xs text-orange-600 font-medium bg-orange-50 px-2 py-0.5 rounded-full w-fit mt-1">
+                                                        Admin
+                                                    </p>
+                                                </div>
                                             </div>
-                                        </div>
+                                        </Link>
                                     ))}
                                 </div>
                             </div>
