@@ -12,7 +12,7 @@ import type { CampArea } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import RegionSelector from '../components/ui/RegionSelector';
 
-const ITEMS_PER_PAGE = 20;
+const ITEMS_PER_PAGE = 8;
 
 export default function CampAreas() {
     const { user } = useAuth();
