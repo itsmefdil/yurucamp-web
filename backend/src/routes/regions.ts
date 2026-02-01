@@ -273,6 +273,7 @@ router.post('/', authenticate, async (req, res) => {
             slug,
             description,
             imageUrl,
+            coverUrl,
             instagram: instagram || null,
             whatsappAdmin: whatsappAdmin || null,
             whatsappGroup: whatsappGroup || null,
@@ -358,9 +359,35 @@ router.delete('/:id', authenticate, async (req, res) => {
             return;
         }
 
+        // Fetch region to get image URLs before deletion
+        const regionData = await db.select({
+            imageUrl: regions.imageUrl,
+            coverUrl: regions.coverUrl,
+        }).from(regions).where(eq(regions.id, id)).limit(1);
+
+        // Delete Cloudinary assets if they exist
+        if (regionData.length > 0) {
+            const { deleteImage, getPublicIdFromUrl } = await import('../lib/cloudinary');
+
+            if (regionData[0].imageUrl) {
+                const publicId = getPublicIdFromUrl(regionData[0].imageUrl);
+                if (publicId) {
+                    await deleteImage(publicId).catch(err => console.error('Failed to delete profile image:', err));
+                }
+            }
+
+            if (regionData[0].coverUrl) {
+                const publicId = getPublicIdFromUrl(regionData[0].coverUrl);
+                if (publicId) {
+                    await deleteImage(publicId).catch(err => console.error('Failed to delete cover image:', err));
+                }
+            }
+        }
+
         await db.delete(regions).where(eq(regions.id, id));
         res.json({ message: 'Region deleted' });
     } catch (error) {
+        console.error('Failed to delete region:', error);
         res.status(500).json({ error: 'Failed to delete region' });
     }
 });

@@ -5,11 +5,12 @@ import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
-import { Calendar, MapPin, Edit, Ticket, Plus, Mountain, LogOut, Trash2, Tent, LayoutDashboard } from 'lucide-react';
+import { Calendar, MapPin, Edit, Ticket, Plus, Mountain, LogOut, Trash2, Tent, LayoutDashboard, Instagram, Facebook, ExternalLink } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useAuth } from '../../contexts/AuthContext';
 import type { User, Activity, Event, CampArea } from '../../types';
 import { DeleteEventDialog } from '../events/DeleteEventDialog';
+import { ImagePreviewDialog } from '../ui/image-preview-dialog';
 
 interface DashboardViewProps {
     profile: User | null;
@@ -24,6 +25,7 @@ export function DashboardView({ profile, activities, joinedEvents, createdEvents
     const { logout } = useAuth();
 
     const [deletingEvent, setDeletingEvent] = useState<Event | null>(null);
+    const [showImagePreview, setShowImagePreview] = useState(false);
 
     // Combined events count (joined + created)
     const totalEvents = joinedEvents.length + createdEvents.length;
@@ -33,7 +35,10 @@ export function DashboardView({ profile, activities, joinedEvents, createdEvents
             {/* Profile Header */}
             <div className="flex flex-col md:flex-row items-center gap-6 p-8 bg-white rounded-3xl shadow-lg border border-gray-100">
                 <div className="relative">
-                    <Avatar className="h-32 w-32 border-4 border-white shadow-md">
+                    <Avatar
+                        className="h-32 w-32 border-4 border-white shadow-md cursor-pointer hover:opacity-90 transition-opacity"
+                        onClick={() => profile?.avatarUrl && setShowImagePreview(true)}
+                    >
                         <AvatarImage src={profile?.avatarUrl} />
                         <AvatarFallback>{profile?.fullName?.[0]?.toUpperCase() ?? 'U'}</AvatarFallback>
                     </Avatar>
@@ -46,6 +51,42 @@ export function DashboardView({ profile, activities, joinedEvents, createdEvents
                 <div className="flex-1 text-center md:text-left space-y-2">
                     <h1 className="text-3xl font-black text-gray-800">{profile?.fullName ?? 'User'}</h1>
                     <p className="text-gray-500 font-medium">{profile?.email}</p>
+
+                    {/* Bio */}
+                    {profile?.bio && (
+                        <p className="text-gray-600 text-sm mt-2 max-w-md">{profile.bio}</p>
+                    )}
+
+                    {/* Social Media Links */}
+                    {(profile?.facebook || profile?.instagram) && (
+                        <div className="flex flex-wrap justify-center md:justify-start gap-2 pt-2">
+                            {profile?.instagram && (
+                                <a
+                                    href={profile.instagram.startsWith('http') ? profile.instagram : `https://instagram.com/${profile.instagram}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-1.5 bg-gradient-to-r from-pink-50 to-purple-50 hover:from-pink-100 hover:to-purple-100 text-pink-600 px-3 py-1.5 rounded-full text-xs font-medium transition-colors"
+                                >
+                                    <Instagram className="h-3.5 w-3.5" />
+                                    Instagram
+                                    <ExternalLink className="h-3 w-3 opacity-50" />
+                                </a>
+                            )}
+                            {profile?.facebook && (
+                                <a
+                                    href={profile.facebook.startsWith('http') ? profile.facebook : `https://facebook.com/${profile.facebook}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-1.5 rounded-full text-xs font-medium transition-colors"
+                                >
+                                    <Facebook className="h-3.5 w-3.5" />
+                                    Facebook
+                                    <ExternalLink className="h-3 w-3 opacity-50" />
+                                </a>
+                            )}
+                        </div>
+                    )}
+
                     <div className="flex flex-wrap justify-center md:justify-start gap-2 pt-2">
                         <span className="bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-xs font-bold">{profile?.levelName || 'Camper'}</span>
                         <span className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-xs font-bold">Level {profile?.level || 1}</span>
@@ -459,6 +500,13 @@ export function DashboardView({ profile, activities, joinedEvents, createdEvents
                 open={!!deletingEvent}
                 onOpenChange={(open) => !open && setDeletingEvent(null)}
                 event={deletingEvent}
+            />
+
+            <ImagePreviewDialog
+                open={showImagePreview}
+                onOpenChange={setShowImagePreview}
+                imageUrl={profile?.avatarUrl}
+                alt={profile?.fullName || 'Profile Picture'}
             />
         </div>
     );

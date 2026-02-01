@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Loader2, MapPin, Calendar, Globe, Briefcase, Mountain, Facebook, Instagram } from 'lucide-react';
@@ -8,6 +8,7 @@ import { Footer } from '../components/layout/Footer';
 import { Card, CardContent } from '../components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/avatar';
 import { Badge } from '../components/ui/badge';
+import { ImagePreviewDialog } from '../components/ui/image-preview-dialog';
 import api from '../lib/api';
 
 interface UserProfile {
@@ -48,6 +49,7 @@ interface Activity {
 
 export default function UserProfile() {
     const { id } = useParams<{ id: string }>();
+    const [showImagePreview, setShowImagePreview] = useState(false);
 
     // Fetch user profile
     const { data: user, isLoading } = useQuery<UserProfile>({
@@ -138,7 +140,10 @@ export default function UserProfile() {
                     <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
                         {/* Avatar */}
                         <div className="relative">
-                            <Avatar className="w-28 h-28 md:w-36 md:h-36 border-4 border-white shadow-xl">
+                            <Avatar
+                                className="w-28 h-28 md:w-36 md:h-36 border-4 border-white shadow-xl cursor-pointer hover:opacity-90 transition-opacity"
+                                onClick={() => user.avatarUrl && setShowImagePreview(true)}
+                            >
                                 <AvatarImage src={user.avatarUrl} alt={user.fullName} className="object-cover" />
                                 <AvatarFallback className="bg-orange-500 text-white text-3xl font-bold">
                                     {getInitials(user.fullName)}
@@ -319,6 +324,13 @@ export default function UserProfile() {
             </div>
 
             <Footer />
+
+            <ImagePreviewDialog
+                open={showImagePreview}
+                onOpenChange={setShowImagePreview}
+                imageUrl={user?.avatarUrl}
+                alt={user?.fullName || 'Profile Picture'}
+            />
         </div>
     );
 }
