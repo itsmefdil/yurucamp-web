@@ -137,7 +137,7 @@ router.put('/profile', authenticate, upload.single('avatar'), async (req: Reques
     try {
         const user = req.user;
         const userId = user.sub;
-        const { fullName, email, bio, phone, avatarUrl: bodyAvatarUrl, regionId } = req.body;
+        const { fullName, email, bio, phone, avatarUrl: bodyAvatarUrl, regionId, facebook, instagram } = req.body;
         const avatarFile = req.file;
 
         const currentUser = await db.select().from(users).where(eq(users.id, userId)).limit(1);
@@ -172,6 +172,8 @@ router.put('/profile', authenticate, upload.single('avatar'), async (req: Reques
             email,
             bio,
             phone,
+            facebook: facebook || null,
+            instagram: instagram || null,
             regionId: regionId || null,
             updatedAt: new Date().toISOString(),
         };

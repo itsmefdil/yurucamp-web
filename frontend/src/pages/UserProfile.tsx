@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Loader2, MapPin, Calendar, Globe, Briefcase, Mountain } from 'lucide-react';
+import { Loader2, MapPin, Calendar, Globe, Briefcase, Mountain, Facebook, Instagram } from 'lucide-react';
 
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
@@ -15,6 +15,8 @@ interface UserProfile {
     fullName: string;
     avatarUrl?: string;
     bio?: string;
+    facebook?: string;
+    instagram?: string;
     level: number;
     exp: number;
     levelName: string;
@@ -156,6 +158,35 @@ export default function UserProfile() {
                             {user.bio && (
                                 <p className="mt-3 text-gray-600 max-w-lg">{user.bio}</p>
                             )}
+
+                            {/* Social Media Links */}
+                            {(user.facebook || user.instagram) && (
+                                <div className="flex flex-wrap justify-center md:justify-start gap-3 mt-4">
+                                    {user.facebook && (
+                                        <a
+                                            href={user.facebook.startsWith('http') ? user.facebook : `https://facebook.com/${user.facebook}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-2 px-4 py-2 bg-[#1877F2] hover:bg-[#166FE5] text-white rounded-full text-sm font-medium transition-all hover:shadow-lg hover:scale-105"
+                                        >
+                                            <Facebook className="w-4 h-4" />
+                                            Facebook
+                                        </a>
+                                    )}
+                                    {user.instagram && (
+                                        <a
+                                            href={user.instagram.startsWith('http') ? user.instagram : `https://instagram.com/${user.instagram}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#F77737] hover:from-[#7332A1] hover:via-[#E51A1A] hover:to-[#DE6C32] text-white rounded-full text-sm font-medium transition-all hover:shadow-lg hover:scale-105"
+                                        >
+                                            <Instagram className="w-4 h-4" />
+                                            Instagram
+                                        </a>
+                                    )}
+                                </div>
+                            )}
+
                             <div className="flex flex-wrap justify-center md:justify-start gap-4 mt-4 text-sm text-gray-500">
                                 <span>{user.exp} EXP</span>
                                 <span>•</span>

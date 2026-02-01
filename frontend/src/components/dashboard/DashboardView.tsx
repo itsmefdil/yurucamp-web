@@ -5,10 +5,10 @@ import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
-import { Calendar, MapPin, Edit, Ticket, Plus, Mountain, LogOut, Trash2 } from 'lucide-react';
+import { Calendar, MapPin, Edit, Ticket, Plus, Mountain, LogOut, Trash2, Tent, LayoutDashboard } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useAuth } from '../../contexts/AuthContext';
-import type { User, Activity, Event } from '../../types';
+import type { User, Activity, Event, CampArea } from '../../types';
 import { DeleteEventDialog } from '../events/DeleteEventDialog';
 
 interface DashboardViewProps {
@@ -16,13 +16,17 @@ interface DashboardViewProps {
     activities: Activity[];
     joinedEvents: Event[];
     createdEvents: Event[];
+    campAreas: CampArea[];
 }
 
-export function DashboardView({ profile, activities, joinedEvents, createdEvents }: DashboardViewProps) {
+export function DashboardView({ profile, activities, joinedEvents, createdEvents, campAreas }: DashboardViewProps) {
     const [activeTab, setActiveTab] = useState("activities");
     const { logout } = useAuth();
 
     const [deletingEvent, setDeletingEvent] = useState<Event | null>(null);
+
+    // Combined events count (joined + created)
+    const totalEvents = joinedEvents.length + createdEvents.length;
 
     return (
         <div className="max-w-4xl mx-auto space-y-8">
@@ -49,6 +53,14 @@ export function DashboardView({ profile, activities, joinedEvents, createdEvents
                     </div>
                 </div>
                 <div className="flex flex-col gap-2 w-full md:w-auto">
+                    {profile?.role === 'admin' && (
+                        <Button className="rounded-full gap-2 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700" asChild>
+                            <Link to="/admin">
+                                <LayoutDashboard className="h-4 w-4" />
+                                Admin Panel
+                            </Link>
+                        </Button>
+                    )}
                     <Button variant="outline" className="rounded-full border-2 gap-2" asChild>
                         <Link to="/dashboard/pengaturan">
                             <Edit className="h-4 w-4" />
@@ -67,23 +79,24 @@ export function DashboardView({ profile, activities, joinedEvents, createdEvents
             </div>
 
             {/* Quick Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-4">
                 {[
                     { icon: Mountain, label: "Aktivitas", count: activities.length, color: "text-orange-500", bg: "bg-orange-50" },
-                    { icon: Ticket, label: "Acara Diikuti", count: joinedEvents.length, color: "text-blue-500", bg: "bg-blue-50" },
-                    { icon: Calendar, label: "Acara Dibuat", count: createdEvents.length, color: "text-green-500", bg: "bg-green-50" },
+                    { icon: Ticket, label: "Acara", count: totalEvents, color: "text-blue-500", bg: "bg-blue-50" },
+                    { icon: Tent, label: "Camp Area", count: campAreas.length, color: "text-green-500", bg: "bg-green-50" },
                 ].map((item, i) => (
                     <Card key={i} className="border-none shadow-md hover:shadow-lg transition-shadow cursor-pointer bg-white">
-                        <CardContent className="p-6 flex flex-col items-center justify-center gap-2 text-center">
-                            <div className={`w-12 h-12 rounded-full ${item.bg} flex items-center justify-center ${item.color} mb-2`}>
-                                <item.icon className="h-6 w-6" />
+                        <CardContent className="p-4 md:p-6 flex flex-col items-center justify-center gap-1 md:gap-2 text-center">
+                            <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full ${item.bg} flex items-center justify-center ${item.color} mb-1 md:mb-2`}>
+                                <item.icon className="h-5 w-5 md:h-6 md:w-6" />
                             </div>
-                            <h3 className="text-2xl font-black text-gray-800">{item.count}</h3>
-                            <p className="text-sm text-gray-500 font-medium">{item.label}</p>
+                            <h3 className="text-xl md:text-2xl font-black text-gray-800">{item.count}</h3>
+                            <p className="text-xs md:text-sm text-gray-500 font-medium">{item.label}</p>
                         </CardContent>
                     </Card>
                 ))}
             </div>
+
 
             {/* Tabs Section */}
             <div className="space-y-6">
@@ -107,7 +120,14 @@ export function DashboardView({ profile, activities, joinedEvents, createdEvents
                         variant={activeTab === "events" ? "default" : "ghost"}
                         className={cn("rounded-full px-6 shadow-sm", activeTab !== "events" && "text-gray-500 hover:text-primary hover:bg-orange-50")}
                     >
-                        Acara Saya (Organizer)
+                        Acara Saya
+                    </Button>
+                    <Button
+                        onClick={() => setActiveTab("camp-areas")}
+                        variant={activeTab === "camp-areas" ? "default" : "ghost"}
+                        className={cn("rounded-full px-6 shadow-sm", activeTab !== "camp-areas" && "text-gray-500 hover:text-primary hover:bg-orange-50")}
+                    >
+                        Camp Area
                     </Button>
                 </div>
 
@@ -176,7 +196,7 @@ export function DashboardView({ profile, activities, joinedEvents, createdEvents
                                                     <Button variant="outline" size="sm" className="flex-1 rounded-full text-xs font-bold hover:bg-orange-50 hover:text-orange-600 hover:border-orange-200" asChild>
                                                         <Link to={`/a/${activity.id}`}>Lihat</Link>
                                                     </Button>
-                                                    <Button size="sm" className="flex-1 rounded-full text-xs font-bold gap-1 bg-gray-900 hover:bg-orange-600 transition-colors" asChild>
+                                                    <Button size="sm" className="flex-1 rounded-full text-xs font-bold gap-1 bg-orange-500 hover:bg-orange-600 transition-colors" asChild>
                                                         <Link to={`/a/${activity.id}/edit`}>
                                                             <Edit className="h-3 w-3" /> Edit
                                                         </Link>
@@ -335,7 +355,7 @@ export function DashboardView({ profile, activities, joinedEvents, createdEvents
                                                     <Button variant="outline" size="sm" className="flex-1 rounded-full text-xs font-bold hover:bg-green-50 hover:text-green-600 hover:border-green-200" asChild>
                                                         <Link to={`/e/${event.id}`}>Lihat</Link>
                                                     </Button>
-                                                    <Button size="sm" className="rounded-full text-xs font-bold gap-1 hover:bg-green-50 hover:text-green-600" asChild>
+                                                    <Button size="sm" className="flex-1 rounded-full text-xs font-bold gap-1 bg-green-500 hover:bg-green-600 transition-colors" asChild>
                                                         <Link to={`/e/${event.id}/edit`}>
                                                             <Edit className="h-3 w-3" /> Edit
                                                         </Link>
@@ -347,6 +367,82 @@ export function DashboardView({ profile, activities, joinedEvents, createdEvents
                                                         onClick={() => setDeletingEvent(event)}
                                                     >
                                                         <Trash2 className="h-3 w-3" /> Hapus
+                                                    </Button>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Camp Areas Tab */}
+                    {activeTab === "camp-areas" && (
+                        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <div className="flex justify-between items-center">
+                                <h2 className="text-xl font-bold text-gray-800">Camp Area Saya</h2>
+                                <Button className="rounded-full gap-2" asChild>
+                                    <Link to="/camp-area/add">
+                                        <Plus className="h-4 w-4" /> Tambah Camp Area
+                                    </Link>
+                                </Button>
+                            </div>
+
+                            {campAreas.length === 0 ? (
+                                <div className="text-center py-12 bg-white rounded-3xl border border-dashed border-gray-300">
+                                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
+                                        <Tent className="h-8 w-8" />
+                                    </div>
+                                    <h3 className="text-lg font-bold text-gray-700 mb-2">Belum ada Camp Area</h3>
+                                    <p className="text-gray-500 mb-6">Bagikan lokasi camping favoritmu</p>
+                                    <Button variant="outline" className="rounded-full" asChild>
+                                        <Link to="/camp-area/add">Tambah Camp Area</Link>
+                                    </Button>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {campAreas.map((campArea) => (
+                                        <Card key={campArea.id} className="group overflow-hidden bg-white hover:-translate-y-1 transition-all duration-300 h-full flex flex-col border-2 border-transparent hover:border-green-200 shadow-md hover:shadow-xl rounded-3xl">
+                                            <div className="relative aspect-video bg-green-50 overflow-hidden m-2 rounded-2xl">
+                                                {campArea.imageUrl ? (
+                                                    <img
+                                                        src={campArea.imageUrl}
+                                                        alt={campArea.name}
+                                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center text-green-200">
+                                                        <Tent className="h-12 w-12" />
+                                                    </div>
+                                                )}
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-60" />
+                                                <div className="absolute bottom-3 left-3 right-3 text-white">
+                                                    <div className="flex items-center gap-1 text-xs font-bold bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-full w-fit">
+                                                        <MapPin className="h-3 w-3" />
+                                                        <span className="truncate max-w-[200px]">{campArea.location}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <CardContent className="p-5 flex-1 flex flex-col">
+                                                <div className="flex-1 mb-4">
+                                                    <h3 className="text-xl font-bold text-gray-800 mb-2 line-clamp-2 leading-tight group-hover:text-green-600 transition-colors">
+                                                        {campArea.name}
+                                                    </h3>
+                                                    {campArea.price && (
+                                                        <p className="text-sm text-green-600 font-semibold">{campArea.price}</p>
+                                                    )}
+                                                </div>
+
+                                                <div className="flex gap-2 pt-2 border-t border-gray-100">
+                                                    <Button variant="outline" size="sm" className="flex-1 rounded-full text-xs font-bold hover:bg-green-50 hover:text-green-600 hover:border-green-200" asChild>
+                                                        <Link to={`/c/${campArea.id}`}>Lihat</Link>
+                                                    </Button>
+                                                    <Button size="sm" className="flex-1 rounded-full text-xs font-bold gap-1 bg-green-500 hover:bg-green-600 transition-colors" asChild>
+                                                        <Link to={`/camp-area/${campArea.id}/edit`}>
+                                                            <Edit className="h-3 w-3" /> Edit
+                                                        </Link>
                                                     </Button>
                                                 </div>
                                             </CardContent>

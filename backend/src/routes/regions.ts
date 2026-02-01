@@ -86,6 +86,9 @@ router.get('/by-slug/:slug', optionalAuthenticate, async (req, res) => {
             imageUrl: regions.imageUrl,
             coverUrl: regions.coverUrl,
             status: regions.status,
+            instagram: regions.instagram,
+            whatsappAdmin: regions.whatsappAdmin,
+            whatsappGroup: regions.whatsappGroup,
             createdAt: regions.createdAt,
             memberCount: sql<number>`(SELECT COUNT(*)::int FROM ${regionMembers} WHERE ${regionMembers.regionId} = ${regions.id})`,
         }).from(regions).where(eq(regions.slug, slug)).limit(1);
@@ -264,13 +267,15 @@ router.get('/:id/membership', authenticate, async (req, res) => {
 // POST create region (admin)
 router.post('/', authenticate, async (req, res) => {
     try {
-        const { name, slug, description, imageUrl, coverUrl } = req.body;
+        const { name, slug, description, imageUrl, coverUrl, instagram, whatsappAdmin, whatsappGroup } = req.body;
         const result = await db.insert(regions).values({
             name,
             slug,
             description,
             imageUrl,
-
+            instagram: instagram || null,
+            whatsappAdmin: whatsappAdmin || null,
+            whatsappGroup: whatsappGroup || null,
             status: 'pending', // Default to pending
             socialLinks: JSON.stringify({}),
         }).returning();
@@ -295,7 +300,7 @@ router.post('/', authenticate, async (req, res) => {
 router.put('/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, slug, description, imageUrl, coverUrl, socialLinks } = req.body;
+        const { name, slug, description, imageUrl, coverUrl, socialLinks, instagram, whatsappAdmin, whatsappGroup } = req.body;
         const requesterId = req.user ? (req.user.sub || req.user.id) : null;
 
         // Check permissions
@@ -312,7 +317,17 @@ router.put('/:id', async (req, res) => {
         }
 
         const result = await db.update(regions)
-            .set({ name, slug, description, imageUrl, coverUrl, socialLinks: JSON.stringify(socialLinks) })
+            .set({
+                name,
+                slug,
+                description,
+                imageUrl,
+                coverUrl,
+                instagram: instagram || null,
+                whatsappAdmin: whatsappAdmin || null,
+                whatsappGroup: whatsappGroup || null,
+                socialLinks: JSON.stringify(socialLinks)
+            })
             .where(eq(regions.id, id))
             .returning();
         if (result.length === 0) {

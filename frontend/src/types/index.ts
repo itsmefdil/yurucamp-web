@@ -5,6 +5,8 @@ export interface User {
     avatarUrl?: string;
     bio?: string;
     phone?: string;
+    facebook?: string;
+    instagram?: string;
     googleId?: string;
     createdAt?: string;
     updatedAt?: string;

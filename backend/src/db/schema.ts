@@ -13,6 +13,8 @@ export const users = pgTable('users', {
     avatarUrl: text('avatar_url'),
     bio: text('bio'),
     phone: text('phone'),
+    facebook: text('facebook'),
+    instagram: text('instagram'),
     role: text('role').default('user').notNull(),
     exp: integer('exp').default(0).notNull(),
     level: integer('level').default(1).notNull(),
@@ -27,7 +29,10 @@ export const regions = pgTable('regions', {
     imageUrl: text('image_url'),
     coverUrl: text('cover_url'),
     status: text('status').default('active').notNull(), // 'pending', 'active', 'rejected'
-    socialLinks: text('social_links'), // JSON string for flexibility
+    socialLinks: text('social_links'), // JSON string for flexibility (legacy)
+    instagram: text('instagram'),
+    whatsappAdmin: text('whatsapp_admin'),
+    whatsappGroup: text('whatsapp_group'),
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 });
 
