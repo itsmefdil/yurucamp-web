@@ -28,7 +28,7 @@ router.get('/cloudinary-signature', (req: Request, res: Response) => {
         ? `${process.env.CLOUDINARY_PATH_PREFIX}/${subfolder}`
         : subfolder;
 
-    const transformation = 'w_800,c_limit,q_auto';
+    const transformation = 'w_800,c_limit,q_auto,f_auto,fl_lossy';
 
     const signature = cloudinary.utils.api_sign_request({
         timestamp: timestamp,
