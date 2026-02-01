@@ -6,7 +6,8 @@ import { toast } from 'sonner';
 import {
     Loader2, ArrowLeft, Settings,
     Shield, UserMinus, ShieldAlert, ImageIcon,
-    Upload, Users, Globe, FileText, X, AlertTriangle
+    Upload, Users, Globe, FileText, X, AlertTriangle,
+    Phone, MessageCircle, Instagram
 } from 'lucide-react';
 
 import { Navbar } from '../components/layout/Navbar';
@@ -40,6 +41,9 @@ interface Region {
     imageUrl: string;
     coverUrl: string;
     socialLinks?: string;
+    instagram?: string;
+    whatsappAdmin?: string;
+    whatsappGroup?: string;
 }
 
 interface Member {
@@ -365,6 +369,53 @@ export default function RegionManagement() {
                                                 <div>
                                                     <Label htmlFor="description" className="text-sm font-medium text-gray-700 mb-2 block">Deskripsi</Label>
                                                     <Textarea id="description" className="min-h-[150px] border-gray-200 focus:border-orange-400 focus:ring-orange-400 resize-none" {...register('description')} />
+                                                </div>
+
+                                                {/* Social Media Section */}
+                                                <div className="pt-4 border-t border-gray-100">
+                                                    <h3 className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                                                        <MessageCircle className="w-4 h-4 text-orange-500" />
+                                                        Sosial Media & Kontak
+                                                    </h3>
+                                                    <div className="space-y-4">
+                                                        <div>
+                                                            <Label htmlFor="instagram" className="text-sm font-medium text-gray-700 mb-2 block">Instagram</Label>
+                                                            <div className="relative">
+                                                                <Instagram className="absolute left-3 top-2.5 h-5 w-5 text-pink-500" />
+                                                                <Input
+                                                                    id="instagram"
+                                                                    placeholder="https://instagram.com/komunitas"
+                                                                    className="pl-10 h-10 border-gray-200 focus:border-orange-400 focus:ring-orange-400"
+                                                                    {...register('instagram')}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <Label htmlFor="whatsappAdmin" className="text-sm font-medium text-gray-700 mb-2 block">No. WhatsApp Admin ( Opsional )</Label>
+                                                            <div className="relative">
+                                                                <Phone className="absolute left-3 top-2.5 h-5 w-5 text-green-500" />
+                                                                <Input
+                                                                    id="whatsappAdmin"
+                                                                    placeholder="628123456789"
+                                                                    className="pl-10 h-10 border-gray-200 focus:border-orange-400 focus:ring-orange-400"
+                                                                    {...register('whatsappAdmin')}
+                                                                />
+                                                            </div>
+                                                            <p className="text-xs text-gray-500 mt-1">Format: 628xxx tanpa + atau spasi</p>
+                                                        </div>
+                                                        <div>
+                                                            <Label htmlFor="whatsappGroup" className="text-sm font-medium text-gray-700 mb-2 block">Link Grup WhatsApp ( Opsional )</Label>
+                                                            <div className="relative">
+                                                                <MessageCircle className="absolute left-3 top-2.5 h-5 w-5 text-green-500" />
+                                                                <Input
+                                                                    id="whatsappGroup"
+                                                                    placeholder="https://chat.whatsapp.com/xxx"
+                                                                    className="pl-10 h-10 border-gray-200 focus:border-orange-400 focus:ring-orange-400"
+                                                                    {...register('whatsappGroup')}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
 
                                                 <div className="flex justify-end pt-4 border-t border-gray-100">

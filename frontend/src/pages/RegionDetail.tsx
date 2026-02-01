@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
     Loader2, Users, MapPin, Calendar, LogIn, LogOut, Settings,
-    ArrowRight, MessageSquare, Tent, Share2, Plus
+    ArrowRight, MessageSquare, Tent, Share2, Plus, Instagram, Phone, MessageCircle, ExternalLink
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -37,6 +37,9 @@ interface Region {
     coverUrl?: string;
     memberCount: number;
     status: string;
+    instagram?: string;
+    whatsappAdmin?: string;
+    whatsappGroup?: string;
 }
 
 interface Member {
@@ -626,6 +629,79 @@ export default function RegionDetail() {
                             </Button>
                         </CardContent>
                     </Card>
+
+                    {/* Social Media & Contact Card */}
+                    {(region.instagram || region.whatsappAdmin || region.whatsappGroup) && (
+                        <Card className="border-none shadow-sm bg-white overflow-hidden">
+                            <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 border-b border-gray-100 py-4">
+                                <CardTitle className="text-sm font-bold text-gray-800 flex items-center gap-2">
+                                    <MessageCircle className="w-4 h-4 text-green-500" />
+                                    Sosial Media & Kontak
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-5 space-y-3">
+                                {region.instagram && (
+                                    <a
+                                        href={region.instagram.startsWith('http') ? region.instagram : `https://instagram.com/${region.instagram}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-pink-50 to-purple-50 hover:from-pink-100 hover:to-purple-100 transition-all group"
+                                    >
+                                        <div className="p-2 bg-gradient-to-br from-pink-500 to-purple-600 rounded-lg text-white">
+                                            <Instagram className="w-4 h-4" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-xs text-gray-500">Instagram</p>
+                                            <p className="text-sm font-medium text-gray-900 truncate group-hover:text-pink-600 transition-colors">
+                                                {region.instagram.replace(/https?:\/\/(www\.)?instagram\.com\/?/i, '@')}
+                                            </p>
+                                        </div>
+                                        <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-pink-500 transition-colors" />
+                                    </a>
+                                )}
+
+                                {region.whatsappAdmin && (
+                                    <a
+                                        href={`https://wa.me/${region.whatsappAdmin.replace(/[^0-9]/g, '')}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-3 p-3 rounded-xl bg-green-50 hover:bg-green-100 transition-all group"
+                                    >
+                                        <div className="p-2 bg-green-500 rounded-lg text-white">
+                                            <Phone className="w-4 h-4" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-xs text-gray-500">WhatsApp Admin</p>
+                                            <p className="text-sm font-medium text-gray-900 truncate group-hover:text-green-600 transition-colors">
+                                                +{region.whatsappAdmin}
+                                            </p>
+                                        </div>
+                                        <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-green-500 transition-colors" />
+                                    </a>
+                                )}
+
+                                {region.whatsappGroup && (
+                                    <a
+                                        href={region.whatsappGroup}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-3 p-3 rounded-xl bg-green-50 hover:bg-green-100 transition-all group"
+                                    >
+                                        <div className="p-2 bg-green-600 rounded-lg text-white">
+                                            <Users className="w-4 h-4" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-xs text-gray-500">Grup WhatsApp</p>
+                                            <p className="text-sm font-medium text-gray-900 truncate group-hover:text-green-600 transition-colors">
+                                                Gabung Grup
+                                            </p>
+                                        </div>
+                                        <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-green-500 transition-colors" />
+                                    </a>
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
                 </div>
             </div>
 

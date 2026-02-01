@@ -67,6 +67,36 @@ router.get('/', async (req: Request, res: Response) => {
     }
 });
 
+// GET user created camp areas
+router.get('/created', authenticate, async (req: Request, res: Response) => {
+    try {
+        const user = req.user;
+        const userId = user.sub || user.id;
+
+        const result = await db.select({
+            id: campAreas.id,
+            name: campAreas.name,
+            description: campAreas.description,
+            location: campAreas.location,
+            price: campAreas.price,
+            imageUrl: campAreas.imageUrl,
+            additionalImages: campAreas.additionalImages,
+            facilities: campAreas.facilities,
+            userId: campAreas.userId,
+            regionId: campAreas.regionId,
+            createdAt: campAreas.createdAt,
+        })
+            .from(campAreas)
+            .where(eq(campAreas.userId, userId))
+            .orderBy(desc(campAreas.createdAt));
+
+        res.json(result);
+    } catch (error) {
+        console.error("Error fetching created camp areas:", error);
+        res.status(500).json({ error: 'Failed to fetch created camp areas' });
+    }
+});
+
 // GET single camp area
 router.get('/:id', async (req: Request, res: Response) => {
     try {

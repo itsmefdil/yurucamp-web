@@ -64,6 +64,20 @@
       "when": 1769698240591,
       "tag": "0008_smiling_starhawk",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1769965412110,
+      "tag": "0009_elite_amazoness",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1769966213528,
+      "tag": "0010_groovy_photon",
+      "breakpoints": true
     }
   ]
 }
