@@ -1,0 +1,896 @@
+{
+    "season": 1,
+    "episodes": [
+        {
+            "episode_number": 1,
+            "title": "Gunung Fuji dan Mie Kari",
+            "locations": [
+                {
+                    "name": "Persimpangan Rute 300-709",
+                    "description": "Rin berhenti di sini dan memeriksa waktu\n                                                                                    sambil memperlihatkan pemandangan Gunung Fuji yang indah.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e1/1.jpg",
+                    "google_maps": "https://goo.gl/maps/9RB5bZP2J9iewVg69",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.47404&mlon=138.57575#map=18/35.47404/138.57575",
+                    "coords": {
+                        "lat": 35.47404,
+                        "lng": 138.57575
+                    }
+                },
+                {
+                    "name": "Nadeshiko Tidur dan Pondok Tunggu",
+                    "description": "Rin pertama kali bertemu Nadeshiko\n                                                                                    yang sedang tidur di sini, di bangku dalam\n                                                                                    pondok tunggu.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e1/2.jpg",
+                    "google_maps": "https://goo.gl/maps/C7Em47J141QETJdi7",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.47412&mlon=138.57407#map=18/35.47412/138.57407",
+                    "coords": {
+                        "lat": 35.47412,
+                        "lng": 138.57407
+                    }
+                },
+                {
+                    "name": "Bangunan Check-in Perkemahan Danau Motosu",
+                    "description": "Di sinilah Rin melakukan check-in untuk\n                                                                                    Perkemahan Danau Motosu. Merchandise seri dan promosi tersedia\n                                                                                    di sini!",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e1/3.jpg",
+                    "google_maps": "https://maps.google.com/?cid=7838609439215152171",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.47354&mlon=138.57335#map=18/35.47354/138.57335&layers=N",
+                    "coords": {
+                        "lat": 35.47354,
+                        "lng": 138.57335
+                    }
+                },
+                {
+                    "name": "Jalan Menuju Perkemahan Danau Motosu",
+                    "description": "Rin mengendarai sepedanya menuruni jalan ini menuju\n                                                                                    tepi danau. Nadeshiko juga mengejar Rin yang\n                                                                                    ketakutan menuruni jalan ini nanti\n                                                                                    malam itu.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e1/4.jpg",
+                    "google_maps": "https://goo.gl/maps/6nJy3J8ATNkBMdA57",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.47328&mlon=138.57316#map=18/35.47328/138.57316",
+                    "coords": {
+                        "lat": 35.47328,
+                        "lng": 138.57316
+                    }
+                },
+                {
+                    "name": "Area Cuci Perkemahan Danau Motosu",
+                    "description": "Rin bersepeda melewati area ini saat dia\n                                                                                    menuju ke tepi danau.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e1/5.jpg",
+                    "google_maps": "https://goo.gl/maps/qMVw5498ydk7ywjH6",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.47310&mlon=138.57435#map=18/35.47310/138.57435",
+                    "coords": {
+                        "lat": 35.4731,
+                        "lng": 138.57435
+                    }
+                },
+                {
+                    "name": "Lokasi Tenda Rin di Danau Motosu",
+                    "description": "Rin mendirikan tendanya di sini di samping Danau\n                                                                                    Motosu.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e1/6.jpg",
+                    "google_maps": "https://goo.gl/maps/VhZ1BbagNUc231zC9",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.47187&mlon=138.57487#map=18/35.47187/138.57487",
+                    "coords": {
+                        "lat": 35.47187,
+                        "lng": 138.57487
+                    }
+                },
+                {
+                    "name": "Lokasi Kayu Bakar Rin di Danau Motosu",
+                    "description": "Rin mengumpulkan biji pinus dan kayu bakar di\n                                                                                    area hutan ini.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e1/7.jpg",
+                    "google_maps": "https://goo.gl/maps/7XywXCGhsNXjv8iX7",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.47305&mlon=138.57502#map=18/35.47305/138.57502",
+                    "coords": {
+                        "lat": 35.47305,
+                        "lng": 138.57502
+                    }
+                },
+                {
+                    "name": "Jembatan Jalur Stasiun Utsubuna",
+                    "description": "Nadeshiko bersepeda melewati jembatan ini\n                                                                                    dalam perjalanan ke Stasiun Utsubuna dari\n                                                                                    rumahnya.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e1/8.jpg",
+                    "google_maps": "https://goo.gl/maps/Bj3mfFMab3QtsdUq8",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.28198&mlon=138.45893#map=18/35.28198/138.45893",
+                    "coords": {
+                        "lat": 35.28198,
+                        "lng": 138.45893
+                    }
+                },
+                {
+                    "name": "Gedung Lama SD & SMP Shimobe\n                                                                                    (SMA Motosu)",
+                    "description": "Di sinilah para protagonis utama\n                                                                                    bersekolah! Merchandise seri dan promosi tersedia\n                                                                                    di sini!",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e1/9.jpg",
+                    "google_maps": "https://goo.gl/maps/9RB5bZP2J9iewVg69",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.47404&mlon=138.57575#map=18/35.47404/138.57575",
+                    "coords": {
+                        "lat": 35.47404,
+                        "lng": 138.57575
+                    }
+                }
+            ]
+        },
+        {
+            "episode_number": 2,
+            "title": "Selamat Datang di Klub Aktivitas Luar Ruangan!",
+            "locations": [
+                {
+                    "name": "Perkemahan Fumotoppara",
+                    "description": "Dikenal sebagai Perkemahan Fumoto di\n                                                                                    anime, ini adalah tempat Rin melakukan solo\n                                                                                    camping saat hari yang dingin dan berangin.\n                                                                                    Nadeshiko menyusulnya setelah\n                                                                                    tahu dari Ena bahwa Rin sedang\n                                                                                    camping di sini. Merchandise seri dan promosi tersedia\n                                                                                    di sini!",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e2/1.jpg",
+                    "google_maps": "https://g.page/fumotoppara",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.40112&mlon=138.56064#map=17/35.40112/138.56064",
+                    "coords": {
+                        "lat": 35.40112,
+                        "lng": 138.56064
+                    }
+                },
+                {
+                    "name": "Lokasi Tenda Rin di Perkemahan Fumotoppara",
+                    "description": "Ini adalah tempat di mana Rin mendirikan\n                                                                                    tenda di Perkemahan Fumotoppara.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e2/2.jpg",
+                    "google_maps": "https://goo.gl/maps/VQTBHvyJsD6PqFGz8",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.39980&mlon=138.56241#map=17/35.39980/138.56241",
+                    "coords": {
+                        "lat": 35.3998,
+                        "lng": 138.56241
+                    }
+                },
+                {
+                    "name": "Lokasi Fasilitas Palsu Perkemahan Fumotoppara",
+                    "description": "Rin mengira ini adalah fasilitas\n                                                                                    toilet dari perkemahan.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e2/3.jpg",
+                    "google_maps": "https://goo.gl/maps/eXjttn2PtA2hPMtA9",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.40133&mlon=138.56210#map=17/35.40133/138.56210",
+                    "coords": {
+                        "lat": 35.40133,
+                        "lng": 138.5621
+                    }
+                },
+                {
+                    "name": "Lokasi Fasilitas Asli Perkemahan Fumotoppara",
+                    "description": "Di sinilah toilet yang sebenarnya berada\n                                                                                    setelah Rin salah mengira lokasi\n                                                                                    sebelumnya sebagai fasilitas toilet.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e2/4.jpg",
+                    "google_maps": "https://goo.gl/maps/dPQe9quMYESQigqy6",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.40055&mlon=138.56257#map=17/35.40055/138.56257",
+                    "coords": {
+                        "lat": 35.40055,
+                        "lng": 138.56257
+                    }
+                },
+                {
+                    "name": "Bangunan Menyerupai Wajah Perkemahan Fumotoppara",
+                    "description": "Rin mengambil foto bangunan ini\n                                                                                    saat berjalan-jalan di perkemahan.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e2/5.jpg",
+                    "google_maps": "https://goo.gl/maps/ZBASngYZJ3Ap68Xt6",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.40075&mlon=138.56234#map=17/35.40075/138.56234",
+                    "coords": {
+                        "lat": 35.40075,
+                        "lng": 138.56234
+                    }
+                },
+                {
+                    "name": "Gunung Fuji Terbalik",
+                    "description": "Rin mengambil foto Gunung Fuji dengan\n                                                                                    pantulan terbaliknya menggunakan\n                                                                                    permukaan kolam.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e2/6.jpg",
+                    "google_maps": "https://goo.gl/maps/9HwT54UVdmfU7vYZ6",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.40059&mlon=138.56156#map=17/35.40059/138.56156",
+                    "coords": {
+                        "lat": 35.40059,
+                        "lng": 138.56156
+                    }
+                }
+            ]
+        },
+        {
+            "episode_number": 3,
+            "title": "Gunung Fuji dan Perkemahan Panci Panas yang Santai",
+            "locations": [
+                {
+                    "name": "Pasar Makanan Selva",
+                    "description": "Dikenal sebagai Supermarket Zebra dalam\n                                                                                    seri, supermarket ini adalah\n                                                                                    basis dari supermarket tempat Aoi\n                                                                                    bekerja paruh waktu. Merchandise seri dan promosi tersedia\n                                                                                    di sini!",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e3/1.jpg",
+                    "google_maps": "https://goo.gl/maps/oWVfPcoWNtysXmDG9",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.43270&mlon=138.44073#map=17/35.43270/138.44073",
+                    "coords": {
+                        "lat": 35.4327,
+                        "lng": 138.44073
+                    }
+                },
+                {
+                    "name": "Toko Minuman Keras Kawamoto",
+                    "description": "Bangunan ini adalah basis dari\n                                                                                    toko minuman keras tempat Chiaki bekerja\n                                                                                    paruh waktu. Itu dicat dengan\n                                                                                    nama bangunan di anime\n                                                                                    untuk promosi tetapi sebenarnya tidak\n                                                                                    menjual minuman keras.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e3/2.jpg",
+                    "google_maps": "https://goo.gl/maps/HJMT52MccfuyzRXB8",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.43318&mlon=138.44147#map=17/35.43318/138.44147",
+                    "coords": {
+                        "lat": 35.43318,
+                        "lng": 138.44147
+                    }
+                }
+            ]
+        },
+        {
+            "episode_number": 4,
+            "title": "Klub Aktivitas Luar Ruangan dan Gadis Berkemah Solo",
+            "locations": [
+                {
+                    "name": "Bekas Gudang Pengendalian Banjir Shimobecho",
+                    "description": "Di sinilah rumah Rin berada\n                                                                                    dalam anime. Ini adalah gudang pengendalian\n                                                                                    banjir yang sudah ditutup.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e4/0.jpg",
+                    "google_maps": "https://maps.app.goo.gl/CP7YJr6Cxdbbbvfe8",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.4796&mlon=138.5273#map=17/35.4796/138.5273",
+                    "coords": {
+                        "lat": 35.4796,
+                        "lng": 138.5273
+                    }
+                },
+                {
+                    "name": "7451 Tokiwa",
+                    "description": "Ini adalah model untuk rumah Rin. Ini\n                                                                                    adalah bekas restoran.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e4/0.jpg",
+                    "google_maps": "https://maps.app.goo.gl/qg84aoU9iH2hQ7CU7",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.44478&mlon=138.48271#map=17/35.44478/138.48271",
+                    "coords": {
+                        "lat": 35.44478,
+                        "lng": 138.48271
+                    }
+                },
+                {
+                    "name": "Stasiun Yamanashishi",
+                    "description": "Di sinilah Nadeshiko, Aoi, dan\n                                                                                    Chiaki bertemu untuk perjalanan berkemah pertama\n                                                                                    Klub Aktivitas Luar Ruangan.\n                                                                                    Nadeshiko terlambat.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e4/1.jpg",
+                    "google_maps": "https://goo.gl/maps/xN4rHbjmc6auEh8w7",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.68498&mlon=138.68284#map=17/35.68498/138.68284",
+                    "coords": {
+                        "lat": 35.68498,
+                        "lng": 138.68284
+                    }
+                },
+                {
+                    "name": "Jembatan Menuju Taman Buah Fuefukigawa",
+                    "description": "Nadeshiko, Aoi, dan Chiaki berjalan\n                                                                                    menyusuri jembatan ini dalam perjalanan ke\n                                                                                    Taman Buah Fuefukigawa. Chiaki mencoba\n                                                                                    mencari tumpangan di persimpangan\n                                                                                    Timur sungai karena perjalanan panjang\n                                                                                    mulai membuatnya lelah.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e4/2.jpg",
+                    "google_maps": "https://goo.gl/maps/gjupecwThSgp5FDF9",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.68618&mlon=138.67957#map=17/35.68618/138.67957",
+                    "coords": {
+                        "lat": 35.68618,
+                        "lng": 138.67957
+                    }
+                },
+                {
+                    "name": "Taman Buah Fuefukigawa",
+                    "description": "Dikenal sebagai Taman Fuefuki dalam seri,\n                                                                                    taman ini adalah tujuan\n                                                                                    Nadeshiko, Aoi, dan Chiaki yang\n                                                                                    berjalan kaki dari Stasiun Yamanashi City\n                                                                                    tanpa mengetahui ada bus yang menuju\n                                                                                    ke taman dari stasiun.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e4/3.jpg",
+                    "google_maps": "https://goo.gl/maps/b3NtHRUySZjbrseS6",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.70133&mlon=138.66674#map=17/35.70133/138.66674",
+                    "coords": {
+                        "lat": 35.70133,
+                        "lng": 138.66674
+                    }
+                },
+                {
+                    "name": "Kafe Buah Hachinka+",
+                    "description": "Dikenal sebagai Dapur Kebun Buah dalam\n                                                                                    seri, ini adalah kafe tempat\n                                                                                    Nadeshiko membeli es krim vanila,\n                                                                                    Aoi membeli parfait, dan Chiaki\n                                                                                    membeli sundae violet (kemungkinan\n                                                                                    blueberry). Merchandise seri dan promosi tersedia\n                                                                                    di sini!",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e4/4.jpg",
+                    "google_maps": "https://goo.gl/maps/ygRyHbDBUCBKjYJ38",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.70201&mlon=138.66566#map=17/35.70201/138.66566",
+                    "coords": {
+                        "lat": 35.70201,
+                        "lng": 138.66566
+                    }
+                },
+                {
+                    "name": "Pondok Korobokkuru",
+                    "description": "Di sinilah Rin beristirahat dalam\n                                                                                    perjalanannya dan menikmati Set Borscht\n                                                                                    dengan Caramel Macchiato. Merchandise seri dan promosi tersedia\n                                                                                    di sini!",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e4/5.jpg",
+                    "google_maps": "https://goo.gl/maps/gAXXZKPhwDUBc5rE9",
+                    "osm": "https://www.openstreetmap.org/?mlat=36.10481&mlon=138.18800#map=17/36.10481/138.18800",
+                    "coords": {
+                        "lat": 36.10481,
+                        "lng": 138.188
+                    }
+                },
+                {
+                    "name": "Pemandian Air Panas Hottarakashi",
+                    "description": "Ini adalah onsen yang dikunjungi Nadeshiko,\n                                                                                    Aoi, dan Chiaki. Mereka\n                                                                                    tertidur di area istirahat setelah\n                                                                                    mandi jadi berhati-hatilah karena itu bisa\n                                                                                    terjadi pada Anda juga!",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e4/6.jpg",
+                    "google_maps": "https://goo.gl/maps/19YpH2d9m6YkHQUx7",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.70610&mlon=138.65214#map=17/35.70610/138.65214",
+                    "coords": {
+                        "lat": 35.7061,
+                        "lng": 138.65214
+                    }
+                },
+                {
+                    "name": "Kamera Kirigamine",
+                    "description": "Di sinilah kamera langsung yang sebenarnya\n                                                                                    untuk jalan di Gunung Kirigamine\n                                                                                    berada. Rin melambai di sini untuk menunjukkan kepada\n                                                                                    Nadeshiko, Aoi, dan Chiaki di mana dia\n                                                                                    berada.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e4/7.jpg",
+                    "google_maps": "https://goo.gl/maps/tabHjyLioxQNjAY86",
+                    "osm": "https://www.openstreetmap.org/?mlat=36.09686&mlon=138.16950#map=17/36.09686/138.16950",
+                    "coords": {
+                        "lat": 36.09686,
+                        "lng": 138.1695
+                    }
+                }
+            ]
+        },
+        {
+            "episode_number": 5,
+            "title": "Dua Perkemahan, Pemandangan Dua Camper",
+            "locations": [
+                {
+                    "name": "Jalan Menuju Onsen Terbengkalai",
+                    "description": "Di sinilah perjalanan sial Rin\n                                                                                    menuju onsen terbengkalai\n                                                                                    dimulai.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e5/1.jpg",
+                    "google_maps": "https://goo.gl/maps/8HzZbPJ14Hibubev9",
+                    "osm": "https://www.openstreetmap.org/?mlat=36.13962&mlon=138.04019#map=17/36.13962/138.04019",
+                    "coords": {
+                        "lat": 36.13962,
+                        "lng": 138.04019
+                    }
+                },
+                {
+                    "name": "Tanda Onsen",
+                    "description": "Ini adalah tanda yang menandai\n                                                                                    pintu masuk ke onsen terbengkalai.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e5/2.jpg",
+                    "google_maps": "https://goo.gl/maps/JgmC2SUrzg9yuWHPA",
+                    "osm": "https://www.openstreetmap.org/?mlat=36.14837&mlon=138.01498#map=17/36.14837/138.01498",
+                    "coords": {
+                        "lat": 36.14837,
+                        "lng": 138.01498
+                    }
+                },
+                {
+                    "name": "Onsen Tanpa Nama",
+                    "description": "Dikenal sebagai Sumber Air Mineral Takabotchi\n                                                                                    dalam seri, onsen ini\n                                                                                    masih berdiri, tetapi areanya telah\n                                                                                    diblokir dari jalan akses.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e5/3.jpg",
+                    "google_maps": "https://goo.gl/maps/kucT9vN65p3sN14Q6",
+                    "osm": "https://www.openstreetmap.org/?mlat=36.14843&mlon=138.01641#map=17/36.14843/138.01641",
+                    "coords": {
+                        "lat": 36.14843,
+                        "lng": 138.01641
+                    }
+                },
+                {
+                    "name": "Pemandangan Panorama Pegunungan Alpen Jepang",
+                    "description": "Ini adalah pemberhentian pertama Rin setelah kembali\n                                                                                    dari perjalanan onsen yang mengecewakan.\n                                                                                    Cuacanya tidak bagus di\n                                                                                    sisi gunung ini dan tutupan awan\n                                                                                    menghalangi pemandangannya terhadap\n                                                                                    lanskap.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e5/4.jpg",
+                    "google_maps": "https://goo.gl/maps/ygRyHbDBUCBKjYJ38",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.70201&mlon=138.66566#map=17/35.70201/138.66566",
+                    "coords": {
+                        "lat": 35.70201,
+                        "lng": 138.66566
+                    }
+                },
+                {
+                    "name": "Jalur Menuju Puncak Gunung Takabotchi",
+                    "description": "Bergerak dari Pemandangan Panorama,\n                                                                                    dia menuju ke puncak Gunung\n                                                                                    Takabotchi.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e5/5.jpg",
+                    "google_maps": "https://goo.gl/maps/qzn4yghqQJuSdj6x5",
+                    "osm": "https://www.openstreetmap.org/?mlat=36.13461&mlon=138.03781#map=17/36.13461/138.03781",
+                    "coords": {
+                        "lat": 36.13461,
+                        "lng": 138.03781
+                    }
+                },
+                {
+                    "name": "Puncak Gunung Takabotchi",
+                    "description": "Rin tiba di puncak dan menyadari\n                                                                                    bahwa tidak ada awan yang menutupi\n                                                                                    sisi gunung ini, memberikan\n                                                                                    pemandangan jelas ke kota di bawah. Rin mengambil foto malam kota yang\n                                                                                    terlihat dari tempat ini dan membagikannya\n                                                                                    dengan Nadeshiko. Lokasi ini adalah\n                                                                                    wajib bagi fotografer!",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e5/6.jpg",
+                    "google_maps": "https://goo.gl/maps/19YpH2d9m6YkHQUx7",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.70610&mlon=138.65214#map=17/35.70610/138.65214",
+                    "coords": {
+                        "lat": 35.7061,
+                        "lng": 138.65214
+                    }
+                },
+                {
+                    "name": "Mesin Penjual Otomatis Gunung Takabotchi",
+                    "description": "Rin berkeliaran di sini saat berkeliling\n                                                                                    tempat itu.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e5/7.jpg",
+                    "google_maps": "https://goo.gl/maps/9uKiwhG8yAkmEmqS9",
+                    "osm": "https://www.openstreetmap.org/?mlat=36.13487&mlon=138.03676#map=17/36.13487/138.03676",
+                    "coords": {
+                        "lat": 36.13487,
+                        "lng": 138.03676
+                    }
+                },
+                {
+                    "name": "Perkemahan Gunung Takabotchi",
+                    "description": "Rin berkeliaran di sini saat berkeliling\n                                                                                    tempat itu.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e5/8.jpg",
+                    "google_maps": "https://goo.gl/maps/ETTmB1vcKXtmdWiUA",
+                    "osm": "https://www.openstreetmap.org/?mlat=36.13451&mlon=138.03702#map=17/36.13451/138.03702",
+                    "coords": {
+                        "lat": 36.13451,
+                        "lng": 138.03702
+                    }
+                },
+                {
+                    "name": "Stasiun Antena Gunung Takabotchi",
+                    "description": "Rin berkeliaran di sini saat berkeliling\n                                                                                    tempat itu.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e5/9.jpg",
+                    "google_maps": "https://goo.gl/maps/6cr5CM6njAb587C27",
+                    "osm": "https://www.openstreetmap.org/?mlat=36.13415&mlon=138.03545#map=17/36.13415/138.03545",
+                    "coords": {
+                        "lat": 36.13415,
+                        "lng": 138.03545
+                    }
+                },
+                {
+                    "name": "Padang Rumput Gunung Takabotchi",
+                    "description": "Rin berkeliaran di sini saat berkeliling\n                                                                                    tempat itu.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e5/10.jpg",
+                    "google_maps": "https://goo.gl/maps/r4qpKLbREMbzFzXN7",
+                    "osm": "https://www.openstreetmap.org/?mlat=36.13197&mlon=138.03328#map=17/36.13197/138.03328",
+                    "coords": {
+                        "lat": 36.13197,
+                        "lng": 138.03328
+                    }
+                },
+                {
+                    "name": "Lokasi Tenda Rin di Gunung Takabotchi",
+                    "description": "Rin berkeliaran di sini saat berkeliling\n                                                                                    tempat itu.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e5/11.jpg",
+                    "google_maps": "https://goo.gl/maps/T1NpNwhfUkFbXFrDA",
+                    "osm": "https://www.openstreetmap.org/?mlat=36.13157&mlon=138.03466#map=17/36.13157/138.03466",
+                    "coords": {
+                        "lat": 36.13157,
+                        "lng": 138.03466
+                    }
+                },
+                {
+                    "name": "Perkemahan Mobil Pine Wood",
+                    "description": "Penanda ini menunjuk ke tempat yang tepat\n                                                                                    di mana Nadeshiko, Aoi, dan Chiaki\n                                                                                    mendirikan tenda mereka dan makan\n                                                                                    kari untuk makan malam.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e5/12.jpg",
+                    "google_maps": "https://goo.gl/maps/LiZxJEx1tUSKHaxW7",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.71152&mlon=138.66028#map=17/35.71152/138.66028",
+                    "coords": {
+                        "lat": 35.71152,
+                        "lng": 138.66028
+                    }
+                },
+                {
+                    "name": "Tempat Perlindungan Kekasih",
+                    "description": "Di sinilah Nadeshiko mengambil foto\n                                                                                    kota di bawah dan mengirimkannya ke Rin\n                                                                                    pada malam hari. Otaku lajang berhati-hatilah!",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e5/13.jpg",
+                    "google_maps": "https://goo.gl/maps/T2NVjxwgKQhUtJ3q8",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.70453&mlon=138.66287#map=17/35.70453/138.66287",
+                    "coords": {
+                        "lat": 35.70453,
+                        "lng": 138.66287
+                    }
+                },
+                {
+                    "name": "Kastil Takashima",
+                    "description": "Rin melewati sini setelah\n                                                                                    solo camp-nya di Gunung Takabotchi.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e5/14.jpg",
+                    "google_maps": "https://goo.gl/maps/aqwVFR8CYj6Ma8Fd9",
+                    "osm": "https://www.openstreetmap.org/?mlat=36.03977&mlon=138.11313#map=17/36.03977/138.11313",
+                    "coords": {
+                        "lat": 36.03977,
+                        "lng": 138.11313
+                    }
+                },
+                {
+                    "name": "Spa Harian Katakurakan",
+                    "description": "Ini adalah tempat di mana Shimarin mandi\n                                                                                    setelah melewatkan keseruan onsen\n                                                                                    yang dialami grup Nadeshiko.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e5/15.jpg",
+                    "google_maps": "https://goo.gl/maps/E9MHiATMc12yyECa9",
+                    "osm": "https://www.openstreetmap.org/?mlat=36.04810&mlon=138.11308#map=17/36.04810/138.11308",
+                    "coords": {
+                        "lat": 36.0481,
+                        "lng": 138.11308
+                    }
+                }
+            ]
+        },
+        {
+            "episode_number": 6,
+            "title": "Daging, Warna Musim Gugur, dan Danau Misterius",
+            "locations": [
+                {
+                    "name": "Perkemahan Suimeiso",
+                    "description": "Ini adalah tempat di mana Rin dan\n                                                                                    Nadeshiko berkemah di tepi Danau\n                                                                                    Shibire. Tempat perkemahan berada di seberang\n                                                                                    bangunan ini dan Anda bisa menyewa\n                                                                                    perahu untuk menyeberangi danau jika Anda\n                                                                                    menyukainya. Tidak ada belut listrik\n                                                                                    di danau. Merchandise seri dan promosi tersedia\n                                                                                    di sini!",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e6/1.jpg",
+                    "google_maps": "https://goo.gl/maps/ARoUNTnWYZ5CgYV1A",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.53055&mlon=138.51877#map=17/35.53055/138.51877",
+                    "coords": {
+                        "lat": 35.53055,
+                        "lng": 138.51877
+                    }
+                }
+            ]
+        },
+        {
+            "episode_number": 7,
+            "title": "Malam di Tepi Danau dan Para Camper",
+            "locations": [
+                {
+                    "name": "Lokasi Tenda Rin dan Nadeshiko di Suimeiso",
+                    "description": "Di sinilah perjalanan sial Rin\n                                                                                    menuju onsen terbengkalai\n                                                                                    dimulai.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e7/1.jpg",
+                    "google_maps": "https://goo.gl/maps/8HzZbPJ14Hibubev9",
+                    "osm": "https://www.openstreetmap.org/?mlat=36.13962&mlon=138.04019#map=17/36.13962/138.04019",
+                    "coords": {
+                        "lat": 36.13962,
+                        "lng": 138.04019
+                    }
+                },
+                {
+                    "name": "Lokasi Tenda Toba Bersaudara di Suimeiso",
+                    "description": "Di sinilah Rin dan Nadeshiko pertama kali\n                                                                                    bertemu Toba-sensei dan adiknya.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e7/2.jpg",
+                    "google_maps": "https://goo.gl/maps/ihniEfodiEywEC3cA",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.52918&mlon=138.51529#map=17/35.52918/138.51529",
+                    "coords": {
+                        "lat": 35.52918,
+                        "lng": 138.51529
+                    }
+                },
+                {
+                    "name": "Titik Pandang Nadeshiko-Gunung Fuji",
+                    "description": "Di sinilah Nadeshiko berdiri\n                                                                                    sambil memandang Gunung Fuji. Hanya\n                                                                                    mungkin untuk melihat Gunung Fuji pada hari yang\n                                                                                    cerah.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e7/3.jpg",
+                    "google_maps": "https://goo.gl/maps/21zFwJx4KiLPknia8",
+                    "osm": "https://www.openstreetmap.org/?mlat=34.69583&mlon=137.60727#map=17/34.69583/137.60727",
+                    "coords": {
+                        "lat": 34.69583,
+                        "lng": 137.60727
+                    }
+                },
+                {
+                    "name": "Pemandangan Shimizu-Gunung Fuji",
+                    "description": "Ini adalah pemandangan yang dilewatkan\n                                                                                    Nadeshiko saat dia tidur di\n                                                                                    mobil. Melewatkan pemandangan Gunung Fuji ini\n                                                                                    membuatnya bersepeda ke Danau Motosu dan\n                                                                                    bertemu Rin secara kebetulan.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e7/4.jpg",
+                    "google_maps": "https://goo.gl/maps/Z2HYRNqVM1j9vcrL8",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.14486&mlon=138.52047#map=17/35.14486/138.52047",
+                    "coords": {
+                        "lat": 35.14486,
+                        "lng": 138.52047
+                    }
+                }
+            ]
+        },
+        {
+            "episode_number": 8,
+            "title": "Ujian, Caribou, Roti Kukus, Nyam!",
+            "locations": [
+                {
+                    "name": "Stasiun Hadakajima",
+                    "description": "Ini adalah pemberhentian Aoi dan Chiaki saat\n                                                                                    mereka pergi bekerja di Supermarket\n                                                                                    Zebra dan Toko Minuman Keras\n                                                                                    Kawamoto.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e8/1.jpg",
+                    "google_maps": "https://goo.gl/maps/r51HK5jR3s1BAw1v6",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.41856&mlon=138.45972#map=17/35.41856/138.45972",
+                    "coords": {
+                        "lat": 35.41856,
+                        "lng": 138.45972
+                    }
+                },
+                {
+                    "name": "Stasiun Minobu",
+                    "description": "Di sinilah Nadeshiko, Aoi, dan Chiaki\n                                                                                    meninggalkan kereta saat mereka menuju\n                                                                                    ke Toko Outdoor Caribou.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e8/2.jpg",
+                    "google_maps": "https://goo.gl/maps/bsTkXKHCKHC6iXHT7",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.36143&mlon=138.45302#map=17/35.36143/138.45302",
+                    "coords": {
+                        "lat": 35.36143,
+                        "lng": 138.45302
+                    }
+                },
+                {
+                    "name": "Toko Yutakaya",
+                    "description": "Ini adalah toko yang dilewati Nadeshiko\n                                                                                    saat mereka tiba di Minobu. Mereka\n                                                                                    bahkan memiliki menu Houtou di sini yang\n                                                                                    merupakan makanan yang dilihat Nadeshiko di\n                                                                                    spanduk di luar toko. Merchandise seri dan promosi tersedia\n                                                                                    di sini!",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e8/3.jpg",
+                    "google_maps": "https://goo.gl/maps/zDbKET7Z2NJMCudN6",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.36109&mlon=138.45215#map=17/35.36109/138.45215",
+                    "coords": {
+                        "lat": 35.36109,
+                        "lng": 138.45215
+                    }
+                },
+                {
+                    "name": "Eishodo",
+                    "description": "Ini adalah tempat di mana Nadeshiko,\n                                                                                    Aoi, dan Chiaki membeli Manjuu\n                                                                                    Minobu. Ketiganya kembali\n                                                                                    untuk ronde kedua jadi pastikan untuk membeli\n                                                                                    cukup! Merchandise seri dan promosi tersedia\n                                                                                    di sini!",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e8/4.jpg",
+                    "google_maps": "https://goo.gl/maps/bqWWshx91Ht8cZL39",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.36158&mlon=138.45229#map=17/35.36158/138.45229",
+                    "coords": {
+                        "lat": 35.36158,
+                        "lng": 138.45229
+                    }
+                },
+                {
+                    "name": "Bangku Roti Minobu",
+                    "description": "Di sinilah Nadeshiko, Aoi, dan\n                                                                                    Chiaki duduk dan memakan Manjuu\n                                                                                    Minobu yang mereka beli.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e8/5.jpg",
+                    "google_maps": "https://goo.gl/maps/454UYzYN2wgBFUVq5",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.36180&mlon=138.45234#map=17/35.36180/138.45234",
+                    "coords": {
+                        "lat": 35.3618,
+                        "lng": 138.45234
+                    }
+                }
+            ]
+        },
+        {
+            "episode_number": 9,
+            "title": "Malam Navigator Nadeshiko dan Uap\n                                                            Pemandian Air Panas",
+            "locations": [
+                {
+                    "name": "Toko Lawson Minami Alps Kaido",
+                    "description": "Di sinilah Rin berhenti untuk menjawab\n                                                                                    panggilan Nadeshiko.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e9/1.jpg",
+                    "google_maps": "https://goo.gl/maps/rro8rGJ3xR1oxuAJ6",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.66108&mlon=138.44026#map=17/35.66108/138.44026",
+                    "coords": {
+                        "lat": 35.66108,
+                        "lng": 138.44026
+                    }
+                },
+                {
+                    "name": "Jembatan Celah Yashajin Pertama",
+                    "description": "Jembatan ini adalah model dari\n                                                                                    jembatan yang dilintasi Rin di kaki\n                                                                                    Minami Alps.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e9/2.jpg",
+                    "google_maps": "https://goo.gl/maps/M2MNFCEKA5rErtXL6",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.63801&mlon=138.38493#map=17/35.63801/138.38493",
+                    "coords": {
+                        "lat": 35.63801,
+                        "lng": 138.38493
+                    }
+                },
+                {
+                    "name": "Tanda Jembatan Celah Yashajin Pertama",
+                    "description": "Rin melihat tanda ini dan\n                                                                                    tercengang dengan nama celah\n                                                                                    yang dia tuju.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e9/3.jpg",
+                    "google_maps": "https://goo.gl/maps/vyKKLQFKF3PbTBkE8",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.63790&mlon=138.38453#map=17/35.63790/138.38453",
+                    "coords": {
+                        "lat": 35.6379,
+                        "lng": 138.38453
+                    }
+                },
+                {
+                    "name": "Jembatan Celah Yashajin Kedua",
+                    "description": "Jembatan Lengkung Merah ini adalah jembatan\n                                                                                    kedua yang terlihat saat Rin melewati\n                                                                                    Celah Yashajin.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e9/4.jpg",
+                    "google_maps": "https://goo.gl/maps/zHxJdRWjdEPFcuqq5",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.63574&mlon=138.37131#map=17/35.63574/138.37131",
+                    "coords": {
+                        "lat": 35.63574,
+                        "lng": 138.37131
+                    }
+                },
+                {
+                    "name": "Ashiyasu Onsen Iwazonokan",
+                    "description": "Rin melewati bangunan onsen ini\n                                                                                    saat dia berkendara melalui\n                                                                                    Celah Yashajin. Titik pengambilan gambar ada di jalan\n                                                                                    di seberang sungai!",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e9/5.jpg",
+                    "google_maps": "https://goo.gl/maps/uqQuN5R7b6Vr3kAA9",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.63539&mlon=138.37017#map=17/35.63539/138.37017",
+                    "coords": {
+                        "lat": 35.63539,
+                        "lng": 138.37017
+                    }
+                },
+                {
+                    "name": "Tempat Parkir Celah Yashajin",
+                    "description": "Di sinilah Rin mengetahui bahwa\n                                                                                    jalan di depan tidak dapat digunakan oleh\n                                                                                    kendaraan pribadi. Mungkin ada hewan liar seperti\n                                                                                    beruang di daerah tersebut! Harap\n                                                                                    berhati-hati dengan lingkungan Anda!",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e9/6.jpg",
+                    "google_maps": "https://goo.gl/maps/7f1TZZK4NDa2tLj78",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.63540&mlon=138.34582#map=17/35.63540/138.34582",
+                    "coords": {
+                        "lat": 35.6354,
+                        "lng": 138.34582
+                    }
+                },
+                {
+                    "name": "Pondok Yashagami",
+                    "description": "Di sinilah Rin membeli minuman dari\n                                                                                    mesin penjual otomatis saat dia beristirahat\n                                                                                    setelah mengetahui tentang\n                                                                                    jalan terlarang. Mungkin ada hewan liar seperti\n                                                                                    beruang di daerah tersebut! Harap\n                                                                                    berhati-hati dengan lingkungan Anda! Merchandise seri dan promosi tersedia\n                                                                                    di sini!",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e9/7.jpg",
+                    "google_maps": "https://goo.gl/maps/qgepuRUhFTfYaEC59",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.63536&mlon=138.34512#map=17/35.63536/138.34512",
+                    "coords": {
+                        "lat": 35.63536,
+                        "lng": 138.34512
+                    }
+                },
+                {
+                    "name": "Pondok Pendaki Gunung Houou Minami Alps",
+                    "description": "Di sinilah Rin beristirahat dan bertemu\n                                                                                    Subaru-san si Wanita Teh yang sedang\n                                                                                    menunggu temannya yang terlambat.\n                                                                                    Mungkin ada hewan liar seperti\n                                                                                    beruang di daerah tersebut! Harap\n                                                                                    berhati-hati dengan lingkungan Anda!",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e9/8.jpg",
+                    "google_maps": "https://goo.gl/maps/oVESvcnigLHpNp2i7",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.63559&mlon=138.34552#map=17/35.63559/138.34552",
+                    "coords": {
+                        "lat": 35.63559,
+                        "lng": 138.34552
+                    }
+                },
+                {
+                    "name": "Jalur Gunung Houou Minami Alps",
+                    "description": "Di sinilah Rin mengantar kepergian Subaru-san\n                                                                                    dan diberi teh. Mungkin ada hewan liar seperti\n                                                                                    beruang di daerah tersebut! Harap\n                                                                                    berhati-hati dengan lingkungan Anda!",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e9/9.jpg",
+                    "google_maps": "https://goo.gl/maps/zmUDsX8RVdiA5NKNA",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.63563&mlon=138.34562#map=17/35.63563/138.34562",
+                    "coords": {
+                        "lat": 35.63563,
+                        "lng": 138.34562
+                    }
+                },
+                {
+                    "name": "Kafe Observasi Celah Tsuetsuki Kaze\n                                                                                    no Uta",
+                    "description": "Di sinilah Rin berada saat Nadeshiko\n                                                                                    menanyakan lokasinya. Letaknya\n                                                                                    tepat di selatan Danau Suwa dan\n                                                                                    ada dek observasi di dekatnya. Mereka hanya buka dari April hingga\n                                                                                    akhir November. Jam buka:\n                                                                                    10:00 - 15:00 (Tutup pada\n                                                                                    Rabu).",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e9/10.jpg",
+                    "google_maps": "https://goo.gl/maps/r4qpKLbREMbzFzXN7",
+                    "osm": "https://www.openstreetmap.org/?mlat=36.13197&mlon=138.03328#map=17/36.13197/138.03328",
+                    "coords": {
+                        "lat": 36.13197,
+                        "lng": 138.03328
+                    }
+                },
+                {
+                    "name": "Lengkungan Senjoujiki",
+                    "description": "Wilayah pegunungan ini adalah salah satu\n                                                                                    tempat yang disarankan Nadeshiko\n                                                                                    meskipun Rin sebenarnya tidak datang ke\n                                                                                    tempat ini. Arah timur laut\n                                                                                    dari tempat ini memiliki area yang sama dengan\n                                                                                    lengkungan yang digunakan dalam anime.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e9/11.jpg",
+                    "google_maps": "https://goo.gl/maps/sxNMVeqVRndM31FV7",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.77811&mlon=137.81463#map=17/35.77811/137.81463",
+                    "coords": {
+                        "lat": 35.77811,
+                        "lng": 137.81463
+                    }
+                },
+                {
+                    "name": "Kerajaan Jamur",
+                    "description": "Tempat ini adalah salah satu tempat yang\n                                                                                    disarankan Nadeshiko meskipun Rin\n                                                                                    sebenarnya tidak datang ke tempat ini.\n                                                                                    Ini adalah resor ski di musim dingin dan\n                                                                                    kerajaan jamur pada musim yang lebih\n                                                                                    hangat. Mereka buka dari 25 April - 31 Mei,\n                                                                                    10:00 - 16:00 dengan masuk terakhir pada\n                                                                                    15:30. Mereka tutup pada hari Kamis.\n                                                                                    (Dapat berubah jika Kamis adalah\n                                                                                    hari libur nasional.)",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e9/12.jpg",
+                    "google_maps": "https://goo.gl/maps/GHcaxgMwjSY2cQAz8",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.81544&mlon=137.91633#map=17/35.81544/137.91633",
+                    "coords": {
+                        "lat": 35.81544,
+                        "lng": 137.91633
+                    }
+                },
+                {
+                    "name": "Kuil Hoshakuzan Kozenji",
+                    "description": "Ini adalah kuil tempat Rin mampir.\n                                                                                    Terkenal dengan anjing legendarisnya,\n                                                                                    yang menjadi alasan mengapa Rin\n                                                                                    mengunjungi tempat itu. Merchandise seri dan promosi tersedia\n                                                                                    di sini!",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e9/13.jpg",
+                    "google_maps": "https://goo.gl/maps/15sykNzF3atxF4bm7",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.73487&mlon=137.89551#map=17/35.73487/137.89551",
+                    "coords": {
+                        "lat": 35.73487,
+                        "lng": 137.89551
+                    }
+                },
+                {
+                    "name": "Makam Hayatarou",
+                    "description": "Di sinilah Rin memberikan penghormatan\n                                                                                    untuk anjing pahlawan yang diabadikan\n                                                                                    kuil.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e9/14.jpg",
+                    "google_maps": "https://goo.gl/maps/qChj2EZ8zqruG7NXA",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.73466&mlon=137.89579#map=17/35.73466/137.89579",
+                    "coords": {
+                        "lat": 35.73466,
+                        "lng": 137.89579
+                    }
+                },
+                {
+                    "name": "Bangunan Kuil Kozenji",
+                    "description": "Dalam seri, bagian kuil ini\n                                                                                    adalah tempat Rin membeli salah satu\n                                                                                    ramalan anjing lucu dan mendapatkan satu\n                                                                                    yang mengatakan keberuntungan kecil.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e9/15.jpg",
+                    "google_maps": "https://goo.gl/maps/igYzy7MwQFuhCbN7A",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.73511&mlon=137.89611#map=17/35.73511/137.89611",
+                    "coords": {
+                        "lat": 35.73511,
+                        "lng": 137.89611
+                    }
+                },
+                {
+                    "name": "Pemandian Air Panas Hayataro Onsen Komakusa-no-yu",
+                    "description": "Di sinilah Rin beristirahat dan mengambil\n                                                                                    sebotol teh setelah mengunjungi\n                                                                                    Kuil Kozenji. Dia ketiduran karena\n                                                                                    kelelahan dari perjalanannya.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e9/16.jpg",
+                    "google_maps": "https://goo.gl/maps/3o3divGmuDt6ZpUq6",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.74395&mlon=137.88815#map=17/35.74395/137.88815",
+                    "coords": {
+                        "lat": 35.74395,
+                        "lng": 137.88815
+                    }
+                }
+            ]
+        },
+        {
+            "episode_number": 10,
+            "title": "Pelancong Ceroboh dan Pertemuan Kamp",
+            "locations": [
+                {
+                    "name": "FamilyMart Uwabukita",
+                    "description": "Rin membeli roti babi yang lezat dari sini\n                                                                                    saat dia menuju ke perkemahan.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e10/1.jpg",
+                    "google_maps": "https://goo.gl/maps/UHW8HTUfhDwsXsq27",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.74174&mlon=137.93498#map=17/35.74174/137.93498",
+                    "coords": {
+                        "lat": 35.74174,
+                        "lng": 137.93498
+                    }
+                },
+                {
+                    "name": "Tanda Berhenti Jalan Gunung Jinbagata",
+                    "description": "Rin melihat tanda berhenti di sisi\n                                                                                    jalan dan berhenti. Dia kemudian\n                                                                                    diberitahu oleh Chiaki bahwa tanda itu\n                                                                                    baru saja ditinggalkan di sana dan jalan itu\n                                                                                    bisa dilalui. Dia kemudian turun dari\n                                                                                    mopednya dan berjalan ke perkemahan.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e10/2.jpg",
+                    "google_maps": "https://goo.gl/maps/2A3q2Z18FsouCSYBA",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.67105&mlon=137.98513#map=17/35.67105/137.98513",
+                    "coords": {
+                        "lat": 35.67105,
+                        "lng": 137.98513
+                    }
+                },
+                {
+                    "name": "Perkemahan Gunung Jinbagata",
+                    "description": "Ini adalah perkemahan tempat Rin\n                                                                                    tiba terlambat setelah ketiduran di\n                                                                                    Hayataro Onsen.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e10/3.jpg",
+                    "google_maps": "https://goo.gl/maps/YXyyyeRQ6YQiCjxd8",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.67270&mlon=137.98312#map=17/35.67270/137.98312",
+                    "coords": {
+                        "lat": 35.6727,
+                        "lng": 137.98312
+                    }
+                },
+                {
+                    "name": "Lokasi Tenda Rin di Gunung Jinbagata",
+                    "description": "Di sinilah Rin mendirikan tendanya di\n                                                                                    Perkemahan Jinbagatayama.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e10/4.jpg",
+                    "google_maps": "https://goo.gl/maps/DAF6idVHA9rp25QH9",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.67292&mlon=137.98309#map=17/35.67292/137.98309",
+                    "coords": {
+                        "lat": 35.67292,
+                        "lng": 137.98309
+                    }
+                },
+                {
+                    "name": "Observatorium Puncak Gunung Jinbagata",
+                    "description": "Di sinilah Rin duduk di kursi rendahnya\n                                                                                    dan memasak roti babi lezatnya\n                                                                                    yang dia beli dari minimarket.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e10/5.jpg",
+                    "google_maps": "https://goo.gl/maps/WhE3us87rXsoPFWz7",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.67407&mlon=137.98346#map=17/35.67407/137.98346",
+                    "coords": {
+                        "lat": 35.67407,
+                        "lng": 137.98346
+                    }
+                }
+            ]
+        },
+        {
+            "episode_number": 11,
+            "title": "Perkemahan Natal!",
+            "locations": [
+                {
+                    "name": "Desa Eko Global YMCA Gunung Fuji",
+                    "description": "Di sinilah Rin, Nadeshiko, Aoi,\n                                                                                    Ena, dan Toba-sensei melakukan\n                                                                                    perkemahan natal mereka!",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e11/1.jpg",
+                    "google_maps": "https://goo.gl/maps/Mgo5UBfM9PDgC9jg6",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.34142&mlon=138.58348#map=17/35.34142/138.58348",
+                    "coords": {
+                        "lat": 35.34142,
+                        "lng": 138.58348
+                    }
+                },
+                {
+                    "name": "Lokasi Tenda YMCA Gunung Fuji",
+                    "description": "Di sinilah para camper mendirikan\n                                                                                    tenda mereka di perkemahan.",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e11/2.jpg",
+                    "google_maps": "https://goo.gl/maps/iZE5EB1FzfrnUD3o8",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.34076&mlon=138.58486#map=17/35.34076/138.58486",
+                    "coords": {
+                        "lat": 35.34076,
+                        "lng": 138.58486
+                    }
+                },
+                {
+                    "name": "Natura Vita",
+                    "description": "Ini adalah kafe dari Peternakan Makaino.\n                                                                                    Ini adalah tempat di mana\n                                                                                    Aoi\n                                                                                        dan Chiaki makan hidangan penutup\n                                                                                    \n                                                                                    saat Rin, Nadeshiko, dan\n                                                                                    Toba-sensei berada di perkemahan. Merchandise seri dan promosi tersedia\n                                                                                    di sini!",
+                    "image": "https://animenavi.org/assets/imgs/series/anime/yuru-camp/loc/s1/e11/3.jpg",
+                    "google_maps": "https://goo.gl/maps/Vd9BYw6HLmVGLfzJ7",
+                    "osm": "https://www.openstreetmap.org/?mlat=35.33567&mlon=138.58389#map=17/35.33567/138.58389",
+                    "coords": {
+                        "lat": 35.33567,
+                        "lng": 138.58389
+                    }
+                }
+            ]
+        }
+    ]
+}
