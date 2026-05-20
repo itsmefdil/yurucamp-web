@@ -33,14 +33,48 @@ api.interceptors.request.use(
 );
 
 // Response interceptor to handle errors
+let isRefreshing = false;
+let refreshPromise: Promise<string | null> | null = null;
+
+function refreshAccessToken(): Promise<string | null> {
+    if (!refreshPromise) {
+        refreshPromise = api.post('/auth/refresh')
+            .then((res) => {
+                const newToken = res.data?.token;
+                if (newToken) localStorage.setItem('token', newToken);
+                return newToken || null;
+            })
+            .catch((err) => {
+                localStorage.removeItem('token');
+                return null;
+            })
+            .finally(() => {
+                isRefreshing = false;
+                refreshPromise = null;
+            });
+    }
+    isRefreshing = true;
+    return refreshPromise;
+}
+
 api.interceptors.response.use(
     (response) => response,
-    (error) => {
-        if (error.response?.status === 401) {
-            // Token expired or invalid
-            localStorage.removeItem('token');
-            window.location.href = '/login';
+    async (error) => {
+        const originalRequest = error.config;
+
+        if (error.response?.status === 401 && !originalRequest._retry) {
+            originalRequest._retry = true;
+            const newToken = await refreshAccessToken();
+            if (newToken) {
+                originalRequest.headers.Authorization = `Bearer ${newToken}`;
+                return api(originalRequest);
+            } else {
+                // Refresh failed, redirect to login
+                localStorage.removeItem('token');
+                window.location.href = '/login';
+            }
         }
+
         return Promise.reject(error);
     }
 );

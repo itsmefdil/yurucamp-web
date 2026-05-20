@@ -120,6 +120,14 @@ export const categories = pgTable('categories', {
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 });
 
+export const refreshTokens = pgTable('refresh_tokens', {
+    id: uuid('id').defaultRandom().primaryKey().notNull(),
+    token: text('token').notNull().unique(),
+    userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'string' }),
+});
+
 export const gearLists = pgTable('gear_lists', {
     id: text('id').primaryKey().$defaultFn(() => generateId()),
     userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),

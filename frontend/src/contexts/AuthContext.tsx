@@ -43,6 +43,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     const logout = () => {
+        // Revoke refresh token on server and clear local token
+        try {
+            api.post('/auth/logout').catch(() => {});
+        } catch (e) {
+            // ignore
+        }
         localStorage.removeItem('token');
         setUser(null);
         window.location.href = '/login';

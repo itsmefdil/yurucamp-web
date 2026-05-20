@@ -3,8 +3,9 @@ import multer from 'multer';
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import { db } from '../db';
-import { users } from '../db/schema';
+import { users, refreshTokens } from '../db/schema';
 import { authenticate } from '../middleware/auth';
 import { uploadImage, deleteImage, getPublicIdFromUrl } from '../lib/cloudinary';
 import { eq } from 'drizzle-orm';
@@ -89,21 +90,108 @@ router.get('/google/callback',
             return
         }
 
-        // Generate JWT
-        // We use standard 'sub' for user id to match Supabase convention a bit, 
-        // but it's our logic now.
-        const token = jwt.sign({
+        // Generate short-lived access token and a long-lived refresh token
+        const accessToken = jwt.sign({
             sub: user.id,
             email: user.email,
-            role: user.role // Use actual role from DB
-        }, secret, { expiresIn: '7d' });
+            role: user.role
+        }, secret, { expiresIn: '15m' });
 
-        // Redirect to frontend with token (e.g., via query param or cookie)
-        // Adjust FRONTEND_URL as needed
+        const refreshToken = crypto.randomBytes(64).toString('hex');
+        const refreshExpiresMs = 30 * 24 * 60 * 60 * 1000; // 30 days
+
+        // Store refresh token in DB
+        await db.insert(refreshTokens).values({
+            token: refreshToken,
+            userId: user.id,
+            expiresAt: new Date(Date.now() + refreshExpiresMs)
+        });
+
+        // Set httpOnly cookie for refresh token
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: refreshExpiresMs
+        });
+
+        // Redirect to frontend with access token in query
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-        res.redirect(`${frontendUrl}/auth/callback?token=${token}`);
+        res.redirect(`${frontendUrl}/auth/callback?token=${accessToken}`);
     }
 );
+
+// Helper to parse cookie header (simple)
+function parseCookies(cookieHeader: string | undefined) {
+    const result: Record<string, string> = {};
+    if (!cookieHeader) return result;
+    const parts = cookieHeader.split(';');
+    for (const part of parts) {
+        const idx = part.indexOf('=');
+        if (idx > -1) {
+            const key = part.slice(0, idx).trim();
+            const val = part.slice(idx + 1).trim();
+            result[key] = decodeURIComponent(val);
+        }
+    }
+    return result;
+}
+
+// Refresh access token using refresh token cookie
+router.post('/refresh', async (req: Request, res: Response) => {
+    try {
+        const cookies = parseCookies(req.headers.cookie);
+        const token = cookies['refreshToken'];
+        if (!token) {
+            res.status(401).json({ error: 'No refresh token' });
+            return;
+        }
+
+        const rows = await db.select().from(refreshTokens).where(eq(refreshTokens.token, token)).limit(1);
+        if (rows.length === 0) {
+            res.status(401).json({ error: 'Invalid refresh token' });
+            return;
+        }
+
+        const rt = rows[0];
+        if (rt.expiresAt && new Date(rt.expiresAt) < new Date()) {
+            // expired
+            await db.delete(refreshTokens).where(eq(refreshTokens.id, rt.id));
+            res.clearCookie('refreshToken');
+            res.status(401).json({ error: 'Refresh token expired' });
+            return;
+        }
+
+        const secret = process.env.JWT_SECRET;
+        if (!secret) {
+            res.status(500).json({ error: 'Server misconfiguration' });
+            return;
+        }
+
+        // Issue new access token
+        const accessToken = jwt.sign({ sub: rt.userId }, secret, { expiresIn: '15m' });
+        res.json({ token: accessToken });
+    } catch (error) {
+        console.error('Error refreshing token:', error);
+        res.status(500).json({ error: 'Failed to refresh token' });
+    }
+});
+
+// Logout: revoke refresh token and clear cookie
+router.post('/logout', async (req: Request, res: Response) => {
+    try {
+        const cookies = parseCookies(req.headers.cookie);
+        const token = cookies['refreshToken'];
+        if (token) {
+            await db.delete(refreshTokens).where(eq(refreshTokens.token, token));
+        }
+        res.clearCookie('refreshToken');
+        res.json({ message: 'Logged out' });
+    } catch (error) {
+        console.error('Error during logout:', error);
+        res.status(500).json({ error: 'Failed to logout' });
+    }
+});
 
 // GET current profile
 router.get('/me', authenticate, async (req: Request, res: Response) => {
