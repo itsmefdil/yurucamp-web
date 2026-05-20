@@ -5,6 +5,9 @@ export function Footer() {
                 <div className="text-sm font-bold text-gray-700">
                     YuruCamp ID Community v1.0.0
                 </div>
+                <div className="text-sm text-gray-600">
+                    Website ini dikembangkan oleh komunitas <a href="https://www.instagram.com/yc.jogjajateng" target="_blank" rel="noreferrer" className="text-orange-600 hover:underline">YuruCamp Jogja-Jateng</a>
+                </div>
                 <div className="text-xs text-gray-500 max-w-2xl mx-auto leading-relaxed">
                     This is an unofficial non-profit fan project for educational & community purposes only.
                     <br />
