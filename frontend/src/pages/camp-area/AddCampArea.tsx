@@ -13,6 +13,7 @@ import { Textarea } from '../../components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Navbar } from '../../components/layout/Navbar';
 import { Footer } from '../../components/layout/Footer';
+import RichTextEditor from '../../components/ui/RichTextEditor';
 import api from '../../lib/api';
 import { compressImage } from '../../lib/imageCompression';
 import RegionSelector from '../../components/ui/RegionSelector';
@@ -64,6 +65,14 @@ export default function AddCampArea() {
         },
         mode: 'onSubmit',
     });
+
+    const [description, setDescription] = useState(form.getValues('description') || '');
+
+    // Keep form in sync with editor
+    const handleDescriptionChange = (val: string) => {
+        setDescription(val);
+        form.setValue('description', val, { shouldValidate: true, shouldDirty: true });
+    };
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
@@ -327,10 +336,11 @@ export default function AddCampArea() {
 
                                     <div className="grid gap-2">
                                         <label className="font-bold text-gray-700">Deskripsi</label>
-                                        <Textarea
+                                        <RichTextEditor
+                                            value={description}
+                                            onChange={handleDescriptionChange}
                                             placeholder="Ceritakan tentang suasana, pemandangan, dan hal menarik lainnya..."
-                                            className="min-h-[150px] rounded-xl border-gray-200 focus:border-orange-500 focus:ring-orange-200 resize-y"
-                                            {...form.register('description')}
+                                            minHeight="min-h-[180px]"
                                         />
                                         {form.formState.errors.description && (
                                             <span className="text-xs text-red-500 font-medium">{form.formState.errors.description.message}</span>
