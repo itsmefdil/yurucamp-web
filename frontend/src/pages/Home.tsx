@@ -93,16 +93,16 @@ export default function Home() {
                     const owner = (g as any).user ?? (g as any).ownerInfo;
                     return (
                         <Link key={g.id} to={`/g/${g.id}`} className="block group">
-                        <Card className="overflow-hidden bg-white group-hover:-translate-y-1 transition-all duration-300 h-full flex flex-col border border-gray-100 hover:border-orange-200 shadow-md hover:shadow-xl rounded-2xl">
-                            <CardContent className="p-4 flex-1">
-                                <h3 className="font-bold text-gray-800 group-hover:text-orange-500 transition-colors line-clamp-2 mb-2">{g.name}</h3>
-                                {g.description && (
-                                    <p className="text-sm text-gray-500 line-clamp-2">{g.description}</p>
-                                )}
-                            </CardContent>
-                            <CardFooter className="p-5 pt-0 mt-auto">
-                                <div className="flex items-center gap-3 w-full">
-                                    <div className="relative">
+                            <Card className="overflow-hidden bg-white group-hover:-translate-y-1 transition-all duration-300 h-full flex flex-col border border-gray-100 hover:border-orange-200 shadow-md hover:shadow-xl rounded-2xl">
+                                <CardContent className="p-4 flex-1">
+                                    <h3 className="font-bold text-gray-800 group-hover:text-orange-500 transition-colors line-clamp-2 mb-2">{g.name}</h3>
+                                    {g.description && (
+                                        <p className="text-sm text-gray-500 line-clamp-2">{g.description}</p>
+                                    )}
+                                </CardContent>
+                                <CardFooter className="p-5 pt-0 mt-auto">
+                                    <div className="flex items-center gap-3 w-full">
+                                        <div className="relative">
                                             <Link to={`/u/${g.userId}`} className="block">
                                                 <Avatar className="h-8 w-8 border-2 border-white shadow-sm">
                                                     <AvatarImage src={owner?.avatarUrl || undefined} />
@@ -111,16 +111,16 @@ export default function Home() {
                                                     </AvatarFallback>
                                                 </Avatar>
                                             </Link>
-                                    </div>
-                                    <div className="flex flex-col min-w-0 flex-1">
+                                        </div>
+                                        <div className="flex flex-col min-w-0 flex-1">
                                             <Link to={`/u/${g.userId}`} className="block w-full">
                                                 <span className="text-sm font-semibold text-gray-600 truncate">{owner?.fullName || 'Pengguna'}</span>
                                             </Link>
-                                        <span className="text-[10px] text-gray-400 truncate">{g.createdAt ? new Date(g.createdAt).toLocaleDateString() : ''}</span>
+                                            <span className="text-[10px] text-gray-400 truncate">{g.createdAt ? new Date(g.createdAt).toLocaleDateString() : ''}</span>
+                                        </div>
                                     </div>
-                                </div>
-                            </CardFooter>
-                        </Card>
+                                </CardFooter>
+                            </Card>
                         </Link>
                     );
                 })}

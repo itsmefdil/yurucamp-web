@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const logout = () => {
         // Revoke refresh token on server and clear local token
         try {
-            api.post('/auth/logout').catch(() => {});
+            api.post('/auth/logout').catch(() => { });
         } catch (e) {
             // ignore
         }
