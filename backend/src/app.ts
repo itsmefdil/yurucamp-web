@@ -25,11 +25,13 @@ app.set('trust proxy', 1);
 
 app.use(morgan('dev'));
 
-// Configure CORS
+// Configure CORS - allow credentials for auth cookies
+const frontendOrigin = process.env.FRONTEND_URL || 'http://localhost:3000';
 app.use(cors({
-    origin: '*',
+    origin: frontendOrigin,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
 }));
 
 app.use(express.json({ limit: '50mb' }));

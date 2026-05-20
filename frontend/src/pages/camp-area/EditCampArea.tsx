@@ -13,6 +13,7 @@ import { Textarea } from '../../components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Navbar } from '../../components/layout/Navbar';
 import { Footer } from '../../components/layout/Footer';
+import RichTextEditor from '../../components/ui/RichTextEditor';
 import api from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { compressImage } from '../../lib/imageCompression';
@@ -81,6 +82,13 @@ export default function EditCampArea() {
         },
     });
 
+    const [description, setDescription] = useState(form.getValues('description') || '');
+
+    const handleDescriptionChange = (val: string) => {
+        setDescription(val);
+        form.setValue('description', val, { shouldValidate: true, shouldDirty: true });
+    };
+
     // Fetch camp area detail
     const { data: campArea, isLoading } = useQuery({
         queryKey: ['camp-area', id],
@@ -108,6 +116,8 @@ export default function EditCampArea() {
                 price: campArea.price || '',
                 regionId: campArea.regionId || null,
             });
+
+            setDescription(campArea.description || '');
 
             setImageFile(null);
             setImagePreview(null);
@@ -413,10 +423,11 @@ export default function EditCampArea() {
 
                                     <div className="grid gap-2">
                                         <label className="font-bold text-gray-700">Deskripsi</label>
-                                        <Textarea
+                                        <RichTextEditor
+                                            value={description}
+                                            onChange={handleDescriptionChange}
                                             placeholder="Deskripsi camp area..."
-                                            className="min-h-[150px] rounded-xl border-gray-200 focus:border-orange-500 focus:ring-orange-200 resize-y"
-                                            {...form.register('description')}
+                                            minHeight="min-h-[180px]"
                                         />
                                         {form.formState.errors.description && (
                                             <span className="text-xs text-red-500 font-medium">{form.formState.errors.description.message}</span>
