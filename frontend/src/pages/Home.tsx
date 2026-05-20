@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Badge } from '../components/ui/badge';
 import api from '../lib/api';
 import type { Activity as ActivityType, CampArea, Event } from '../types';
+import type { GearList } from '../types/gear';
 import { formatDate } from '../lib/utils';
 
 export default function Home() {
@@ -71,6 +72,70 @@ export default function Home() {
             case 'pusat info': return <Info className="h-4 w-4" />;
             default: return null;
         }
+    };
+
+    const PublicGearSection: React.FC = () => {
+        const { data: publicGears } = useQuery({
+            queryKey: ['publicGear'],
+            queryFn: async () => {
+                try {
+                    const response = await api.get('/gear/public?limit=3');
+                    return response.data as GearList[];
+                } catch (e) {
+                    return [] as GearList[];
+                }
+            },
+        });
+
+        return (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {publicGears?.slice(0, 3).map((g) => {
+                    const owner = (g as any).user ?? (g as any).ownerInfo;
+                    return (
+                        <Link key={g.id} to={`/g/${g.id}`} className="block group">
+                        <Card className="overflow-hidden bg-white group-hover:-translate-y-1 transition-all duration-300 h-full flex flex-col border border-gray-100 hover:border-orange-200 shadow-md hover:shadow-xl rounded-2xl">
+                            <CardContent className="p-4 flex-1">
+                                <h3 className="font-bold text-gray-800 group-hover:text-orange-500 transition-colors line-clamp-2 mb-2">{g.name}</h3>
+                                {g.description && (
+                                    <p className="text-sm text-gray-500 line-clamp-2">{g.description}</p>
+                                )}
+                            </CardContent>
+                            <CardFooter className="p-5 pt-0 mt-auto">
+                                <div className="flex items-center gap-3 w-full">
+                                    <div className="relative">
+                                            <Link to={`/u/${g.userId}`} className="block">
+                                                <Avatar className="h-8 w-8 border-2 border-white shadow-sm">
+                                                    <AvatarImage src={owner?.avatarUrl || undefined} />
+                                                    <AvatarFallback className="text-xs bg-orange-200 text-orange-700 font-bold">
+                                                        {owner?.fullName?.charAt(0).toUpperCase() || 'U'}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                            </Link>
+                                    </div>
+                                    <div className="flex flex-col min-w-0 flex-1">
+                                            <Link to={`/u/${g.userId}`} className="block w-full">
+                                                <span className="text-sm font-semibold text-gray-600 truncate">{owner?.fullName || 'Pengguna'}</span>
+                                            </Link>
+                                        <span className="text-[10px] text-gray-400 truncate">{g.createdAt ? new Date(g.createdAt).toLocaleDateString() : ''}</span>
+                                    </div>
+                                </div>
+                            </CardFooter>
+                        </Card>
+                        </Link>
+                    );
+                })}
+
+                {(!publicGears || publicGears.length === 0) && (
+                    <div className="col-span-full text-center py-12 text-gray-500 bg-white rounded-[2rem] border-2 border-dashed border-gray-200">
+                        <div className="inline-block p-4 rounded-full bg-orange-50 mb-4">
+                            <Tent className="h-8 w-8 text-orange-400" />
+                        </div>
+                        <p className="font-bold text-lg text-gray-700">Belum ada gear publik.</p>
+                        <p className="text-sm text-gray-400">Pengguna belum mengaktifkan daftar gear mereka.</p>
+                    </div>
+                )}
+            </div>
+        );
     };
 
     return (
@@ -450,6 +515,20 @@ export default function Home() {
                                 )}
                             </div>
                         </div>
+                    </section>
+
+                    {/* Gear Publik */}
+                    <section className="py-12 md:py-24 container mx-auto px-4">
+                        <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 md:mb-12">
+                            <h2 className="text-2xl md:text-4xl font-black text-gray-800 tracking-tight text-center md:text-left">Gear <span className="text-orange-500">Publik</span></h2>
+                            <Button variant="ghost" className="text-base md:text-lg hover:bg-orange-100 text-orange-600 font-bold rounded-full px-6 w-full md:w-auto" asChild>
+                                <Link to="/gear/public" className="flex items-center justify-center gap-2">
+                                    Lihat Semua <ArrowRight className="h-5 w-5" />
+                                </Link>
+                            </Button>
+                        </div>
+
+                        <PublicGearSection />
                     </section>
 
                     {/* Acara Preview */}

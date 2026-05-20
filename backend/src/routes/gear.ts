@@ -27,7 +27,10 @@ router.get('/', authenticate, async (req: Request, res: Response) => {
 // GET all public gear lists
 router.get('/public', optionalAuthenticate, async (req: Request, res: Response) => {
     try {
-        const result = await db.select({
+        const limitParam = req.query.limit as string | undefined;
+        const offsetParam = req.query.offset as string | undefined;
+
+        const resultQuery = db.select({
             id: gearLists.id,
             name: gearLists.name,
             description: gearLists.description,
@@ -44,6 +47,20 @@ router.get('/public', optionalAuthenticate, async (req: Request, res: Response) 
             .leftJoin(users, eq(gearLists.userId, users.id))
             .where(eq(gearLists.isPublic, true))
             .orderBy(desc(gearLists.createdAt));
+
+        const limit = limitParam ? parseInt(limitParam, 10) : NaN;
+        const offset = offsetParam ? parseInt(offsetParam, 10) : NaN;
+
+        let result;
+        if (!isNaN(limit) && !isNaN(offset)) {
+            result = await resultQuery.limit(limit).offset(offset);
+        } else if (!isNaN(limit)) {
+            result = await resultQuery.limit(limit);
+        } else if (!isNaN(offset)) {
+            result = await resultQuery.offset(offset);
+        } else {
+            result = await resultQuery;
+        }
 
         res.json(result);
     } catch (error) {
