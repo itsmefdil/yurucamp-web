@@ -69,18 +69,41 @@ export default function ActivityDetail() {
         enabled: !!id,
     });
 
-    // Like mutation
+    // Like mutation with optimistic update
     const likeMutation = useMutation({
         mutationFn: async () => {
             await api.post('/interactions/like', {
                 activityId: id,
             });
         },
+        onMutate: async () => {
+            // Cancel any outgoing refetches
+            await queryClient.cancelQueries({ queryKey: ['interactions', 'activity', id] });
+
+            // Snapshot the previous value
+            const previousInteractions = queryClient.getQueryData(['interactions', 'activity', id]);
+
+            // Optimistically update to the new value
+            if (previousInteractions) {
+                queryClient.setQueryData(['interactions', 'activity', id], {
+                    ...previousInteractions,
+                    isLiked: !previousInteractions.isLiked,
+                    likeCount: previousInteractions.isLiked
+                        ? previousInteractions.likeCount - 1
+                        : previousInteractions.likeCount + 1
+                });
+            }
+
+            return { previousInteractions };
+        },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['interactions', 'activity', id] });
             toast.success(interactions?.isLiked ? 'Like dihapus' : 'Activity disukai!');
         },
-        onError: () => {
+        onError: (err, variables, context) => {
+            // Rollback on error
+            if (context?.previousInteractions) {
+                queryClient.setQueryData(['interactions', 'activity', id], context.previousInteractions);
+            }
             toast.error('Gagal menyukai activity');
         },
     });
@@ -389,13 +412,29 @@ export default function ActivityDetail() {
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            className={`gap-2 rounded-full transition-all duration-300 group ${interactions?.isLiked ? 'text-red-600 bg-red-50 border-red-200' : 'hover:text-red-600 hover:bg-red-50 hover:border-red-200'
+                                            className={`gap-2 rounded-full transition-all duration-300 group ${interactions?.isLiked
+                                                ? "border-red-200 bg-red-50 !text-red-600 shadow-sm"
+                                                : "hover:text-red-600 hover:bg-red-50 hover:border-red-200"
                                                 }`}
                                             onClick={handleLike}
                                             disabled={likeMutation.isPending}
+                                            aria-pressed={!!interactions?.isLiked}
                                         >
-                                            <Heart className={`h-5 w-5 group-hover:scale-110 transition-transform ${interactions?.isLiked ? 'fill-current' : ''}`} />
-                                            <span className="font-medium">{interactions?.likeCount || 0}</span>
+                                            {interactions?.isLiked ? (
+                                                <Heart
+                                                    className="h-5 w-5 text-red-600 fill-red-600 transition-transform scale-110"
+                                                    fill="#dc2626"
+                                                />
+                                            ) : (
+                                                <Heart
+                                                    className="h-5 w-5 text-gray-600 group-hover:text-red-600 transition-transform group-hover:scale-110"
+                                                    fill="none"
+                                                    strokeWidth={1.5}
+                                                />
+                                            )}
+                                            <span className={`font-extrabold ${interactions?.isLiked ? '!text-red-600' : ''}`}>
+                                                {interactions?.likeCount || 0}
+                                            </span>
                                         </Button>
                                         <Button variant="outline" size="sm" className="hover:text-blue-600 hover:bg-blue-50 hover:border-blue-200 gap-2 rounded-full transition-all duration-300 group" asChild>
                                             <a href="#comments">
