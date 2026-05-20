@@ -80,7 +80,7 @@ router.get('/google', passport.authenticate('google', { scope: ['profile', 'emai
 // Google Auth Callback
 router.get('/google/callback',
     passport.authenticate('google', { session: false, failureRedirect: '/login-failed' }),
-    (req: Request, res: Response) => {
+    async (req: Request, res: Response) => {
         // Successful authentication
         const user = req.user as any;
         const secret = process.env.JWT_SECRET;
@@ -104,7 +104,7 @@ router.get('/google/callback',
         await db.insert(refreshTokens).values({
             token: refreshToken,
             userId: user.id,
-            expiresAt: new Date(Date.now() + refreshExpiresMs)
+            expiresAt: new Date(Date.now() + refreshExpiresMs).toISOString()
         });
 
         // Set httpOnly cookie for refresh token
