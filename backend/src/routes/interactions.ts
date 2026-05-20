@@ -49,6 +49,20 @@ router.get('/video/:videoId', async (req: Request, res: Response) => {
 router.get('/activity/:activityId', async (req: Request, res: Response) => {
     try {
         const { activityId } = req.params;
+        const authHeader = req.headers.authorization;
+        let userId: string | null = null;
+
+        // Try to extract userId from JWT if present
+        if (authHeader) {
+            try {
+                const token = authHeader.split(' ')[1];
+                const jwt = require('jsonwebtoken');
+                const decoded = jwt.verify(token, process.env.JWT_SECRET);
+                userId = decoded.sub || decoded.id;
+            } catch (err) {
+                // Token invalid or missing, continue as guest
+            }
+        }
 
         const comments = await db.select({
             id: activityComments.id,
@@ -69,9 +83,19 @@ router.get('/activity/:activityId', async (req: Request, res: Response) => {
             .from(activityLikes)
             .where(eq(activityLikes.activityId, activityId));
 
+        // Check if current user has liked this activity
+        let isLiked = false;
+        if (userId) {
+            const userLike = await db.select().from(activityLikes)
+                .where(and(eq(activityLikes.userId, userId), eq(activityLikes.activityId, activityId)))
+                .limit(1);
+            isLiked = userLike.length > 0;
+        }
+
         res.json({
             comments,
-            likeCount: likes[0]?.count || 0
+            likeCount: likes[0]?.count || 0,
+            isLiked
         });
 
     } catch (error) {
