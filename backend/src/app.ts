@@ -39,7 +39,7 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 app.use('/sitemap.xml', sitemapRouter);
 
-app.use(basicAuth);
+// app.use(basicAuth);
 
 // Routes
 app.use('/activities', activityRouter);
