@@ -8,6 +8,7 @@ import { BottomNav } from './components/layout/BottomNav';
 import { TitleUpdater } from './components/TitleUpdater';
 import { AdminLayout } from './components/layout/AdminLayout';
 import { AdminRoute } from './components/AdminRoute';
+import ScrollToTop from './components/ScrollToTop';
 
 // Lazy load admin pages
 const AdminDashboard = React.lazy(() => import('./pages/admin/Dashboard'));
@@ -63,6 +64,7 @@ function App() {
         <QueryClientProvider client={queryClient}>
             <AuthProvider>
                 <BrowserRouter>
+                    <ScrollToTop />
                     <TitleUpdater />
                     <Routes>
                         {/* Public Routes */}
