@@ -15,7 +15,7 @@ import { Navbar } from '../../components/layout/Navbar';
 import { Footer } from '../../components/layout/Footer';
 import RichTextEditor from '../../components/ui/RichTextEditor';
 import api from '../../lib/api';
-import { compressImage } from '../../lib/imageCompression';
+import { processImageForUpload } from '../../lib/imageCompression';
 import RegionSelector from '../../components/ui/RegionSelector';
 
 
@@ -79,14 +79,13 @@ export default function AddCampArea() {
         let isFirstFile = !imageFile && !imagePreview;
 
         for (const file of files) {
-            if (file.size > 20 * 1024 * 1024) {
-                toast.error(`File ${file.name} terlalu besar (>20MB)`);
+            // Set a very high sanity limit, actual validation is in processImageForUpload
+            if (file.size > 50 * 1024 * 1024) {
+                toast.error(`File "${file.name}" terlalu besar (>50MB)`, {
+                    description: "Ukuran file sangat besar dan kemungkinan akan gagal diproses.",
+                    duration: 7000
+                });
                 continue;
-            }
-
-            // Auto compress > 5MB happens in uploadToCloudinary, but we warn here if super huge
-            if (file.size > 5 * 1024 * 1024) {
-                toast.info(`File ${file.name} cukup besar, akan dioptimasi otomatis saat upload.`);
             }
 
             const reader = new FileReader();
@@ -97,7 +96,7 @@ export default function AddCampArea() {
                 reader.readAsDataURL(file);
                 isFirstFile = false;
             } else {
-                const totalAdditional = additionalFiles.length + 1;
+                const totalAdditional = additionalFiles.length + (files.length - (files.indexOf(file) + 1));
                 if (totalAdditional <= 10) {
                     setAdditionalFiles(prev => [...prev, file]);
                     reader.onloadend = () => setAdditionalPreviews(prev => [...prev, reader.result as string]);
@@ -142,11 +141,14 @@ export default function AddCampArea() {
     const uploadToCloudinary = async (file: File) => {
         const { data: signData } = await api.get('/utils/cloudinary-signature?folder=camp_area');
 
-        // Auto compress if > 3MB (default)
-        const compressedFile = await compressImage(file, 3);
+        // Process image (convert HEIC/compress)
+        const processedFile = await processImageForUpload(file, 2);
+        if (!processedFile) {
+            throw new Error(`Gagal memproses file ${file.name}. Kemungkinan file rusak atau terlalu besar.`);
+        }
 
         const formData = new FormData();
-        formData.append("file", compressedFile);
+        formData.append("file", processedFile);
         formData.append("api_key", signData.api_key);
         formData.append("timestamp", signData.timestamp.toString());
         formData.append("signature", signData.signature);
@@ -163,7 +165,7 @@ export default function AddCampArea() {
             const errorMessage = data.error?.message || "Upload failed";
             // Translate common Cloudinary errors
             if (errorMessage.includes("File size too large")) {
-                throw new Error("Ukuran file terlalu besar setelah kompresi");
+                throw new Error("Ukuran file terlalu besar untuk diupload");
             }
             throw new Error(errorMessage);
         }
