@@ -6,7 +6,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Loader2, Upload, X, Image, ArrowLeft } from 'lucide-react';
-import { compressImage } from '../../lib/imageCompression';
+import { processImageForUpload } from '../../lib/imageCompression';
 
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -173,11 +173,13 @@ export default function EditActivity() {
     const uploadToCloudinary = async (file: File) => {
         const { data: signData } = await api.get('/utils/cloudinary-signature?folder=activities');
 
-        // Auto compress if > 3MB
-        const compressedFile = await compressImage(file, 3);
+        const processedFile = await processImageForUpload(file);
+        if (!processedFile) {
+            throw new Error(`Gagal memproses file ${file.name}.`);
+        }
 
         const formData = new FormData();
-        formData.append("file", compressedFile);
+        formData.append("file", processedFile);
         formData.append("api_key", signData.api_key);
         formData.append("timestamp", signData.timestamp.toString());
         formData.append("signature", signData.signature);
