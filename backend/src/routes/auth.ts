@@ -168,8 +168,24 @@ router.post('/refresh', async (req: Request, res: Response) => {
             return;
         }
 
+        const userResult = await db.select({
+            id: users.id,
+            email: users.email,
+            role: users.role,
+        }).from(users).where(eq(users.id, rt.userId)).limit(1);
+
+        if (userResult.length === 0) {
+            res.status(401).json({ error: 'User not found for refresh token' });
+            return;
+        }
+        const user = userResult[0];
+
         // Issue new access token
-        const accessToken = jwt.sign({ sub: rt.userId }, secret, { expiresIn: '15m' });
+        const accessToken = jwt.sign(
+            { sub: user.id, email: user.email, role: user.role },
+            secret,
+            { expiresIn: '15m' }
+        );
         res.json({ token: accessToken });
     } catch (error) {
         console.error('Error refreshing token:', error);

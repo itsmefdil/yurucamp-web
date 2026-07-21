@@ -14,7 +14,11 @@ export function BottomNav() {
     const location = useLocation();
 
     // Don't show on login/register pages
-    if (location.pathname === '/login' || location.pathname === '/register') {
+    if (
+        location.pathname === '/login' ||
+        location.pathname === '/register' ||
+        location.pathname.startsWith('/admin')
+    ) {
         return null;
     }
 
