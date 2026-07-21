@@ -7,31 +7,60 @@ import { toast } from 'sonner';
  * @param maxSizeMB The maximum size in MB (default: 1)
  * @returns The compressed file or the original file if compression fails or isn't needed
  */
-export async function compressImage(file: File, maxSizeMB: number = 3): Promise<File> {
-    // If file is already smaller than the limit, return it
+export async function compressImage(file: File, maxSizeMB: number = 2): Promise<File> {
     if (file.size / 1024 / 1024 <= maxSizeMB) {
+        console.log(`Image ${file.name} is already under ${maxSizeMB}MB, skipping compression.`);
         return file;
     }
 
-    const options = {
-        maxSizeMB: maxSizeMB,
-        maxWidthOrHeight: 1920,
-        useWebWorker: true,
-        fileType: file.type as string,
-    };
+    const toastId = toast.loading(`Mengompres gambar ${file.name}... (Kualitas Tinggi)`);
 
-    try {
-        const compressedFile = await imageCompression(file, options);
-        // Ensure we don't lose the original file name
-        const finalFile = new File([compressedFile], file.name, {
-            type: compressedFile.type,
-            lastModified: Date.now(),
-        });
+    const compressionAttempts = [
+        {
+            label: 'Kualitas Tinggi',
+            options: {
+                maxSizeMB: maxSizeMB,
+                maxWidthOrHeight: 1920,
+                useWebWorker: true,
+            },
+        },
+        {
+            label: 'Kualitas Medium',
+            options: {
+                maxSizeMB: maxSizeMB,
+                maxWidthOrHeight: 1280,
+                useWebWorker: true,
+            },
+        },
+        {
+            label: 'Kualitas Rendah',
+            options: {
+                maxSizeMB: maxSizeMB,
+                maxWidthOrHeight: 800,
+                useWebWorker: true,
+                initialQuality: 0.5,
+            },
+        },
+    ];
 
-        return finalFile;
-    } catch (error) {
-        console.error("Image compression failed:", error);
-        toast.warning(`Gagal mengompres gambar ${file.name}, mencoba upload original...`);
-        return file;
+    for (const attempt of compressionAttempts) {
+        toast.loading(`Mengompres gambar ${file.name}... (${attempt.label})`, { id: toastId });
+        try {
+            const compressedFile = await imageCompression(file, { ...attempt.options, fileType: file.type });
+            const finalFile = new File([compressedFile], file.name, {
+                type: compressedFile.type,
+                lastModified: Date.now(),
+            });
+
+            console.log(`Original size: ${(file.size / 1024 / 1024).toFixed(2)} MB -> Compressed size: ${(finalFile.size / 1024 / 1024).toFixed(2)} MB`);
+            toast.success(`Gambar ${file.name} berhasil dikompres!`, { id: toastId });
+            return finalFile;
+        } catch (error) {
+            console.error(`Compression attempt (${attempt.label}) failed:`, error);
+        }
     }
+
+    // If all attempts fail
+    toast.warning(`Gagal mengompres gambar ${file.name}. Mencoba upload file original... Ukuran mungkin terlalu besar.`, { id: toastId });
+    return file; // Fallback to original
 }
