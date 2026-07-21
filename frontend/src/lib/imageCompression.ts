@@ -1,66 +1,106 @@
-import imageCompression from 'browser-image-compression';
 import { toast } from 'sonner';
+import heic2any from 'heic2any';
 
 /**
- * Compresses an image file if it exceeds a certain size.
+ * Converts a file name to a JPEG extension.
+ * e.g., "image.heic" -> "image.jpeg"
+ */
+const getJpegName = (fileName: string): string => {
+    const nameWithoutExt = fileName.split('.').slice(0, -1).join('.');
+    return `${nameWithoutExt}.jpeg`;
+};
+
+/**
+ * Compresses an image file using native browser Canvas API.
+ * Handles HEIC/HEIF conversion and provides a stable compression method.
  * @param file The image file to compress
- * @param maxSizeMB The maximum size in MB (default: 1)
+ * @param maxSizeMB The maximum size in MB (default: 2)
  * @returns The compressed file or the original file if compression fails or isn't needed
  */
 export async function compressImage(file: File, maxSizeMB: number = 2): Promise<File> {
-    if (file.size / 1024 / 1024 <= maxSizeMB) {
-        console.log(`Image ${file.name} is already under ${maxSizeMB}MB, skipping compression.`);
-        return file;
-    }
+    const toastId = toast.loading(`Mempersiapkan gambar ${file.name}...`);
 
-    const toastId = toast.loading(`Mengompres gambar ${file.name}... (Kualitas Tinggi)`);
+    let processedFile = file;
 
-    const compressionAttempts = [
-        {
-            label: 'Kualitas Tinggi',
-            options: {
-                maxSizeMB: maxSizeMB,
-                maxWidthOrHeight: 1920,
-                useWebWorker: true,
-            },
-        },
-        {
-            label: 'Kualitas Medium',
-            options: {
-                maxSizeMB: maxSizeMB,
-                maxWidthOrHeight: 1280,
-                useWebWorker: true,
-            },
-        },
-        {
-            label: 'Kualitas Rendah',
-            options: {
-                maxSizeMB: maxSizeMB,
-                maxWidthOrHeight: 800,
-                useWebWorker: true,
-                initialQuality: 0.5,
-            },
-        },
-    ];
-
-    for (const attempt of compressionAttempts) {
-        toast.loading(`Mengompres gambar ${file.name}... (${attempt.label})`, { id: toastId });
-        try {
-            const compressedFile = await imageCompression(file, { ...attempt.options, fileType: file.type });
-            const finalFile = new File([compressedFile], file.name, {
-                type: compressedFile.type,
+    try {
+        // Step 1: Handle HEIC/HEIF conversion if necessary
+        const isHeic = file.type === 'image/heic' || file.type === 'image/heif' || /\.heic$|\.heif$/i.test(file.name);
+        if (isHeic) {
+            toast.loading(`Mengonversi file HEIC: ${file.name}...`, { id: toastId });
+            const conversionResult = await heic2any({
+                blob: file,
+                toType: "image/jpeg",
+                quality: 0.8,
+            });
+            const blob = Array.isArray(conversionResult) ? conversionResult[0] : conversionResult;
+            processedFile = new File([blob], getJpegName(file.name), {
+                type: 'image/jpeg',
                 lastModified: Date.now(),
             });
-
-            console.log(`Original size: ${(file.size / 1024 / 1024).toFixed(2)} MB -> Compressed size: ${(finalFile.size / 1024 / 1024).toFixed(2)} MB`);
-            toast.success(`Gambar ${file.name} berhasil dikompres!`, { id: toastId });
-            return finalFile;
-        } catch (error) {
-            console.error(`Compression attempt (${attempt.label}) failed:`, error);
+            console.log(`HEIC converted to JPEG: ${processedFile.name}`);
         }
-    }
 
-    // If all attempts fail
-    toast.warning(`Gagal mengompres gambar ${file.name}. Mencoba upload file original... Ukuran mungkin terlalu besar.`, { id: toastId });
-    return file; // Fallback to original
+        // Step 2: Check size AFTER potential conversion
+        if (processedFile.size / 1024 / 1024 <= maxSizeMB) {
+            toast.dismiss(toastId);
+            console.log(`Image ${processedFile.name} is already under ${maxSizeMB}MB.`);
+            return processedFile;
+        }
+
+        // Step 3: Compress with Canvas API
+        toast.loading(`Mengompres gambar ${processedFile.name}...`, { id: toastId });
+        const compressed = await new Promise<File>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(processedFile);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target?.result as string;
+                img.onload = () => {
+                    const MAX_WIDTH = 1280;
+                    const MAX_HEIGHT = 1280;
+                    let { width, height } = img;
+
+                    if (width > height) {
+                        if (width > MAX_WIDTH) {
+                            height *= MAX_WIDTH / width;
+                            width = MAX_WIDTH;
+                        }
+                    } else if (height > MAX_HEIGHT) {
+                        width *= MAX_HEIGHT / height;
+                        height = MAX_HEIGHT;
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    if (!ctx) return reject(new Error("Could not get canvas context"));
+
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    canvas.toBlob(
+                        (blob) => {
+                            if (!blob) return reject(new Error("Canvas to Blob conversion failed"));
+                            const finalFileName = processedFile.name.endsWith('.jpeg') ? processedFile.name : getJpegName(processedFile.name);
+                            resolve(new File([blob], finalFileName, { type: 'image/jpeg', lastModified: Date.now() }));
+                        },
+                        'image/jpeg',
+                        0.7 // Quality
+                    );
+                };
+                img.onerror = reject;
+            };
+            reader.onerror = reject;
+        });
+
+        console.log(`Original: ${(file.size / 1024 / 1024).toFixed(2)} MB -> Compressed: ${(compressed.size / 1024 / 1024).toFixed(2)} MB`);
+        toast.success(`Gambar ${compressed.name} berhasil dioptimasi!`, { id: toastId });
+        return compressed;
+
+    } catch (error) {
+        console.error("Image processing failed:", error);
+        toast.warning(`Gagal memproses gambar. Mengunggah file original jika memungkinkan...`, { id: toastId });
+        return file; // Fallback to the very original file
+    }
 }
+
