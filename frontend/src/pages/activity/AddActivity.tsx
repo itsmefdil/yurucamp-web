@@ -31,7 +31,7 @@ import { Navbar } from '../../components/layout/Navbar';
 import { Footer } from '../../components/layout/Footer';
 import api from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
-import { compressImage } from '../../lib/imageCompression';
+import { processImageForUpload } from '../../lib/imageCompression';
 
 const activitySchema = z.object({
     title: z.string().min(3, "Judul minimal 3 karakter"),
@@ -89,12 +89,9 @@ export default function AddActivity() {
     const handleCoverChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            if (file.size > 20 * 1024 * 1024) {
-                toast.error("Ukuran file maksimal 20MB");
+            if (file.size > 50 * 1024 * 1024) {
+                toast.error(`File "${file.name}" terlalu besar (>50MB)`);
                 return;
-            }
-            if (file.size > 5 * 1024 * 1024) {
-                toast.info("File cover cukup besar, akan dioptimasi otomatis.");
             }
             setImageFile(file);
             const reader = new FileReader();
@@ -108,12 +105,12 @@ export default function AddActivity() {
         const files = Array.from(e.target.files || []);
 
         for (const file of files) {
-            if (file.size > 20 * 1024 * 1024) {
-                toast.error(`File ${file.name} terlalu besar (>20MB)`);
+            if (file.size > 50 * 1024 * 1024) {
+                toast.error(`File "${file.name}" terlalu besar (>50MB)`);
                 continue;
             }
 
-            const totalAdditional = additionalFiles.length + 1;
+            const totalAdditional = additionalFiles.length + (files.length - (files.indexOf(file) + 1));
             if (totalAdditional <= 10) {
                 const reader = new FileReader();
                 setAdditionalFiles(prev => [...prev, file]);
@@ -137,11 +134,13 @@ export default function AddActivity() {
     const uploadToCloudinary = async (file: File) => {
         const { data: signData } = await api.get('/utils/cloudinary-signature?folder=activities');
 
-        // Auto compress if > 3MB
-        const compressedFile = await compressImage(file, 3);
+        const processedFile = await processImageForUpload(file, 2);
+        if (!processedFile) {
+            throw new Error(`Gagal memproses file ${file.name}.`);
+        }
 
         const formData = new FormData();
-        formData.append("file", compressedFile);
+        formData.append("file", processedFile);
         formData.append("api_key", signData.api_key);
         formData.append("timestamp", signData.timestamp.toString());
         formData.append("signature", signData.signature);

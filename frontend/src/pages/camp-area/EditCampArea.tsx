@@ -16,7 +16,7 @@ import { Footer } from '../../components/layout/Footer';
 import RichTextEditor from '../../components/ui/RichTextEditor';
 import api from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
-import { compressImage } from '../../lib/imageCompression';
+import { processImageForUpload } from '../../lib/imageCompression';
 import type { CampArea } from '../../types';
 import RegionSelector from '../../components/ui/RegionSelector';
 
@@ -198,11 +198,13 @@ export default function EditCampArea() {
     const uploadToCloudinary = async (file: File) => {
         const { data: signData } = await api.get('/utils/cloudinary-signature?folder=camp_area');
 
-        // Auto compress if > 3MB (default)
-        const compressedFile = await compressImage(file, 3);
+        const processedFile = await processImageForUpload(file);
+        if (!processedFile) {
+            throw new Error(`Gagal memproses file ${file.name}. Kemungkinan file rusak atau terlalu besar.`);
+        }
 
         const formData = new FormData();
-        formData.append("file", compressedFile);
+        formData.append("file", processedFile);
         formData.append("api_key", signData.api_key);
         formData.append("timestamp", signData.timestamp.toString());
         formData.append("signature", signData.signature);
@@ -218,7 +220,7 @@ export default function EditCampArea() {
         if (!response.ok) {
             const errorMessage = data.error?.message || "Upload failed";
             if (errorMessage.includes("File size too large")) {
-                throw new Error("Ukuran file terlalu besar setelah kompresi");
+                throw new Error("Ukuran file terlalu besar untuk diupload");
             }
             throw new Error(errorMessage);
         }
