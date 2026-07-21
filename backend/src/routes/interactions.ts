@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { db } from '../db';
 import { activityLikes, activityComments, users } from '../db/schema';
-import { authenticate } from '../middleware/auth';
+import { authenticate, optionalAuthenticate } from '../middleware/auth';
 import { eq, and, desc, sql } from 'drizzle-orm';
 
 const router = Router();
@@ -46,23 +46,10 @@ router.get('/video/:videoId', async (req: Request, res: Response) => {
 });
 
 // GET interactions for an activity
-router.get('/activity/:activityId', async (req: Request, res: Response) => {
+router.get('/activity/:activityId', optionalAuthenticate, async (req: Request, res: Response) => {
     try {
         const { activityId } = req.params;
-        const authHeader = req.headers.authorization;
-        let userId: string | null = null;
-
-        // Try to extract userId from JWT if present
-        if (authHeader) {
-            try {
-                const token = authHeader.split(' ')[1];
-                const jwt = require('jsonwebtoken');
-                const decoded = jwt.verify(token, process.env.JWT_SECRET);
-                userId = decoded.sub || decoded.id;
-            } catch (err) {
-                // Token invalid or missing, continue as guest
-            }
-        }
+        const userId = req.user?.sub;
 
         const comments = await db.select({
             id: activityComments.id,
@@ -108,7 +95,7 @@ router.get('/activity/:activityId', async (req: Request, res: Response) => {
 router.post('/like', authenticate, async (req: Request, res: Response) => {
     try {
         const user = req.user;
-        const userId = user.sub || user.id;
+        const userId = user.sub;
         const { activityId, videoId } = req.body;
 
         if (!activityId && !videoId) {
@@ -146,7 +133,7 @@ router.post('/like', authenticate, async (req: Request, res: Response) => {
 router.post('/comment', authenticate, async (req: Request, res: Response) => {
     try {
         const user = req.user;
-        const userId = user.sub || user.id;
+        const userId = user.sub;
         const { activityId, videoId, content } = req.body;
 
         if (!content || !content.trim()) {
@@ -174,7 +161,7 @@ router.delete('/comment/:id', authenticate, async (req: Request, res: Response) 
     try {
         const { id } = req.params;
         const user = req.user;
-        const userId = user.sub || user.id;
+        const userId = user.sub;
 
         const comment = await db.select().from(activityComments).where(eq(activityComments.id, id)).limit(1);
         if (comment.length === 0) {

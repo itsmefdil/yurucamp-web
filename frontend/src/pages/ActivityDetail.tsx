@@ -96,8 +96,9 @@ export default function ActivityDetail() {
 
             return { previousInteractions };
         },
-        onSuccess: () => {
-            toast.success(interactions?.isLiked ? 'Like dihapus' : 'Activity disukai!');
+        onSuccess: (data, variables, context) => {
+            const wasLiked = (context?.previousInteractions as any)?.isLiked;
+            toast.success(wasLiked ? 'Like dihapus' : 'Activity disukai!');
         },
         onError: (err, variables, context) => {
             // Rollback on error
@@ -432,7 +433,7 @@ export default function ActivityDetail() {
                                                     strokeWidth={1.5}
                                                 />
                                             )}
-                                            <span className={`font-extrabold ${interactions?.isLiked ? '!text-red-600' : ''}`}>
+                                            <span className={`font-extrabold text-gray-600 ${interactions?.isLiked ? '!text-red-600' : ''}`}>
                                                 {interactions?.likeCount || 0}
                                             </span>
                                         </Button>
