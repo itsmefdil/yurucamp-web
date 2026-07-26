@@ -428,7 +428,7 @@ export default function Home() {
                                     Komunitas <span className="text-orange-500">Populer</span>
                                 </h2>
                                 <Button variant="ghost" className="text-base md:text-lg hover:bg-orange-100 text-orange-600 font-bold rounded-full px-6 w-full md:w-auto" asChild>
-                                    <Link to="/komunitas" className="flex items-center justify-center gap-2">
+                                    <Link to="/community" className="flex items-center justify-center gap-2">
                                         Lihat Semua <ArrowRight className="h-5 w-5" />
                                     </Link>
                                 </Button>
