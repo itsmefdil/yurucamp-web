@@ -8,7 +8,8 @@ import {
     X,
     Tent,
     Calendar,
-    Globe
+    Globe,
+    Image
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 // Assuming generic button/classes if ui components not fully setup, but let's try to stick to standard jsx
@@ -26,11 +27,12 @@ export function AdminLayout() {
 
     const navItems = [
         { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-        { href: '/admin/users', label: 'Users', icon: Users },
-        { href: '/admin/camp-areas', label: 'Camp Areas', icon: Tent },
-        { href: '/admin/activities', label: 'Activities', icon: Users },
-        { href: '/admin/events', label: 'Events', icon: Calendar },
-        { href: '/admin/regions', label: 'Regions', icon: Globe },
+        { href: '/admin/users', label: 'Pengguna', icon: Users },
+        { href: '/admin/camp-areas', label: 'Lokasi Camp', icon: Tent },
+        { href: '/admin/activities', label: 'Aktivitas', icon: Users },
+        { href: '/admin/events', label: 'Acara & Event', icon: Calendar },
+        { href: '/admin/regions', label: 'Regional Komunitas', icon: Globe },
+        { href: '/admin/gallery', label: 'Galeri Foto', icon: Image },
     ];
 
     return (
@@ -52,7 +54,7 @@ export function AdminLayout() {
             >
                 <div className="h-16 flex items-center px-6 border-b shrink-0">
                     <Tent className="h-6 w-6 text-orange-500 mr-2" />
-                    <span className="font-bold text-xl">Admin Panel</span>
+                    <span className="font-bold text-xl">Panel Admin</span>
                     <button
                         className="ml-auto lg:hidden"
                         onClick={() => setIsSidebarOpen(false)}
@@ -72,7 +74,7 @@ export function AdminLayout() {
                                 className={cn(
                                     "flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors",
                                     isActive
-                                        ? "bg-orange-50 text-orange-600"
+                                        ? "bg-orange-50 text-orange-600 font-semibold"
                                         : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                                 )}
                             >
@@ -89,7 +91,7 @@ export function AdminLayout() {
                         onClick={logout}
                     >
                         <LogOut className="h-5 w-5 mr-2" />
-                        Logout
+                        Keluar (Logout)
                     </button>
                 </div>
             </aside>
@@ -106,7 +108,7 @@ export function AdminLayout() {
                     </button>
                     <div className="flex items-center ml-auto space-x-4">
                         <Link to="/" className="text-sm font-medium text-gray-600 hover:text-gray-900">
-                            Back to Website
+                            Kembali ke Situs Utama
                         </Link>
                     </div>
                 </header>

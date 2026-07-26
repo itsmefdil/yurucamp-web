@@ -17,6 +17,7 @@ const AdminCampAreas = React.lazy(() => import('./pages/admin/CampAreas'));
 const AdminActivities = React.lazy(() => import('./pages/admin/Activities'));
 const AdminEvents = React.lazy(() => import('./pages/admin/Events'));
 const AdminRegions = React.lazy(() => import('./pages/admin/Regions'));
+const AdminGallery = React.lazy(() => import('./pages/admin/Gallery'));
 // Pages
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -201,6 +202,11 @@ function App() {
                             <Route path="regions" element={
                                 <Suspense fallback={<div className="p-8">Loading regions...</div>}>
                                     <AdminRegions />
+                                </Suspense>
+                            } />
+                            <Route path="gallery" element={
+                                <Suspense fallback={<div className="p-8">Loading gallery...</div>}>
+                                    <AdminGallery />
                                 </Suspense>
                             } />
                             {/* Add more admin routes here */}

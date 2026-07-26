@@ -161,22 +161,22 @@ export default function AdminDashboard() {
 
             {/* Quick Actions Bar */}
             <div className="bg-white p-4 rounded-xl border shadow-sm">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Quick Navigation & Actions</h3>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Navigasi & Akses Cepat</h3>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <Link to="/admin/users" className="flex items-center justify-between p-3 rounded-lg bg-blue-50/60 hover:bg-blue-100/80 text-blue-700 font-medium text-sm transition-all group">
-                        <span className="flex items-center gap-2"><Users className="w-4 h-4" /> User Management</span>
+                        <span className="flex items-center gap-2"><Users className="w-4 h-4" /> Kelola Pengguna</span>
                         <ArrowUpRight className="w-4 h-4 opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
                     </Link>
                     <Link to="/admin/camp-areas" className="flex items-center justify-between p-3 rounded-lg bg-green-50/60 hover:bg-green-100/80 text-green-700 font-medium text-sm transition-all group">
-                        <span className="flex items-center gap-2"><Tent className="w-4 h-4" /> Camp Areas</span>
+                        <span className="flex items-center gap-2"><Tent className="w-4 h-4" /> Lokasi Camping</span>
                         <ArrowUpRight className="w-4 h-4 opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
                     </Link>
                     <Link to="/admin/events" className="flex items-center justify-between p-3 rounded-lg bg-orange-50/60 hover:bg-orange-100/80 text-orange-700 font-medium text-sm transition-all group">
-                        <span className="flex items-center gap-2"><Calendar className="w-4 h-4" /> Kelola Events</span>
+                        <span className="flex items-center gap-2"><Calendar className="w-4 h-4" /> Kelola Event</span>
                         <ArrowUpRight className="w-4 h-4 opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
                     </Link>
                     <Link to="/admin/regions" className="flex items-center justify-between p-3 rounded-lg bg-amber-50/60 hover:bg-amber-100/80 text-amber-700 font-medium text-sm transition-all group">
-                        <span className="flex items-center gap-2"><MapPin className="w-4 h-4" /> Regional Communities</span>
+                        <span className="flex items-center gap-2"><MapPin className="w-4 h-4" /> Regional Komunitas</span>
                         <ArrowUpRight className="w-4 h-4 opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
                     </Link>
                 </div>
@@ -187,7 +187,7 @@ export default function AdminDashboard() {
                 <Link to="/admin/users">
                     <Card className="hover:shadow-lg transition-all duration-300 border-none shadow-sm hover:-translate-y-1 bg-white">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-gray-500">Total Users</CardTitle>
+                            <CardTitle className="text-sm font-medium text-gray-500">Total Pengguna</CardTitle>
                             <div className="p-2.5 bg-blue-50 rounded-xl">
                                 <Users className="h-5 w-5 text-blue-500" />
                             </div>
@@ -195,9 +195,9 @@ export default function AdminDashboard() {
                         <CardContent>
                             <div className="text-3xl font-bold text-gray-800">{stats.userCount}</div>
                             <div className="flex items-center justify-between mt-2">
-                                <p className="text-xs text-muted-foreground">Registered users</p>
+                                <p className="text-xs text-muted-foreground">Pengguna terdaftar</p>
                                 <span className="text-[11px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full flex items-center gap-0.5">
-                                    Active <TrendingUp className="w-3 h-3" />
+                                    Aktif <TrendingUp className="w-3 h-3" />
                                 </span>
                             </div>
                         </CardContent>
@@ -206,7 +206,7 @@ export default function AdminDashboard() {
                 <Link to="/admin/camp-areas">
                     <Card className="hover:shadow-lg transition-all duration-300 border-none shadow-sm hover:-translate-y-1 bg-white">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-gray-500">Camp Areas</CardTitle>
+                            <CardTitle className="text-sm font-medium text-gray-500">Lokasi Camping</CardTitle>
                             <div className="p-2.5 bg-green-50 rounded-xl">
                                 <Tent className="h-5 w-5 text-green-500" />
                             </div>
@@ -214,9 +214,9 @@ export default function AdminDashboard() {
                         <CardContent>
                             <div className="text-3xl font-bold text-gray-800">{stats.activeInfo.campCount}</div>
                             <div className="flex items-center justify-between mt-2">
-                                <p className="text-xs text-muted-foreground">Verified spots</p>
+                                <p className="text-xs text-muted-foreground">Spot terverifikasi</p>
                                 <span className="text-[11px] font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
-                                    Live
+                                    Tayang
                                 </span>
                             </div>
                         </CardContent>
@@ -225,7 +225,7 @@ export default function AdminDashboard() {
                 <Link to="/admin/events">
                     <Card className="hover:shadow-lg transition-all duration-300 border-none shadow-sm hover:-translate-y-1 bg-white">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-gray-500">Events</CardTitle>
+                            <CardTitle className="text-sm font-medium text-gray-500">Acara & Event</CardTitle>
                             <div className="p-2.5 bg-orange-50 rounded-xl">
                                 <Calendar className="h-5 w-5 text-orange-500" />
                             </div>
@@ -233,9 +233,9 @@ export default function AdminDashboard() {
                         <CardContent>
                             <div className="text-3xl font-bold text-gray-800">{stats.activeInfo.eventCount}</div>
                             <div className="flex items-center justify-between mt-2">
-                                <p className="text-xs text-muted-foreground">Community gatherings</p>
+                                <p className="text-xs text-muted-foreground">Kegiatan komunitas</p>
                                 <span className="text-[11px] font-semibold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full">
-                                    Upcoming
+                                    Mendatang
                                 </span>
                             </div>
                         </CardContent>
@@ -244,7 +244,7 @@ export default function AdminDashboard() {
                 <Link to="/admin/activities">
                     <Card className="hover:shadow-lg transition-all duration-300 border-none shadow-sm hover:-translate-y-1 bg-white">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-gray-500">Activities</CardTitle>
+                            <CardTitle className="text-sm font-medium text-gray-500">Postingan Aktivitas</CardTitle>
                             <div className="p-2.5 bg-amber-50 rounded-xl">
                                 <TrendingUp className="h-5 w-5 text-amber-500" />
                             </div>
@@ -252,7 +252,7 @@ export default function AdminDashboard() {
                         <CardContent>
                             <div className="text-3xl font-bold text-gray-800">{stats.activeInfo.activityCount}</div>
                             <div className="flex items-center justify-between mt-2">
-                                <p className="text-xs text-muted-foreground">User posts & logs</p>
+                                <p className="text-xs text-muted-foreground">Catatan & foto user</p>
                                 <span className="text-[11px] font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
                                     Feed
                                 </span>

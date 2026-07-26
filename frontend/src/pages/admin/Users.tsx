@@ -140,18 +140,18 @@ export default function AdminUsers() {
     );
 
     if (loading) {
-        return <div>Loading users...</div>;
+        return <div className="p-8 text-center text-gray-500">Memuat data pengguna...</div>;
     }
 
     return (
         <div className="space-y-6 pb-24 md:pb-8">
-            <h1 className="text-3xl font-bold tracking-tight">Users</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Manajemen Pengguna</h1>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
                 <div className="relative w-full sm:w-64">
                     <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
                     <Input
-                        placeholder="Search users..."
+                        placeholder="Cari nama atau email..."
                         className="pl-8"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -164,11 +164,11 @@ export default function AdminUsers() {
                         onValueChange={(value) => setRoleFilter(value as RoleFilterType)}
                     >
                         <SelectTrigger className="w-full sm:w-[150px]">
-                            <SelectValue placeholder="Filter by role" />
+                            <SelectValue placeholder="Peran / Role" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="all">All Roles</SelectItem>
-                            <SelectItem value="user">User</SelectItem>
+                            <SelectItem value="all">Semua Peran</SelectItem>
+                            <SelectItem value="user">User Biasa</SelectItem>
                             <SelectItem value="admin">Admin</SelectItem>
                         </SelectContent>
                     </Select>
@@ -178,7 +178,7 @@ export default function AdminUsers() {
                         onValueChange={(value) => setSortBy(value as SortOptionType)}
                     >
                         <SelectTrigger className="w-full sm:w-[170px]">
-                            <SelectValue placeholder="Sort by" />
+                            <SelectValue placeholder="Urutkan" />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="newest">Terbaru</SelectItem>
@@ -192,16 +192,16 @@ export default function AdminUsers() {
 
             <Card>
                 <CardHeader>
-                    <CardTitle>All Users ({filteredUsers.length})</CardTitle>
+                    <CardTitle>Daftar Pengguna ({filteredUsers.length})</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <Table>
                         <TableHeader>
                             <TableRow>
                                 <TableHead className="w-[80px]">Avatar</TableHead>
-                                <TableHead>Name</TableHead>
+                                <TableHead>Nama Lengkap</TableHead>
                                 <TableHead>Email</TableHead>
-                                <TableHead>Role</TableHead>
+                                <TableHead>Peran / Role</TableHead>
                                 <TableHead>Level</TableHead>
                                 <TableHead className="text-right">EXP</TableHead>
                                 <TableHead className="w-[50px]"></TableHead>
@@ -211,7 +211,7 @@ export default function AdminUsers() {
                             {paginatedUsers.length === 0 ? (
                                 <TableRow>
                                     <TableCell colSpan={7} className="text-center py-8 text-gray-500">
-                                        No users found matching your criteria
+                                        Tidak ada pengguna yang cocok dengan kriteria pencarian
                                     </TableCell>
                                 </TableRow>
                             ) :
@@ -223,7 +223,7 @@ export default function AdminUsers() {
                                                 <AvatarFallback>{user.fullName ? user.fullName[0].toUpperCase() : 'U'}</AvatarFallback>
                                             </Avatar>
                                         </TableCell>
-                                        <TableCell className="font-medium">{user.fullName}</TableCell>
+                                        <TableCell className="font-medium">{user.fullName || 'Belum diisi'}</TableCell>
                                         <TableCell>{user.email}</TableCell>
                                         <TableCell>
                                             <Badge variant={user.role === 'admin' ? 'destructive' : 'secondary'}>
@@ -233,7 +233,7 @@ export default function AdminUsers() {
                                         <TableCell>{user.level}</TableCell>
                                         <TableCell className="text-right">{user.exp}</TableCell>
                                         <TableCell>
-                                            <Button variant="ghost" size="icon" onClick={() => handleEditClick(user)}>
+                                            <Button variant="ghost" size="icon" onClick={() => handleEditClick(user)} title="Edit User">
                                                 <Pencil className="h-4 w-4" />
                                             </Button>
                                         </TableCell>
@@ -245,7 +245,7 @@ export default function AdminUsers() {
                 {totalPages > 1 && (
                     <div className="flex items-center justify-between px-4 py-4 border-t">
                         <div className="text-sm text-gray-500">
-                            Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, filteredUsers.length)} of {filteredUsers.length} users
+                            Menampilkan {((currentPage - 1) * ITEMS_PER_PAGE) + 1} sampai {Math.min(currentPage * ITEMS_PER_PAGE, filteredUsers.length)} dari {filteredUsers.length} pengguna
                         </div>
                         <div className="flex items-center gap-2">
                             <Button
@@ -257,7 +257,7 @@ export default function AdminUsers() {
                                 <ChevronLeft className="h-4 w-4" />
                             </Button>
                             <span className="text-sm font-medium">
-                                Page {currentPage} of {totalPages}
+                                Halaman {currentPage} dari {totalPages}
                             </span>
                             <Button
                                 variant="outline"
@@ -275,22 +275,22 @@ export default function AdminUsers() {
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Edit User</DialogTitle>
+                        <DialogTitle>Edit Data Pengguna</DialogTitle>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="role" className="text-right">
-                                Role
+                                Peran (Role)
                             </Label>
                             <Select
                                 value={formData.role}
                                 onValueChange={(value) => setFormData({ ...formData, role: value })}
                             >
                                 <SelectTrigger className="col-span-3">
-                                    <SelectValue placeholder="Select role" />
+                                    <SelectValue placeholder="Pilih peran" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="user">User</SelectItem>
+                                    <SelectItem value="user">User Biasa</SelectItem>
                                     <SelectItem value="admin">Admin</SelectItem>
                                 </SelectContent>
                             </Select>
@@ -309,7 +309,7 @@ export default function AdminUsers() {
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="exp" className="text-right">
-                                EXP
+                                Total EXP
                             </Label>
                             <Input
                                 id="exp"
@@ -321,8 +321,8 @@ export default function AdminUsers() {
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-                        <Button onClick={handleSave}>Save changes</Button>
+                        <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Batal</Button>
+                        <Button onClick={handleSave}>Simpan Perubahan</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
