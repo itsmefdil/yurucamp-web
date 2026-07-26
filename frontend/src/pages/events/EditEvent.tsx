@@ -14,7 +14,7 @@ import RegionSelector from '../../components/ui/RegionSelector';
 import { Dialog, DialogContent } from '../../components/ui/dialog';
 import { Navbar } from '../../components/layout/Navbar';
 import { Footer } from '../../components/layout/Footer';
-import api from '../../lib/api';
+import { uploadToCloudinary } from '../../lib/cloudinaryUpload';
 import { useAuth } from '../../contexts/AuthContext';
 import type { Event } from '../../types';
 
@@ -115,27 +115,6 @@ export default function EditEvent() {
         setImagePreview(null);
     };
 
-    const uploadToCloudinary = async (file: File) => {
-        const { data: signData } = await api.get('/utils/cloudinary-signature?folder=events');
-
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("api_key", signData.api_key);
-        formData.append("timestamp", signData.timestamp.toString());
-        formData.append("signature", signData.signature);
-        formData.append("folder", signData.folder);
-        formData.append("transformation", signData.transformation);
-
-        const response = await fetch(`https://api.cloudinary.com/v1_1/${signData.cloud_name}/image/upload`, {
-            method: "POST",
-            body: formData
-        });
-
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error?.message || "Upload failed");
-        return data.secure_url;
-    };
-
     const onSubmit = async (data: EventFormValues) => {
         if (!event) return;
 
@@ -145,8 +124,10 @@ export default function EditEvent() {
 
             let imageUrl = null;
             if (imageFile) {
-                setUploadStatus('Mengupload cover baru...');
-                imageUrl = await uploadToCloudinary(imageFile);
+                imageUrl = await uploadToCloudinary(imageFile, {
+                    folder: 'events',
+                    onProgress: (percent) => setUploadStatus(`Mengupload cover baru (${percent}%)...`)
+                });
             }
 
             setUploadStatus('Menyimpan perubahan...');

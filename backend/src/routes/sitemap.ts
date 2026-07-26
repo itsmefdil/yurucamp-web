@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { db } from '../db';
 import { activities, campAreas, events, regions, users, gearLists } from '../db/schema';
-import { eq, desc } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 
 const router = Router();
 
@@ -15,19 +15,38 @@ const STATIC_ROUTES = [
     '/events',
     '/watch',
     '/community',
-    // Static seasons links if they are permanent
     '/w/season-1',
     '/w/season-2',
     '/w/season-3',
 ];
 
-const BASE_URL = 'https://www.yurucamp.my.id'; // Adjust as needed or use env var
+const BASE_URL = process.env.FRONTEND_URL || 'https://www.yurucamp.my.id';
+
+const escapeXml = (unsafe: string): string => {
+    return unsafe.replace(/[<>&'"]/g, (c) => {
+        switch (c) {
+            case '<': return '&lt;';
+            case '>': return '&gt;';
+            case '&': return '&amp;';
+            case '\'': return '&apos;';
+            case '"': return '&quot;';
+            default: return c;
+        }
+    });
+};
+
+const formatDate = (date: Date | string | null): string | null => {
+    if (!date) return null;
+    try {
+        const d = new Date(date);
+        return isNaN(d.getTime()) ? null : d.toISOString();
+    } catch {
+        return null;
+    }
+};
 
 router.get('/', async (req, res) => {
     try {
-        console.log('Generating dynamic sitemap...');
-
-        // Parallel data fetching
         const [
             allActivities,
             allCampAreas,
@@ -50,93 +69,43 @@ router.get('/', async (req, res) => {
         // Static Routes
         STATIC_ROUTES.forEach(route => {
             xml += '  <url>\n';
-            xml += `    <loc>${BASE_URL}${route}</loc>\n`;
+            xml += `    <loc>${escapeXml(`${BASE_URL}${route}`)}</loc>\n`;
             xml += '    <changefreq>daily</changefreq>\n';
             xml += '    <priority>0.7</priority>\n';
             xml += '  </url>\n';
         });
 
-        // Activities (/a/:id)
-        allActivities.forEach(item => {
+        // Helper to append URL entry
+        const addUrl = (path: string, updatedAt?: Date | string | null, priority = '0.8', changefreq = 'weekly') => {
             xml += '  <url>\n';
-            xml += `    <loc>${BASE_URL}/a/${item.id}</loc>\n`;
-            if (item.updatedAt) {
-                xml += `    <lastmod>${new Date(item.updatedAt).toISOString()}</lastmod>\n`;
+            xml += `    <loc>${escapeXml(`${BASE_URL}${path}`)}</loc>\n`;
+            const formattedDate = formatDate(updatedAt ?? null);
+            if (formattedDate) {
+                xml += `    <lastmod>${formattedDate}</lastmod>\n`;
             }
-            xml += '    <changefreq>weekly</changefreq>\n';
-            xml += '    <priority>0.8</priority>\n';
+            xml += `    <changefreq>${changefreq}</changefreq>\n`;
+            xml += `    <priority>${priority}</priority>\n`;
             xml += '  </url>\n';
-        });
+        };
 
-        // Camp Areas (/c/:id)
-        allCampAreas.forEach(item => {
-            xml += '  <url>\n';
-            xml += `    <loc>${BASE_URL}/c/${item.id}</loc>\n`;
-            if (item.updatedAt) {
-                xml += `    <lastmod>${new Date(item.updatedAt).toISOString()}</lastmod>\n`;
-            }
-            xml += '    <changefreq>weekly</changefreq>\n';
-            xml += '    <priority>0.8</priority>\n';
-            xml += '  </url>\n';
-        });
-
-        // Events (/e/:id)
-        allEvents.forEach(item => {
-            xml += '  <url>\n';
-            xml += `    <loc>${BASE_URL}/e/${item.id}</loc>\n`;
-            if (item.updatedAt) {
-                xml += `    <lastmod>${new Date(item.updatedAt).toISOString()}</lastmod>\n`;
-            }
-            xml += '    <changefreq>weekly</changefreq>\n';
-            xml += '    <priority>0.8</priority>\n';
-            xml += '  </url>\n';
-        });
-
-        // Regions (/r/:slug)
-        allRegions.forEach(item => {
-            xml += '  <url>\n';
-            xml += `    <loc>${BASE_URL}/r/${item.slug}</loc>\n`;
-            if (item.updatedAt) {
-                xml += `    <lastmod>${new Date(item.updatedAt).toISOString()}</lastmod>\n`;
-            }
-            xml += '    <changefreq>weekly</changefreq>\n';
-            xml += '    <priority>0.9</priority>\n';
-            xml += '  </url>\n';
-        });
-
-        // Users (/u/:id)
-        allUsers.forEach(item => {
-            xml += '  <url>\n';
-            xml += `    <loc>${BASE_URL}/u/${item.id}</loc>\n`;
-            if (item.updatedAt) {
-                xml += `    <lastmod>${new Date(item.updatedAt).toISOString()}</lastmod>\n`;
-            }
-            xml += '    <changefreq>weekly</changefreq>\n';
-            xml += '    <priority>0.6</priority>\n';
-            xml += '  </url>\n';
-        });
-
-        // Gear Lists (/g/:id)
-        publicGearLists.forEach(item => {
-            xml += '  <url>\n';
-            xml += `    <loc>${BASE_URL}/g/${item.id}</loc>\n`;
-            if (item.updatedAt) {
-                xml += `    <lastmod>${new Date(item.updatedAt).toISOString()}</lastmod>\n`;
-            }
-            xml += '    <changefreq>weekly</changefreq>\n';
-            xml += '    <priority>0.7</priority>\n';
-            xml += '  </url>\n';
-        });
+        allActivities.forEach(item => addUrl(`/a/${item.id}`, item.updatedAt, '0.8'));
+        allCampAreas.forEach(item => addUrl(`/c/${item.id}`, item.updatedAt, '0.8'));
+        allEvents.forEach(item => addUrl(`/e/${item.id}`, item.updatedAt, '0.8'));
+        allRegions.forEach(item => addUrl(`/r/${item.slug}`, item.updatedAt, '0.9'));
+        allUsers.forEach(item => addUrl(`/u/${item.id}`, item.updatedAt, '0.6'));
+        publicGearLists.forEach(item => addUrl(`/g/${item.id}`, item.updatedAt, '0.7'));
 
         xml += '</urlset>';
 
-        res.header('Content-Type', 'application/xml');
-        res.send(xml);
+        res.setHeader('Content-Type', 'text/xml; charset=utf-8');
+        res.setHeader('Cache-Control', 'public, max-age=3600, s-maxage=86400');
+        res.status(200).send(xml);
 
     } catch (error) {
         console.error('Error generating sitemap:', error);
-        res.status(500).send('Error generating sitemap');
+        res.status(500).setHeader('Content-Type', 'text/plain').send('Error generating sitemap');
     }
 });
 
 export default router;
+

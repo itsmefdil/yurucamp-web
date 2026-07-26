@@ -31,7 +31,7 @@ import { Navbar } from '../../components/layout/Navbar';
 import { Footer } from '../../components/layout/Footer';
 import api from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
-import { processImageForUpload } from '../../lib/imageCompression';
+import { uploadToCloudinary, uploadMultipleToCloudinary } from '../../lib/cloudinaryUpload';
 
 const activitySchema = z.object({
     title: z.string().min(3, "Judul minimal 3 karakter"),
@@ -131,38 +131,6 @@ export default function AddActivity() {
         setAdditionalPreviews(prev => prev.filter((_, i) => i !== index));
     };
 
-    const uploadToCloudinary = async (file: File) => {
-        const { data: signData } = await api.get('/utils/cloudinary-signature?folder=activities');
-
-        const processedFile = await processImageForUpload(file, 2);
-        if (!processedFile) {
-            throw new Error(`Gagal memproses file ${file.name}.`);
-        }
-
-        const formData = new FormData();
-        formData.append("file", processedFile);
-        formData.append("api_key", signData.api_key);
-        formData.append("timestamp", signData.timestamp.toString());
-        formData.append("signature", signData.signature);
-        formData.append("folder", signData.folder);
-        formData.append("transformation", signData.transformation);
-
-        const response = await fetch(`https://api.cloudinary.com/v1_1/${signData.cloud_name}/image/upload`, {
-            method: "POST",
-            body: formData
-        });
-
-        const data = await response.json();
-        if (!response.ok) {
-            const errorMessage = data.error?.message || "Upload failed";
-            if (errorMessage.includes("File size too large")) {
-                throw new Error("Ukuran file terlalu besar setelah kompresi");
-            }
-            throw new Error(errorMessage);
-        }
-        return data.secure_url;
-    };
-
     const onSubmit = async (data: ActivityFormValues) => {
         if (!imageFile) {
             toast.error("Tambahkan minimal 1 foto (Cover)");
@@ -174,37 +142,36 @@ export default function AddActivity() {
             setUploadStatus('Menyiapkan upload...');
 
             // Upload Cover
-            setUploadStatus('Mengupload foto cover...');
             let coverUrl = '';
             try {
-                coverUrl = await uploadToCloudinary(imageFile);
+                coverUrl = await uploadToCloudinary(imageFile, {
+                    folder: 'activities',
+                    onProgress: (percent) => setUploadStatus(`Mengupload foto cover (${percent}%)...`)
+                });
             } catch (error) {
                 console.error("Cover upload failed:", error);
                 const errorMessage = error instanceof Error ? error.message : "Unknown error";
 
-                if (errorMessage.includes("terlalu besar")) {
-                    toast.error("Ukuran gambar terlalu besar", {
-                        description: "Pilih gambar dengan ukuran lebih kecil atau resolusi lebih rendah.",
-                        duration: 5000,
-                    });
-                } else {
-                    toast.error("Gagal mengupload foto cover", {
-                        description: "Pastikan koneksi internet stabil dan coba lagi dalam beberapa saat.",
-                        duration: 5000,
-                    });
-                }
+                toast.error("Gagal mengupload foto cover", {
+                    description: errorMessage || "Pastikan koneksi internet stabil dan coba lagi dalam beberapa saat.",
+                    duration: 5000,
+                });
                 setIsSubmitting(false);
                 setUploadStatus('');
                 return;
             }
 
-            // Upload Additional Images
+            // Upload Additional Images sequentially with progress tracking
             const additionalUrls: string[] = [];
             if (additionalFiles.length > 0) {
-                setUploadStatus(`Mengupload ${additionalFiles.length} foto tambahan...`);
                 try {
-                    const uploadPromises = additionalFiles.map(file => uploadToCloudinary(file));
-                    const results = await Promise.all(uploadPromises);
+                    const results = await uploadMultipleToCloudinary(
+                        additionalFiles,
+                        'activities',
+                        (current, total, percent) => {
+                            setUploadStatus(`Mengupload foto tambahan ${current}/${total} (${percent}%)...`);
+                        }
+                    );
                     additionalUrls.push(...results);
                 } catch (error) {
                     console.error("Additional images upload failed:", error);
@@ -352,7 +319,7 @@ export default function AddActivity() {
                                                     <input
                                                         type="file"
                                                         multiple
-                                                        accept="image/*"
+                                                        accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
                                                         className="hidden"
                                                         onChange={handleAdditionalImagesChange}
                                                     />

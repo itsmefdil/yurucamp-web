@@ -8,8 +8,8 @@ const getJpegName = (fileName: string): string => {
     return `${nameWithoutExt}.jpeg`;
 };
 
-// Helper function to perform canvas compression
-const compressWithCanvas = (file: File, quality: number): Promise<File> => {
+// Helper function to perform canvas compression safely
+const compressWithCanvas = (file: File, quality: number, maxDimension = 1600): Promise<File> => {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
@@ -17,14 +17,13 @@ const compressWithCanvas = (file: File, quality: number): Promise<File> => {
             const img = new Image();
             img.src = event.target?.result as string;
             img.onload = () => {
-                const MAX_DIMS = 1280;
                 let { width, height } = img;
-                if (width > height && width > MAX_DIMS) {
-                    height *= MAX_DIMS / width;
-                    width = MAX_DIMS;
-                } else if (height > MAX_DIMS) {
-                    width *= MAX_DIMS / height;
-                    height = MAX_DIMS;
+                if (width > height && width > maxDimension) {
+                    height = Math.round((height * maxDimension) / width);
+                    width = maxDimension;
+                } else if (height > maxDimension) {
+                    width = Math.round((width * maxDimension) / height);
+                    height = maxDimension;
                 }
                 const canvas = document.createElement('canvas');
                 canvas.width = width;
@@ -36,13 +35,13 @@ const compressWithCanvas = (file: File, quality: number): Promise<File> => {
 
                 canvas.toBlob(blob => {
                     if (!blob) return reject(new Error("Canvas to Blob failed"));
-                    const finalFileName = file.name.endsWith('.jpeg') ? file.name : getJpegName(file.name);
+                    const finalFileName = file.name.endsWith('.jpeg') || file.name.endsWith('.jpg') ? file.name : getJpegName(file.name);
                     resolve(new File([blob], finalFileName, { type: 'image/jpeg', lastModified: Date.now() }));
                 }, 'image/jpeg', quality);
             };
-            img.onerror = reject;
+            img.onerror = () => reject(new Error("Gagal membaca data gambar"));
         };
-        reader.onerror = reject;
+        reader.onerror = () => reject(new Error("Gagal membaca file gambar"));
     });
 };
 
@@ -63,35 +62,46 @@ export async function processImageForUpload(file: File): Promise<File | null> {
         const isHeic = file.type === 'image/heic' || file.type === 'image/heif' || /\.heic$|\.heif$/i.test(file.name);
         if (isHeic) {
             toast.loading(`Mengonversi file HEIC...`, { id: toastId });
-            const conversionResult = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.8 });
-            const blob = Array.isArray(conversionResult) ? conversionResult[0] : conversionResult;
-            processedFile = new File([blob], getJpegName(file.name), { type: 'image/jpeg', lastModified: Date.now() });
+            try {
+                const conversionResult = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.8 });
+                const blob = Array.isArray(conversionResult) ? conversionResult[0] : conversionResult;
+                processedFile = new File([blob], getJpegName(file.name), { type: 'image/jpeg', lastModified: Date.now() });
+            } catch (heicError) {
+                console.error("HEIC conversion failed:", heicError);
+                toast.error(`Format HEIC gagal dikonversi di browser ini. Mohon gunakan format JPG/PNG.`, { id: toastId, duration: 5000 });
+                return null;
+            }
         }
 
-        // Step 2: Iterative compression to get under the final size limit
-        let currentQuality = 0.8;
-        const MIN_QUALITY = 0.1;
-        const QUALITY_STEP_DOWN = 0.15;
+        // Step 2: Canvas compression (Start with max dimension 1600 & 0.8 quality for mobile optimization)
+        toast.loading(`Mengompresi gambar ${file.name}...`, { id: toastId });
+        processedFile = await compressWithCanvas(processedFile, 0.8, 1600);
+
+        // Step 3: Iterative compression if still larger than target limit
+        let currentQuality = 0.65;
+        let currentMaxDim = 1200;
+        const MIN_QUALITY = 0.2;
 
         while (processedFile.size / 1024 / 1024 > FINAL_SIZE_LIMIT_MB && currentQuality >= MIN_QUALITY) {
-            toast.loading(`File > ${FINAL_SIZE_LIMIT_MB}MB. Kompresi ulang... (Kualitas ${Math.round(currentQuality * 100)}%)`, { id: toastId });
-            processedFile = await compressWithCanvas(processedFile, currentQuality);
-            currentQuality -= QUALITY_STEP_DOWN;
+            toast.loading(`Ukuran file > ${FINAL_SIZE_LIMIT_MB}MB. Kompresi ulang...`, { id: toastId });
+            processedFile = await compressWithCanvas(processedFile, currentQuality, currentMaxDim);
+            currentQuality -= 0.15;
+            currentMaxDim = Math.max(800, currentMaxDim - 200);
         }
 
-        // Step 3: Final size validation
+        // Step 4: Final size validation
         if (processedFile.size / 1024 / 1024 > FINAL_SIZE_LIMIT_MB) {
             console.error(`File is still too large after all compression attempts: ${(processedFile.size / 1024 / 1024).toFixed(2)} MB`);
             toast.error(`Gagal mengompres file di bawah ${FINAL_SIZE_LIMIT_MB}MB.`, { id: toastId, duration: 5000 });
             return null;
         }
 
-        toast.success(`Gambar ${processedFile.name} siap di-upload! (${(processedFile.size / 1024 / 1024).toFixed(2)}MB)`, { id: toastId, duration: 4000 });
+        toast.success(`Gambar ${processedFile.name} siap di-upload! (${(processedFile.size / 1024 / 1024).toFixed(2)}MB)`, { id: toastId, duration: 3000 });
         return processedFile;
 
     } catch (error) {
         console.error("Image processing failed:", error);
-        toast.error(`Gagal memproses gambar. Coba pilih file lain.`, { id: toastId, duration: 5000 });
+        toast.error(`Gagal memproses gambar. Silakan coba file gambar lain.`, { id: toastId, duration: 5000 });
         return null;
     }
 }
