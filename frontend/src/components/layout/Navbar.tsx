@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../ui/button';
-import { Home, Mountain, Tent, Calendar, PlayCircle, LogIn, User } from 'lucide-react';
+import { Home, Mountain, Tent, Calendar, PlayCircle, LogIn, User, Camera } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { UserNav } from './UserNav';
 
@@ -27,6 +27,11 @@ export function Navbar() {
                         <Link to="/activities" className="flex items-center gap-2 transition-colors hover:text-primary hover:scale-105 transform">
                             <Mountain className="w-4 h-4" />
                             Aktivitas
+                        </Link>
+
+                        <Link to="/gallery" className="flex items-center gap-2 transition-colors hover:text-primary hover:scale-105 transform">
+                            <Camera className="w-4 h-4" />
+                            Galeri
                         </Link>
 
                         <Link to="/community" className="flex items-center gap-2 transition-colors hover:text-primary hover:scale-105 transform">

@@ -11,7 +11,7 @@ import {
     TableRow,
 } from "../../components/ui/table";
 import { Button } from '../../components/ui/button';
-import { Trash2, ExternalLink, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Trash2, ExternalLink, Search, ChevronLeft, ChevronRight, Plus, Pencil } from 'lucide-react';
 import { Input } from '../../components/ui/input';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
@@ -22,7 +22,7 @@ export default function AdminCampAreas() {
     const [loading, setLoading] = useState(true);
 
     // Dialog state
-    const [dialogOpen, setDialogOpen] = useState(false);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [selectedAreaId, setSelectedAreaId] = useState<string | null>(null);
 
     // Search & Pagination state
@@ -80,24 +80,31 @@ export default function AdminCampAreas() {
             console.error('Failed to delete camp area:', error);
             toast.error("Failed to delete camp area");
         } finally {
-            setDialogOpen(false);
+            setIsDeleteDialogOpen(false);
             setSelectedAreaId(null);
         }
     };
 
     if (loading) {
-        return <div>Loading camp areas...</div>;
+        return <div className="p-8 text-center text-gray-500">Memuat lokasi camping...</div>;
     }
 
     return (
         <div className="space-y-6 pb-24 md:pb-8">
-            <h1 className="text-3xl font-bold tracking-tight">Camp Areas</h1>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <h1 className="text-3xl font-bold tracking-tight">Kelola Lokasi Camping</h1>
+                <Button asChild className="bg-orange-500 hover:bg-orange-600">
+                    <Link to="/c/new">
+                        <Plus className="h-4 w-4 mr-2" /> Tambah Lokasi
+                    </Link>
+                </Button>
+            </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-                <div className="relative w-full sm:w-64">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+            <div className="flex items-center space-x-2">
+                <div className="relative flex-1 max-w-sm">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
                     <Input
-                        placeholder="Search camp areas..."
+                        placeholder="Cari nama atau lokasi..."
                         className="pl-8"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -107,89 +114,113 @@ export default function AdminCampAreas() {
 
             <Card>
                 <CardHeader>
-                    <CardTitle>All Camp Areas ({filteredCampAreas.length})</CardTitle>
+                    <CardTitle>Daftar Lokasi Camping ({filteredCampAreas.length})</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Name</TableHead>
-                                <TableHead>Location</TableHead>
-                                <TableHead>Price</TableHead>
-                                <TableHead>Created By</TableHead>
-                                <TableHead className="w-[100px]"></TableHead>
+                                <TableHead className="w-[100px]">Foto</TableHead>
+                                <TableHead>Nama Lokasi</TableHead>
+                                <TableHead>Lokasi</TableHead>
+                                <TableHead>Harga Est.</TableHead>
+                                <TableHead className="text-right">Aksi</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {paginatedCampAreas.length === 0 ? (
                                 <TableRow>
                                     <TableCell colSpan={5} className="text-center py-8 text-gray-500">
-                                        No camp areas found matching your criteria
+                                        Tidak ada lokasi camping yang cocok
                                     </TableCell>
                                 </TableRow>
                             ) :
                                 paginatedCampAreas.map((area) => (
                                     <TableRow key={area.id}>
+                                        <TableCell>
+                                            {area.imageUrl ? (
+                                                <img
+                                                    src={area.imageUrl}
+                                                    alt={area.name}
+                                                    className="w-12 h-12 rounded-lg object-cover"
+                                                />
+                                            ) : (
+                                                <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center text-xs text-gray-400 font-medium">
+                                                    No Img
+                                                </div>
+                                            )}
+                                        </TableCell>
                                         <TableCell className="font-medium">{area.name}</TableCell>
-                                        <TableCell>{area.location}</TableCell>
-                                        <TableCell>{area.price}</TableCell>
-                                        <TableCell>{area.user?.fullName || 'Unknown'}</TableCell>
-                                        <TableCell className="flex items-center space-x-2">
-                                            <Link to={`/c/${area.id}`} target="_blank">
-                                                <Button variant="ghost" size="icon">
-                                                    <ExternalLink className="h-4 w-4" />
+                                        <TableCell>{area.location || '-'}</TableCell>
+                                        <TableCell>
+                                            {area.price && !isNaN(Number(area.price))
+                                                ? `Rp ${Math.round(Number(area.price)).toLocaleString('id-ID')}`
+                                                : '-'}
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <div className="flex justify-end gap-2">
+                                                <Button variant="ghost" size="icon" asChild title="Buka Detail">
+                                                    <Link to={`/c/${area.id}`} target="_blank">
+                                                        <ExternalLink className="h-4 w-4" />
+                                                    </Link>
                                                 </Button>
-                                            </Link>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                                                onClick={() => handleDeleteClick(area.id)}
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
+                                                <Button variant="ghost" size="icon" asChild title="Edit Lokasi">
+                                                    <Link to={`/c/${area.id}/edit`}>
+                                                        <Pencil className="h-4 w-4" />
+                                                    </Link>
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                                                    onClick={() => handleDeleteClick(area.id)}
+                                                    title="Hapus Lokasi"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ))}
                         </TableBody>
                     </Table>
-                    {totalPages > 1 && (
-                        <div className="flex items-center justify-between px-4 py-4 border-t">
-                            <div className="text-sm text-gray-500">
-                                Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, filteredCampAreas.length)} of {filteredCampAreas.length} items
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                                    disabled={currentPage === 1}
-                                >
-                                    <ChevronLeft className="h-4 w-4" />
-                                </Button>
-                                <span className="text-sm font-medium">
-                                    Page {currentPage} of {totalPages}
-                                </span>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                                    disabled={currentPage === totalPages}
-                                >
-                                    <ChevronRight className="h-4 w-4" />
-                                </Button>
-                            </div>
-                        </div>
-                    )}
                 </CardContent>
+                {totalPages > 1 && (
+                    <div className="flex items-center justify-between px-4 py-4 border-t">
+                        <div className="text-sm text-gray-500">
+                            Menampilkan {((currentPage - 1) * ITEMS_PER_PAGE) + 1} sampai {Math.min(currentPage * ITEMS_PER_PAGE, filteredCampAreas.length)} dari {filteredCampAreas.length} lokasi
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                disabled={currentPage === 1}
+                            >
+                                <ChevronLeft className="h-4 w-4" />
+                            </Button>
+                            <span className="text-sm font-medium">
+                                Halaman {currentPage} dari {totalPages}
+                            </span>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                disabled={currentPage === totalPages}
+                            >
+                                <ChevronRight className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    </div>
+                )}
             </Card>
 
             <ConfirmationDialog
-                isOpen={dialogOpen}
-                onClose={() => setDialogOpen(false)}
+                isOpen={isDeleteDialogOpen}
+                onClose={() => setIsDeleteDialogOpen(false)}
                 onConfirm={handleConfirmDelete}
-                title="Hapus Area Camping?"
-                description="Apakah Anda yakin ingin menghapus area camping ini? Tindakan ini tidak dapat dibatalkan."
+                title="Hapus Lokasi Camping?"
+                description="Apakah Anda yakin ingin menghapus lokasi camping ini? Tindakan ini tidak dapat dibatalkan."
                 confirmText="Hapus"
                 cancelText="Batal"
             />

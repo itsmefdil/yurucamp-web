@@ -12,6 +12,13 @@ import api from '../lib/api';
 import type { Activity as ActivityType, CampArea, Event } from '../types';
 import type { GearList } from '../types/gear';
 import { formatDate } from '../lib/utils';
+import Lightbox from 'yet-another-react-lightbox';
+import Thumbnails from 'yet-another-react-lightbox/plugins/thumbnails';
+import Zoom from 'yet-another-react-lightbox/plugins/zoom';
+import Fullscreen from 'yet-another-react-lightbox/plugins/fullscreen';
+import DownloadPlugin from 'yet-another-react-lightbox/plugins/download';
+import 'yet-another-react-lightbox/styles.css';
+import 'yet-another-react-lightbox/plugins/thumbnails.css';
 
 export default function Home() {
     // Fetch activities
@@ -62,6 +69,72 @@ export default function Home() {
             }
         },
     });
+
+    const [lightboxIndex, setLightboxIndex] = React.useState<number | null>(null);
+
+    // Extract photos for Community Photo Gallery
+    const galleryPhotos = React.useMemo(() => {
+        const list: Array<{ url: string; title: string; location?: string; link: string; author?: string; type: string }> = [];
+
+        if (activities) {
+            activities.forEach((act) => {
+                if (act.imageUrl) {
+                    list.push({
+                        url: act.imageUrl,
+                        title: act.title,
+                        location: act.location,
+                        link: `/a/${act.id}`,
+                        author: act.user?.fullName || undefined,
+                        type: 'Aktivitas',
+                    });
+                }
+                if (act.additionalImages && Array.isArray(act.additionalImages)) {
+                    act.additionalImages.forEach((img) => {
+                        if (img) {
+                            list.push({
+                                url: img,
+                                title: act.title,
+                                location: act.location,
+                                link: `/a/${act.id}`,
+                                author: act.user?.fullName || undefined,
+                                type: 'Aktivitas',
+                            });
+                        }
+                    });
+                }
+            });
+        }
+
+        if (campAreas) {
+            campAreas.forEach((camp) => {
+                if (camp.imageUrl) {
+                    list.push({
+                        url: camp.imageUrl,
+                        title: camp.name,
+                        location: camp.location,
+                        link: `/c/${camp.id}`,
+                        type: 'Camp Area',
+                    });
+                }
+                if (camp.additionalImages && Array.isArray(camp.additionalImages)) {
+                    camp.additionalImages.forEach((img) => {
+                        if (img) {
+                            list.push({
+                                url: img,
+                                title: camp.name,
+                                location: camp.location,
+                                link: `/c/${camp.id}`,
+                                type: 'Camp Area',
+                            });
+                        }
+                    });
+                }
+            });
+        }
+
+        // Limit to 8 photos for Home Page display
+        return list.slice(0, 8);
+    }, [activities, campAreas]);
 
     const getFacilityIcon = (facility: string) => {
         switch (facility.toLowerCase()) {
@@ -626,9 +699,91 @@ export default function Home() {
                             </div>
                         </div>
                     </section>
+
+                    {/* Community Photo Gallery Section */}
+                    {galleryPhotos.length > 0 && (
+                        <section className="py-16 md:py-24 bg-gradient-to-b from-gray-50 to-white">
+                            <div className="container mx-auto px-4">
+                                <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+                                    <div>
+                                        <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-600 px-4 py-1.5 rounded-full text-sm font-bold mb-3">
+                                            <Camera className="h-4 w-4" /> Galeri Foto Komunitas
+                                        </div>
+                                        <h2 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tight">
+                                            Momen Camping <span className="text-orange-500">Terbaik</span>
+                                        </h2>
+                                        <p className="text-gray-600 mt-2 text-base md:text-lg">
+                                            Koleksi potret keindahan alam dan keceriaan berkemah anggota Yurucamp Indonesia
+                                        </p>
+                                    </div>
+                                    <Button asChild variant="outline" className="rounded-full border-2 border-orange-200 hover:bg-orange-50 hover:border-orange-300 font-semibold w-fit">
+                                        <Link to="/gallery" className="flex items-center gap-2">
+                                            Jelajahi Semua Foto <ArrowRight className="h-4 w-4" />
+                                        </Link>
+                                    </Button>
+                                </div>
+
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-6">
+                                    {galleryPhotos.map((photo, index) => (
+                                        <div
+                                            key={index}
+                                            className="group relative aspect-square rounded-3xl overflow-hidden cursor-pointer shadow-md hover:shadow-2xl transition-all duration-500 hover:-translate-y-1.5 bg-gray-900"
+                                            onClick={() => setLightboxIndex(index)}
+                                        >
+                                            <img
+                                                src={photo.url}
+                                                alt={photo.title}
+                                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100"
+                                            />
+
+                                            <div className="absolute top-3 left-3 z-10">
+                                                <Badge className={`text-xs font-bold text-white shadow-md ${photo.type === 'Aktivitas' ? 'bg-amber-500/90 backdrop-blur-md' : 'bg-green-600/90 backdrop-blur-md'}`}>
+                                                    {photo.type}
+                                                </Badge>
+                                            </div>
+
+                                            {/* Hover Overlay Details */}
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4 md:p-5 flex flex-col justify-end">
+                                                <h3 className="text-white font-bold text-base md:text-lg line-clamp-1">
+                                                    {photo.title}
+                                                </h3>
+                                                {photo.location && (
+                                                    <p className="text-gray-300 text-xs md:text-sm flex items-center gap-1 mt-1 truncate">
+                                                        <MapPin className="h-3.5 w-3.5 text-orange-400 shrink-0" />
+                                                        {photo.location}
+                                                    </p>
+                                                )}
+                                                <div className="mt-3 flex items-center justify-between text-xs text-orange-300 font-semibold pt-2 border-t border-white/20">
+                                                    <span>{photo.author ? `Oleh ${photo.author}` : 'Klik untuk perbesar'}</span>
+                                                    <span className="bg-orange-500 text-white px-2.5 py-0.5 rounded-full text-[10px] font-bold">
+                                                        🔍 Zoom
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </section>
+                    )}
                 </main>
 
                 <Footer />
+
+                {/* yet-another-react-lightbox Modal */}
+                <Lightbox
+                    open={lightboxIndex !== null}
+                    close={() => setLightboxIndex(null)}
+                    index={lightboxIndex ?? 0}
+                    slides={galleryPhotos.map((p) => ({
+                        src: p.url,
+                        title: p.title,
+                        description: `${p.type}${p.location ? ` - ${p.location}` : ''}${p.author ? ` (oleh ${p.author})` : ''}`
+                    }))}
+                    plugins={[Thumbnails, Zoom, Fullscreen, DownloadPlugin]}
+                    zoom={{ maxZoomPixelRatio: 3, zoomInMultiplier: 1.5 }}
+                    thumbnails={{ position: 'bottom', width: 80, height: 80, border: 2, gap: 10 }}
+                />
             </div>
         </>
     );

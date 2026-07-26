@@ -26,6 +26,13 @@ import {
 } from '../components/ui/alert-dialog';
 import ReactMarkdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
+import Lightbox from 'yet-another-react-lightbox';
+import Thumbnails from 'yet-another-react-lightbox/plugins/thumbnails';
+import Zoom from 'yet-another-react-lightbox/plugins/zoom';
+import Fullscreen from 'yet-another-react-lightbox/plugins/fullscreen';
+import DownloadPlugin from 'yet-another-react-lightbox/plugins/download';
+import 'yet-another-react-lightbox/styles.css';
+import 'yet-another-react-lightbox/plugins/thumbnails.css';
 
 
 export default function ActivityDetail() {
@@ -310,19 +317,22 @@ export default function ActivityDetail() {
             <main className="flex-1 pb-24 md:pb-12">
                 <div className="container mx-auto px-4 pt-24 md:pt-32">
                     {/* Hero Image */}
-                    <div className="relative h-[45vh] md:h-[60vh] w-full bg-gray-900 rounded-3xl overflow-hidden shadow-2xl">
+                    <div
+                        className="relative h-[45vh] md:h-[60vh] w-full bg-gray-900 rounded-3xl overflow-hidden shadow-2xl cursor-pointer group"
+                        onClick={() => openLightbox(0)}
+                    >
                         {activity.imageUrl ? (
                             <img
                                 src={activity.imageUrl}
                                 alt={activity.title}
-                                className="w-full h-full object-cover opacity-90"
+                                className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-700"
                             />
                         ) : (
                             <div className="w-full h-full bg-gray-800 flex items-center justify-center text-gray-500">
                                 <span className="text-4xl font-bold opacity-30">No Image</span>
                             </div>
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10 pointer-events-none" />
 
                         <div className="absolute top-6 left-6 z-20">
                             <Button variant="outline" size="icon" className="rounded-full bg-white/10 border-white/20 text-white hover:bg-white/20 backdrop-blur-md" asChild>
@@ -388,7 +398,7 @@ export default function ActivityDetail() {
                                     )}
                                 </div>
 
-                                <h1 className="text-2xl md:text-5xl lg:text-6xl font-black text-white mb-4 md:mb-6 drop-shadow-xl leading-tight tracking-tight">
+                                <h1 className="text-2xl md:text-5xl lg:text-6xl font-black text-white mb-4 md:mb-6 leading-tight tracking-tight break-words [text-shadow:_0_2px_10px_rgba(0,0,0,0.7)] [font-feature-settings:'liga'_1,'kern'_1]">
                                     {activity.title}
                                 </h1>
                             </div>
@@ -459,15 +469,23 @@ export default function ActivityDetail() {
                             {/* Gallery - All Photos including Cover */}
                             {allImages.length > 0 && (
                                 <Card className="border-none shadow-xl rounded-3xl overflow-hidden bg-white">
-                                    <CardHeader className="p-6">
-                                        <CardTitle className="text-2xl font-bold">Galeri Foto ({allImages.length})</CardTitle>
+                                    <CardHeader className="p-6 pb-2">
+                                        <div className="flex items-center justify-between">
+                                            <CardTitle className="text-xl md:text-2xl font-bold flex items-center gap-2 text-gray-800">
+                                                <span>Galeri Foto</span>
+                                                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-700">
+                                                    {allImages.length} Foto
+                                                </span>
+                                            </CardTitle>
+                                            <span className="text-xs text-gray-400 font-medium hidden sm:inline">Klik foto untuk perbesar</span>
+                                        </div>
                                     </CardHeader>
-                                    <CardContent className="p-6 pt-0">
-                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                    <CardContent className="p-6">
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-4">
                                             {allImages.map((img, idx) => (
                                                 <div
                                                     key={idx}
-                                                    className="relative aspect-square rounded-xl overflow-hidden group cursor-pointer"
+                                                    className="group relative aspect-square rounded-2xl overflow-hidden cursor-pointer bg-gray-100 ring-1 ring-black/5 hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
                                                     onClick={() => openLightbox(idx)}
                                                 >
                                                     <img
@@ -476,20 +494,25 @@ export default function ActivityDetail() {
                                                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                                     />
                                                     {idx === 0 && (
-                                                        <span className="absolute top-2 left-2 bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                                        <span className="absolute top-2 left-2 bg-orange-500 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow-md z-10">
                                                             Cover
                                                         </span>
                                                     )}
-                                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                                                        <span className="opacity-0 group-hover:opacity-100 text-white text-sm font-medium transition-opacity">Perbesar</span>
-                                                        <Button
-                                                            size="icon"
-                                                            variant="secondary"
-                                                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity rounded-full bg-white/90 hover:bg-white shadow-sm h-8 w-8"
-                                                            onClick={(e) => handleDownload(e, img)}
-                                                        >
-                                                            <Download className="h-4 w-4 text-gray-700" />
-                                                        </Button>
+                                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-3">
+                                                        <div className="flex justify-end">
+                                                            <Button
+                                                                size="icon"
+                                                                variant="secondary"
+                                                                className="rounded-full bg-white/90 hover:bg-white text-gray-800 shadow-md h-8 w-8 transition-transform hover:scale-105"
+                                                                onClick={(e) => handleDownload(e, img)}
+                                                                title="Unduh foto"
+                                                            >
+                                                                <Download className="h-4 w-4 text-gray-700" />
+                                                            </Button>
+                                                        </div>
+                                                        <span className="text-white text-xs font-semibold flex items-center justify-center gap-1 bg-black/40 backdrop-blur-md py-1 px-3 rounded-full mx-auto">
+                                                            🔍 Perbesar
+                                                        </span>
                                                     </div>
                                                 </div>
                                             ))}
@@ -684,79 +707,16 @@ export default function ActivityDetail() {
                 </AlertDialogContent>
             </AlertDialog>
 
-            <Dialog open={lightboxIndex !== null} onOpenChange={(open) => !open && closeLightbox()}>
-                <DialogContent
-                    aria-describedby={undefined}
-                    showCloseButton={false}
-                    className="max-w-[95vw] md:max-w-4xl p-0 bg-black/95 border-none shadow-2xl overflow-hidden"
-                    onTouchStart={handleTouchStart}
-                    onTouchEnd={handleTouchEnd}
-                >
-                    <DialogTitle className="sr-only">Galeri Foto</DialogTitle>
-                    <div className="relative w-full h-[80vh] flex items-center justify-center">
-                        {lightboxIndex !== null && allImages[lightboxIndex] && (
-                            <img
-                                src={allImages[lightboxIndex]}
-                                alt={`Photo ${lightboxIndex + 1}`}
-                                className="max-w-full max-h-full object-contain"
-                            />
-                        )}
-
-                        {/* Close Button */}
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="absolute top-4 right-4 text-white bg-black/50 hover:bg-black/70 rounded-full z-50"
-                            onClick={closeLightbox}
-                        >
-                            <X className="h-6 w-6" />
-                        </Button>
-
-                        {/* Download Button */}
-                        {lightboxIndex !== null && allImages[lightboxIndex] && (
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="absolute top-4 left-4 text-white bg-black/50 hover:bg-black/70 rounded-full z-50"
-                                onClick={(e) => handleDownload(e, allImages[lightboxIndex])}
-                            >
-                                <Download className="h-5 w-5" />
-                            </Button>
-                        )}
-
-                        {/* Previous Button */}
-                        {lightboxIndex !== null && lightboxIndex > 0 && (
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="absolute left-4 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/70 rounded-full h-12 w-12"
-                                onClick={goToPrev}
-                            >
-                                <ChevronLeft className="h-8 w-8" />
-                            </Button>
-                        )}
-
-                        {/* Next Button */}
-                        {lightboxIndex !== null && lightboxIndex < allImages.length - 1 && (
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="absolute right-4 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/70 rounded-full h-12 w-12"
-                                onClick={goToNext}
-                            >
-                                <ChevronRight className="h-8 w-8" />
-                            </Button>
-                        )}
-
-                        {/* Image Counter */}
-                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white bg-black/50 px-4 py-2 rounded-full text-sm font-medium">
-                            {lightboxIndex !== null ? lightboxIndex + 1 : 0} / {allImages.length}
-                        </div>
-                    </div>
-                </DialogContent>
-            </Dialog>
-
-
+            {/* yet-another-react-lightbox modal */}
+            <Lightbox
+                open={lightboxIndex !== null}
+                close={() => setLightboxIndex(null)}
+                index={lightboxIndex ?? 0}
+                slides={allImages.map((src) => ({ src }))}
+                plugins={[Thumbnails, Zoom, Fullscreen, DownloadPlugin]}
+                zoom={{ maxZoomPixelRatio: 3, zoomInMultiplier: 1.5 }}
+                thumbnails={{ position: 'bottom', width: 80, height: 80, border: 2, gap: 10 }}
+            />
         </div>
     );
 }

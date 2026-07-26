@@ -309,3 +309,123 @@ router.delete('/activities/:id', async (req: Request, res: Response) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
+// GET /admin/gallery - List all photos from activities and camp areas
+router.get('/gallery', async (req: Request, res: Response) => {
+    try {
+        const activityList = await db
+            .select({
+                id: activities.id,
+                title: activities.title,
+                imageUrl: activities.imageUrl,
+                additionalImages: activities.additionalImages,
+                createdAt: activities.createdAt,
+                user: {
+                    fullName: users.fullName,
+                    avatarUrl: users.avatarUrl
+                }
+            })
+            .from(activities)
+            .leftJoin(users, eq(activities.userId, users.id))
+            .orderBy(desc(activities.createdAt));
+
+        const campList = await db
+            .select({
+                id: campAreas.id,
+                name: campAreas.name,
+                imageUrl: campAreas.imageUrl,
+                additionalImages: campAreas.additionalImages,
+                createdAt: campAreas.createdAt,
+                user: {
+                    fullName: users.fullName,
+                    avatarUrl: users.avatarUrl
+                }
+            })
+            .from(campAreas)
+            .leftJoin(users, eq(campAreas.userId, users.id))
+            .orderBy(desc(campAreas.createdAt));
+
+        const photos: Array<{
+            id: string;
+            url: string;
+            type: 'activity' | 'camp_area';
+            title: string;
+            sourceId: string;
+            createdAt: string;
+            isCover: boolean;
+            user?: { fullName: string | null; avatarUrl: string | null };
+        }> = [];
+
+        // Flatten activity photos
+        activityList.forEach((act) => {
+            if (act.imageUrl) {
+                photos.push({
+                    id: `act-cover-${act.id}`,
+                    url: act.imageUrl,
+                    type: 'activity',
+                    title: act.title,
+                    sourceId: act.id,
+                    createdAt: act.createdAt || new Date().toISOString(),
+                    isCover: true,
+                    user: act.user?.fullName ? act.user : undefined
+                });
+            }
+            if (act.additionalImages && Array.isArray(act.additionalImages)) {
+                act.additionalImages.forEach((img, idx) => {
+                    if (img) {
+                        photos.push({
+                            id: `act-extra-${act.id}-${idx}`,
+                            url: img,
+                            type: 'activity',
+                            title: act.title,
+                            sourceId: act.id,
+                            createdAt: act.createdAt || new Date().toISOString(),
+                            isCover: false,
+                            user: act.user?.fullName ? act.user : undefined
+                        });
+                    }
+                });
+            }
+        });
+
+        // Flatten camp area photos
+        campList.forEach((camp) => {
+            if (camp.imageUrl) {
+                photos.push({
+                    id: `camp-cover-${camp.id}`,
+                    url: camp.imageUrl,
+                    type: 'camp_area',
+                    title: camp.name,
+                    sourceId: camp.id,
+                    createdAt: camp.createdAt || new Date().toISOString(),
+                    isCover: true,
+                    user: camp.user?.fullName ? camp.user : undefined
+                });
+            }
+            if (camp.additionalImages && Array.isArray(camp.additionalImages)) {
+                camp.additionalImages.forEach((img, idx) => {
+                    if (img) {
+                        photos.push({
+                            id: `camp-extra-${camp.id}-${idx}`,
+                            url: img,
+                            type: 'camp_area',
+                            title: camp.name,
+                            sourceId: camp.id,
+                            createdAt: camp.createdAt || new Date().toISOString(),
+                            isCover: false,
+                            user: camp.user?.fullName ? camp.user : undefined
+                        });
+                    }
+                });
+            }
+        });
+
+        // Sort overall by createdAt descending
+        photos.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+        res.json(photos);
+    } catch (error) {
+        console.error('Error fetching admin gallery:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});

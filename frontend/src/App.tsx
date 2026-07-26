@@ -17,6 +17,7 @@ const AdminCampAreas = React.lazy(() => import('./pages/admin/CampAreas'));
 const AdminActivities = React.lazy(() => import('./pages/admin/Activities'));
 const AdminEvents = React.lazy(() => import('./pages/admin/Events'));
 const AdminRegions = React.lazy(() => import('./pages/admin/Regions'));
+const AdminGallery = React.lazy(() => import('./pages/admin/Gallery'));
 // Pages
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -27,6 +28,7 @@ import Activities from './pages/Activities';
 import ActivityDetail from './pages/ActivityDetail';
 import CampAreas from './pages/CampAreas';
 import CampAreaDetail from './pages/CampAreaDetail';
+import Gallery from './pages/Gallery';
 import AddCampArea from './pages/camp-area/AddCampArea';
 import EditCampArea from './pages/camp-area/EditCampArea';
 import Events from './pages/Events';
@@ -91,6 +93,7 @@ function App() {
                             }
                         />
                         <Route path="/a/:id" element={<ActivityDetail />} />
+                        <Route path="/gallery" element={<Gallery />} />
                         <Route path="/camp-areas" element={<CampAreas />} />
                         <Route path="/c/add" element={
                             <ProtectedRoute>
@@ -201,6 +204,11 @@ function App() {
                             <Route path="regions" element={
                                 <Suspense fallback={<div className="p-8">Loading regions...</div>}>
                                     <AdminRegions />
+                                </Suspense>
+                            } />
+                            <Route path="gallery" element={
+                                <Suspense fallback={<div className="p-8">Loading gallery...</div>}>
+                                    <AdminGallery />
                                 </Suspense>
                             } />
                             {/* Add more admin routes here */}

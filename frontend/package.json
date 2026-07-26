@@ -57,6 +57,7 @@
     "remark-breaks": "^4.0.0",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
+    "yet-another-react-lightbox": "^3.32.1",
     "zod": "^4.3.5"
   }
 }
