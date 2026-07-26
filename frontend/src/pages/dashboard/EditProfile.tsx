@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../..
 import { Label } from '../../components/ui/label';
 import RegionSelector from '../../components/ui/RegionSelector';
 import { useAuth } from '../../contexts/AuthContext';
-import api from '../../lib/api';
+import { uploadToCloudinary } from '../../lib/cloudinaryUpload';
 import { Navbar } from '../../components/layout/Navbar';
 import { Footer } from '../../components/layout/Footer';
 
@@ -79,35 +79,15 @@ export default function EditProfile() {
         }
     };
 
-    const uploadToCloudinary = async (file: File) => {
-        const { data: signData } = await api.get('/utils/cloudinary-signature?folder=avatars');
-
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("api_key", signData.api_key);
-        formData.append("timestamp", signData.timestamp.toString());
-        formData.append("signature", signData.signature);
-        formData.append("signature", signData.signature);
-        formData.append("folder", signData.folder);
-        formData.append("transformation", signData.transformation);
-
-        const response = await fetch(`https://api.cloudinary.com/v1_1/${signData.cloud_name}/image/upload`, {
-            method: "POST",
-            body: formData
-        });
-
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error?.message || "Upload failed");
-        return data.secure_url;
-    };
-
     const onSubmit = async (data: ProfileFormValues) => {
         try {
             setIsSubmitting(true);
             let avatarUrl = data.avatarUrl;
 
             if (imageFile) {
-                avatarUrl = await uploadToCloudinary(imageFile);
+                avatarUrl = await uploadToCloudinary(imageFile, {
+                    folder: 'avatars'
+                });
             }
 
             const response = await api.put('/auth/profile', {

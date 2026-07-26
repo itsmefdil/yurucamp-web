@@ -31,7 +31,7 @@ import {
     AlertDialogTrigger,
 } from "../components/ui/alert-dialog"
 import { Dialog, DialogContent } from '../components/ui/dialog';
-import api from '../lib/api';
+import { uploadToCloudinary } from '../lib/cloudinaryUpload';
 
 interface Region {
     id: string;
@@ -116,27 +116,6 @@ export default function RegionManagement() {
         updateMutation.mutate(data);
     };
 
-    const uploadToCloudinary = async (file: File) => {
-        const { data: signData } = await api.get('/utils/cloudinary-signature?folder=community');
-
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("api_key", signData.api_key);
-        formData.append("timestamp", signData.timestamp.toString());
-        formData.append("signature", signData.signature);
-        formData.append("folder", signData.folder);
-        formData.append("transformation", signData.transformation);
-
-        const response = await fetch(`https://api.cloudinary.com/v1_1/${signData.cloud_name}/image/upload`, {
-            method: "POST",
-            body: formData
-        });
-
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error?.message || "Upload failed");
-        return data.secure_url;
-    };
-
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'profile' | 'cover') => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -145,7 +124,7 @@ export default function RegionManagement() {
             if (type === 'profile') setUploadingImage(true);
             else setUploadingCover(true);
 
-            const url = await uploadToCloudinary(file);
+            const url = await uploadToCloudinary(file, { folder: 'community' });
 
             if (type === 'profile') setValue('imageUrl', url);
             else setValue('coverUrl', url);

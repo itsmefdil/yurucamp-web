@@ -15,7 +15,7 @@ import { Navbar } from '../../components/layout/Navbar';
 import { Footer } from '../../components/layout/Footer';
 import RichTextEditor from '../../components/ui/RichTextEditor';
 import api from '../../lib/api';
-import { processImageForUpload } from '../../lib/imageCompression';
+import { uploadToCloudinary, uploadMultipleToCloudinary } from '../../lib/cloudinaryUpload';
 import RegionSelector from '../../components/ui/RegionSelector';
 
 
@@ -138,40 +138,6 @@ export default function AddCampArea() {
 
     const allPreviews = imagePreview ? [imagePreview, ...additionalPreviews] : additionalPreviews;
 
-    const uploadToCloudinary = async (file: File) => {
-        const { data: signData } = await api.get('/utils/cloudinary-signature?folder=camp_area');
-
-        // Process image (convert HEIC/compress)
-        const processedFile = await processImageForUpload(file, 2);
-        if (!processedFile) {
-            throw new Error(`Gagal memproses file ${file.name}. Kemungkinan file rusak atau terlalu besar.`);
-        }
-
-        const formData = new FormData();
-        formData.append("file", processedFile);
-        formData.append("api_key", signData.api_key);
-        formData.append("timestamp", signData.timestamp.toString());
-        formData.append("signature", signData.signature);
-        formData.append("folder", signData.folder);
-        formData.append("transformation", signData.transformation);
-
-        const response = await fetch(`https://api.cloudinary.com/v1_1/${signData.cloud_name}/image/upload`, {
-            method: "POST",
-            body: formData
-        });
-
-        const data = await response.json();
-        if (!response.ok) {
-            const errorMessage = data.error?.message || "Upload failed";
-            // Translate common Cloudinary errors
-            if (errorMessage.includes("File size too large")) {
-                throw new Error("Ukuran file terlalu besar untuk diupload");
-            }
-            throw new Error(errorMessage);
-        }
-        return data.secure_url;
-    };
-
     const onSubmit = async (data: CampAreaFormValues) => {
         if (!imageFile) {
             toast.error("Tambahkan minimal 1 foto");
@@ -183,15 +149,21 @@ export default function AddCampArea() {
             setUploadStatus('Menyiapkan upload...');
 
             // Upload Cover
-            setUploadStatus('Mengupload foto cover...');
-            const coverUrl = await uploadToCloudinary(imageFile);
+            const coverUrl = await uploadToCloudinary(imageFile, {
+                folder: 'camp_area',
+                onProgress: (percent) => setUploadStatus(`Mengupload foto cover (${percent}%)...`)
+            });
 
-            // Upload Additional Images
+            // Upload Additional Images sequentially with progress tracking
             const additionalUrls: string[] = [];
             if (additionalFiles.length > 0) {
-                setUploadStatus(`Mengupload ${additionalFiles.length} foto tambahan...`);
-                const uploadPromises = additionalFiles.map(file => uploadToCloudinary(file));
-                const results = await Promise.all(uploadPromises);
+                const results = await uploadMultipleToCloudinary(
+                    additionalFiles,
+                    'camp_area',
+                    (current, total, percent) => {
+                        setUploadStatus(`Mengupload foto tambahan ${current}/${total} (${percent}%)...`);
+                    }
+                );
                 additionalUrls.push(...results);
             }
 
