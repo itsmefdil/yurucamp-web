@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import { v2 as cloudinary } from 'cloudinary';
 import { db } from '../db';
 import { users, campAreas, activities, events, regions, regionMembers } from '../db/schema';
 import { eq, desc, count, sql, and } from 'drizzle-orm';
@@ -9,6 +10,123 @@ const router = Router();
 
 // Middleware: Must be authenticated AND admin
 router.use(authenticate, isAdmin);
+
+// GET /admin/system-health - System Health & Storage Monitor
+router.get('/system-health', async (req: Request, res: Response) => {
+    try {
+        const startTime = Date.now();
+
+        // 1. Server Runtime & Process Memory
+        const memoryUsage = process.memoryUsage();
+        const serverRuntime = {
+            nodeVersion: process.version,
+            environment: process.env.NODE_NODE_ENV || process.env.NODE_ENV || 'production',
+            uptimeSeconds: Math.floor(process.uptime()),
+            uptimeFormatted: `${Math.floor(process.uptime() / 3600)}j ${Math.floor((process.uptime() % 3600) / 60)}m ${Math.floor(process.uptime() % 60)}d`,
+            memory: {
+                heapUsedMB: (memoryUsage.heapUsed / (1024 * 1024)).toFixed(2),
+                heapTotalMB: (memoryUsage.heapTotal / (1024 * 1024)).toFixed(2),
+                rssMB: (memoryUsage.rss / (1024 * 1024)).toFixed(2),
+                percentUsed: ((memoryUsage.heapUsed / memoryUsage.heapTotal) * 100).toFixed(1)
+            }
+        };
+
+        // 2. Cloudinary Usage & Latency Ping
+        let cloudinaryStats = null;
+        let cloudinaryLatencyMs = -1;
+        try {
+            const cPingStart = Date.now();
+            const [usage] = await Promise.all([
+                cloudinary.api.usage(),
+                cloudinary.api.ping()
+            ]);
+            cloudinaryLatencyMs = Date.now() - cPingStart;
+
+            cloudinaryStats = {
+                plan: usage.plan,
+                latencyMs: cloudinaryLatencyMs,
+                storage: {
+                    usedBytes: usage.storage?.usage || 0,
+                    usedFormatted: usage.storage?.usage ? (usage.storage.usage / (1024 * 1024)).toFixed(2) + ' MB' : '0 MB',
+                    limitBytes: usage.storage?.limit || 0,
+                    percentUsed: usage.storage?.used_percent || 0,
+                },
+                bandwidth: {
+                    usedBytes: usage.bandwidth?.usage || 0,
+                    usedFormatted: usage.bandwidth?.usage ? (usage.bandwidth.usage / (1024 * 1024)).toFixed(2) + ' MB' : '0 MB',
+                    percentUsed: usage.bandwidth?.used_percent || 0,
+                },
+                credits: {
+                    used: usage.credits?.usage || 0,
+                    limit: usage.credits?.limit || 0,
+                    percentUsed: usage.credits?.used_percent || 0,
+                },
+                objectsCount: usage.objects?.usage || 0,
+            };
+        } catch (cErr) {
+            console.error('Cloudinary stats error:', cErr);
+        }
+
+        // 3. PostgreSQL Storage & Connection Pool Stats
+        let postgresStats = null;
+        let dbLatencyMs = -1;
+        try {
+            const dbPingStart = Date.now();
+            const dbSizeResult = await db.execute(sql`
+                SELECT 
+                    pg_size_pretty(pg_database_size(current_database())) AS size_pretty,
+                    pg_database_size(current_database()) AS size_bytes
+            `);
+            dbLatencyMs = Date.now() - dbPingStart;
+
+            const [tablesResult, activeConnResult] = await Promise.all([
+                db.execute(sql`
+                    SELECT 
+                        table_name,
+                        pg_size_pretty(pg_total_relation_size(quote_ident(table_name))) AS total_size_pretty,
+                        pg_total_relation_size(quote_ident(table_name)) AS total_size_bytes
+                    FROM information_schema.tables
+                    WHERE table_schema = 'public' AND table_type = 'BASE TABLE'
+                    ORDER BY pg_total_relation_size(quote_ident(table_name)) DESC
+                    LIMIT 8
+                `),
+                db.execute(sql`
+                    SELECT count(*)::int as active_connections
+                    FROM pg_stat_activity
+                    WHERE state = 'active'
+                `).catch(() => [{ active_connections: 1 }])
+            ]);
+
+            postgresStats = {
+                latencyMs: dbLatencyMs,
+                activeConnections: activeConnResult[0]?.active_connections || 1,
+                databaseSizePretty: dbSizeResult[0]?.size_pretty || '0 B',
+                databaseSizeBytes: Number(dbSizeResult[0]?.size_bytes || 0),
+                topTables: Array.isArray(tablesResult) ? tablesResult.map((t: any) => ({
+                    tableName: t.table_name,
+                    sizePretty: t.total_size_pretty,
+                    sizeBytes: Number(t.total_size_bytes || 0)
+                })) : []
+            };
+        } catch (pgErr) {
+            console.error('Postgres stats error:', pgErr);
+        }
+
+        const totalResponseTimeMs = Date.now() - startTime;
+
+        res.json({
+            status: 'ok',
+            timestamp: new Date().toISOString(),
+            responseTimeMs: totalResponseTimeMs,
+            runtime: serverRuntime,
+            cloudinary: cloudinaryStats,
+            postgres: postgresStats
+        });
+    } catch (error) {
+        console.error('Error fetching system health:', error);
+        res.status(500).json({ error: 'Failed to fetch system health' });
+    }
+});
 
 // GET /admin/users - List all users
 router.get('/users', async (req: Request, res: Response) => {

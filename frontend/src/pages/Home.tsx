@@ -176,19 +176,15 @@ export default function Home() {
                                 <CardFooter className="p-5 pt-0 mt-auto">
                                     <div className="flex items-center gap-3 w-full">
                                         <div className="relative">
-                                            <Link to={`/u/${g.userId}`} className="block">
-                                                <Avatar className="h-8 w-8 border-2 border-white shadow-sm">
-                                                    <AvatarImage src={owner?.avatarUrl || undefined} />
-                                                    <AvatarFallback className="text-xs bg-orange-200 text-orange-700 font-bold">
-                                                        {owner?.fullName?.charAt(0).toUpperCase() || 'U'}
-                                                    </AvatarFallback>
-                                                </Avatar>
-                                            </Link>
+                                            <Avatar className="h-8 w-8 border-2 border-white shadow-sm">
+                                                <AvatarImage src={owner?.avatarUrl || undefined} />
+                                                <AvatarFallback className="text-xs bg-orange-200 text-orange-700 font-bold">
+                                                    {owner?.fullName?.charAt(0).toUpperCase() || 'U'}
+                                                </AvatarFallback>
+                                            </Avatar>
                                         </div>
                                         <div className="flex flex-col min-w-0 flex-1">
-                                            <Link to={`/u/${g.userId}`} className="block w-full">
-                                                <span className="text-sm font-semibold text-gray-600 truncate">{owner?.fullName || 'Pengguna'}</span>
-                                            </Link>
+                                            <span className="text-sm font-semibold text-gray-600 truncate">{owner?.fullName || 'Pengguna'}</span>
                                             <span className="text-[10px] text-gray-400 truncate">{g.createdAt ? new Date(g.createdAt).toLocaleDateString() : ''}</span>
                                         </div>
                                     </div>

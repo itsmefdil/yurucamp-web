@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../components/ui/card";
-import { Users, Calendar, Tent, TrendingUp, ArrowUpRight, Plus, ShieldCheck, Eye, MapPin, CheckCircle, XCircle } from "lucide-react";
+import { Users, Calendar, Tent, TrendingUp, ArrowUpRight, ShieldCheck, Eye, MapPin, CheckCircle, XCircle, HardDrive, Database, Server, RefreshCw, Cpu, Layers, Activity } from "lucide-react";
 import api from '../../lib/api';
 import {
     AreaChart,
@@ -39,8 +39,27 @@ interface DashboardStats {
     userGrowth: Array<{ date: string; count: number }>;
 }
 
+interface SystemHealthData {
+    status: string;
+    timestamp: string;
+    cloudinary: {
+        plan: string;
+        storage: { usedBytes: number; usedFormatted: string; limitBytes: number; percentUsed: number };
+        bandwidth: { usedBytes: number; usedFormatted: string; percentUsed: number };
+        credits: { used: number; limit: number; percentUsed: number };
+        objectsCount: number;
+    } | null;
+    postgres: {
+        databaseSizePretty: string;
+        databaseSizeBytes: number;
+        topTables: Array<{ tableName: string; sizePretty: string; sizeBytes: number }>;
+    } | null;
+}
+
 export default function AdminDashboard() {
     const [stats, setStats] = useState<DashboardStats | null>(null);
+    const [systemHealth, setSystemHealth] = useState<SystemHealthData | null>(null);
+    const [loadingHealth, setLoadingHealth] = useState(true);
     const [pendingRegions, setPendingRegions] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [loadingPending, setLoadingPending] = useState(true);
@@ -74,6 +93,18 @@ export default function AdminDashboard() {
         }
     };
 
+    const fetchSystemHealth = async () => {
+        setLoadingHealth(true);
+        try {
+            const response = await api.get('/admin/system-health');
+            setSystemHealth(response.data);
+        } catch (error) {
+            console.error('Failed to fetch system health:', error);
+        } finally {
+            setLoadingHealth(false);
+        }
+    };
+
     const fetchPendingRegions = async () => {
         try {
             const response = await api.get('/regions/pending');
@@ -88,6 +119,7 @@ export default function AdminDashboard() {
     useEffect(() => {
         fetchStats();
         fetchPendingRegions();
+        fetchSystemHealth();
     }, []);
 
     const handleConfirm = async () => {
