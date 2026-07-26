@@ -268,28 +268,28 @@ export default function AdminGallery() {
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                    <div className="flex items-center justify-between px-6 py-4 border-t bg-gray-50/50">
-                        <div className="text-xs text-gray-500 font-medium">
-                            Halaman {currentPage} dari {totalPages}
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 sm:px-6 py-4 border-t bg-gray-50/50">
+                        <div className="text-xs text-gray-500 font-medium text-center sm:text-left">
+                            Halaman <span className="font-bold text-gray-800">{currentPage}</span> dari <span className="font-bold text-gray-800">{totalPages}</span>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 w-full sm:w-auto justify-center">
                             <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                                 disabled={currentPage === 1}
-                                className="rounded-lg h-8 text-xs"
+                                className="rounded-lg h-8 text-xs flex-1 sm:flex-none"
                             >
-                                <ChevronLeft className="h-4 w-4 mr-1" /> Prev
+                                <ChevronLeft className="h-4 w-4 mr-1 shrink-0" /> Prev
                             </Button>
                             <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                                 disabled={currentPage === totalPages}
-                                className="rounded-lg h-8 text-xs"
+                                className="rounded-lg h-8 text-xs flex-1 sm:flex-none"
                             >
-                                Next <ChevronRight className="h-4 w-4 ml-1" />
+                                Next <ChevronRight className="h-4 w-4 ml-1 shrink-0" />
                             </Button>
                         </div>
                     </div>
