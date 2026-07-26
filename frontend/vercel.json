@@ -1,15 +1,7 @@
 {
     "rewrites": [
         {
-            "source": "/sitemap.xml",
-            "destination": "https://api.yurucamp.my.id/sitemap.xml"
-        },
-        {
-            "source": "/robots.txt",
-            "destination": "/robots.txt"
-        },
-        {
-            "source": "/((?!sitemap\\.xml|robots\\.txt).*)",
+            "source": "/((?!robots\\.txt).*)",
             "destination": "/index.html"
         }
     ]
