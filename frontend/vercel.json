@@ -5,7 +5,11 @@
             "destination": "https://api.yurucamp.my.id/sitemap.xml"
         },
         {
-            "source": "/(.*)",
+            "source": "/robots.txt",
+            "destination": "/robots.txt"
+        },
+        {
+            "source": "/((?!sitemap\\.xml|robots\\.txt).*)"
             "destination": "/index.html"
         }
     ]
