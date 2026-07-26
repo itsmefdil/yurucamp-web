@@ -9,15 +9,10 @@ import {
     Tent,
     Calendar,
     Globe,
-    Image
+    Image,
+    Activity
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-// Assuming generic button/classes if ui components not fully setup, but let's try to stick to standard jsx
-// If 'cn' utility exists (it likely does in shadcn/ui projects), I'll import it. 
-// I saw 'lib/utils' in list_dir so 'cn' is likely there.
-
-// Simple 'cn' fallback if not available (I'll assume it is based on standard scaffolding but will check file)
-// actually I'll just check lib/utils exists. It does.
 import { cn } from '../../lib/utils';
 
 export function AdminLayout() {
@@ -27,6 +22,7 @@ export function AdminLayout() {
 
     const navItems = [
         { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+        { href: '/admin/system-health', label: 'System Health', icon: Activity },
         { href: '/admin/users', label: 'Pengguna', icon: Users },
         { href: '/admin/camp-areas', label: 'Lokasi Camp', icon: Tent },
         { href: '/admin/activities', label: 'Aktivitas', icon: Users },

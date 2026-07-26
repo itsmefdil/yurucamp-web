@@ -12,6 +12,7 @@ import ScrollToTop from './components/ScrollToTop';
 
 // Lazy load admin pages
 const AdminDashboard = React.lazy(() => import('./pages/admin/Dashboard'));
+const AdminSystemHealth = React.lazy(() => import('./pages/admin/SystemHealth'));
 const AdminUsers = React.lazy(() => import('./pages/admin/Users'));
 const AdminCampAreas = React.lazy(() => import('./pages/admin/CampAreas'));
 const AdminActivities = React.lazy(() => import('./pages/admin/Activities'));
@@ -179,6 +180,11 @@ function App() {
                             <Route index element={
                                 <Suspense fallback={<div className="p-8">Loading dashboard...</div>}>
                                     <AdminDashboard />
+                                </Suspense>
+                            } />
+                            <Route path="system-health" element={
+                                <Suspense fallback={<div className="p-8">Loading system health...</div>}>
+                                    <AdminSystemHealth />
                                 </Suspense>
                             } />
                             <Route path="users" element={
