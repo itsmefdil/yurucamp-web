@@ -45,12 +45,14 @@ export default function AdminUsers() {
         exp: 0
     });
 
-    // Valid role type for filter
+    // Valid role type & sort type for filter
     type RoleFilterType = 'all' | 'user' | 'admin';
+    type SortOptionType = 'newest' | 'oldest' | 'name-asc' | 'name-desc';
 
     // Filter & Pagination state
     const [searchQuery, setSearchQuery] = useState('');
     const [roleFilter, setRoleFilter] = useState<RoleFilterType>('all');
+    const [sortBy, setSortBy] = useState<SortOptionType>('newest');
     const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 10;
 
@@ -94,19 +96,43 @@ export default function AdminUsers() {
         }
     };
 
-    const filteredUsers = users.filter(user => {
-        const matchesSearch = user.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            user.email?.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesRole = roleFilter === 'all' || user.role === roleFilter;
-        return matchesSearch && matchesRole;
-    });
+    const filteredUsers = users
+        .filter(user => {
+            const matchesSearch = user.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                user.email?.toLowerCase().includes(searchQuery.toLowerCase());
+            const matchesRole = roleFilter === 'all' || user.role === roleFilter;
+            return matchesSearch && matchesRole;
+        })
+        .sort((a, b) => {
+            if (sortBy === 'newest') {
+                const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+                const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+                return dateB - dateA;
+            }
+            if (sortBy === 'oldest') {
+                const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+                const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+                return dateA - dateB;
+            }
+            if (sortBy === 'name-asc') {
+                const nameA = a.fullName || a.email || '';
+                const nameB = b.fullName || b.email || '';
+                return nameA.localeCompare(nameB);
+            }
+            if (sortBy === 'name-desc') {
+                const nameA = a.fullName || a.email || '';
+                const nameB = b.fullName || b.email || '';
+                return nameB.localeCompare(nameA);
+            }
+            return 0;
+        });
 
     const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
 
-    // Reset page when filter changes
+    // Reset page when filter or sorting changes
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchQuery, roleFilter]);
+    }, [searchQuery, roleFilter, sortBy]);
 
     const paginatedUsers = filteredUsers.slice(
         (currentPage - 1) * ITEMS_PER_PAGE,
@@ -131,19 +157,34 @@ export default function AdminUsers() {
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
                 </div>
-                <div className="flex items-center gap-2 w-full sm:w-auto">
+                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                     <Filter className="h-4 w-4 text-gray-500 hidden sm:block" />
                     <Select
                         value={roleFilter}
                         onValueChange={(value) => setRoleFilter(value as RoleFilterType)}
                     >
-                        <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectTrigger className="w-full sm:w-[150px]">
                             <SelectValue placeholder="Filter by role" />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">All Roles</SelectItem>
                             <SelectItem value="user">User</SelectItem>
                             <SelectItem value="admin">Admin</SelectItem>
+                        </SelectContent>
+                    </Select>
+
+                    <Select
+                        value={sortBy}
+                        onValueChange={(value) => setSortBy(value as SortOptionType)}
+                    >
+                        <SelectTrigger className="w-full sm:w-[170px]">
+                            <SelectValue placeholder="Sort by" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="newest">Terbaru</SelectItem>
+                            <SelectItem value="oldest">Terlama</SelectItem>
+                            <SelectItem value="name-asc">Nama (A - Z)</SelectItem>
+                            <SelectItem value="name-desc">Nama (Z - A)</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
