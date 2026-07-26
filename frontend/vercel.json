@@ -9,7 +9,7 @@
             "destination": "/robots.txt"
         },
         {
-            "source": "/((?!sitemap\\.xml|robots\\.txt).*)"
+            "source": "/((?!sitemap\\.xml|robots\\.txt).*)",
             "destination": "/index.html"
         }
     ]
