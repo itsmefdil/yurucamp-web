@@ -15,10 +15,15 @@ import { Trash2, ExternalLink, Search, ChevronLeft, ChevronRight } from 'lucide-
 import { Input } from '../../components/ui/input';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
+import { ConfirmationDialog } from '../../components/shared/ConfirmationDialog';
 
 export default function AdminCampAreas() {
     const [campAreas, setCampAreas] = useState<CampArea[]>([]);
     const [loading, setLoading] = useState(true);
+
+    // Dialog state
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [selectedAreaId, setSelectedAreaId] = useState<string | null>(null);
 
     // Search & Pagination state
     const [searchQuery, setSearchQuery] = useState('');
@@ -59,16 +64,24 @@ export default function AdminCampAreas() {
         currentPage * ITEMS_PER_PAGE
     );
 
-    const handleDelete = async (id: string) => {
-        if (!window.confirm("Are you sure you want to delete this camp area?")) return;
+    const handleDeleteClick = (id: string) => {
+        setSelectedAreaId(id);
+        setDialogOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!selectedAreaId) return;
 
         try {
-            await api.delete(`/admin/camp-areas/${id}`);
+            await api.delete(`/admin/camp-areas/${selectedAreaId}`);
             toast.success("Camp area deleted");
-            setCampAreas(campAreas.filter(area => area.id !== id));
+            setCampAreas(campAreas.filter(area => area.id !== selectedAreaId));
         } catch (error) {
             console.error('Failed to delete camp area:', error);
             toast.error("Failed to delete camp area");
+        } finally {
+            setDialogOpen(false);
+            setSelectedAreaId(null);
         }
     };
 
@@ -131,7 +144,7 @@ export default function AdminCampAreas() {
                                                 variant="ghost"
                                                 size="icon"
                                                 className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                                                onClick={() => handleDelete(area.id)}
+                                                onClick={() => handleDeleteClick(area.id)}
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                             </Button>
@@ -170,6 +183,16 @@ export default function AdminCampAreas() {
                     )}
                 </CardContent>
             </Card>
+
+            <ConfirmationDialog
+                isOpen={dialogOpen}
+                onClose={() => setDialogOpen(false)}
+                onConfirm={handleConfirmDelete}
+                title="Hapus Area Camping?"
+                description="Apakah Anda yakin ingin menghapus area camping ini? Tindakan ini tidak dapat dibatalkan."
+                confirmText="Hapus"
+                cancelText="Batal"
+            />
         </div>
     );
 }

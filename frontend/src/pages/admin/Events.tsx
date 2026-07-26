@@ -17,10 +17,15 @@ import { Input } from '../../components/ui/input';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
+import { ConfirmationDialog } from '../../components/shared/ConfirmationDialog';
 
 export default function AdminEvents() {
     const [events, setEvents] = useState<Event[]>([]);
     const [loading, setLoading] = useState(true);
+
+    // Dialog state
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
 
     // Search & Pagination state
     const [searchQuery, setSearchQuery] = useState('');
@@ -61,16 +66,24 @@ export default function AdminEvents() {
         currentPage * ITEMS_PER_PAGE
     );
 
-    const handleDelete = async (id: string) => {
-        if (!window.confirm("Are you sure you want to delete this event?")) return;
+    const handleDeleteClick = (id: string) => {
+        setSelectedEventId(id);
+        setDialogOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!selectedEventId) return;
 
         try {
-            await api.delete(`/admin/events/${id}`);
+            await api.delete(`/admin/events/${selectedEventId}`);
             toast.success("Event deleted");
-            setEvents(events.filter(e => e.id !== id));
+            setEvents(events.filter(e => e.id !== selectedEventId));
         } catch (error) {
             console.error('Failed to delete event:', error);
             toast.error("Failed to delete event");
+        } finally {
+            setDialogOpen(false);
+            setSelectedEventId(null);
         }
     };
 
@@ -135,7 +148,7 @@ export default function AdminEvents() {
                                                 variant="ghost"
                                                 size="icon"
                                                 className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                                                onClick={() => handleDelete(event.id)}
+                                                onClick={() => handleDeleteClick(event.id)}
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                             </Button>
@@ -174,6 +187,16 @@ export default function AdminEvents() {
                     )}
                 </CardContent>
             </Card>
+
+            <ConfirmationDialog
+                isOpen={dialogOpen}
+                onClose={() => setDialogOpen(false)}
+                onConfirm={handleConfirmDelete}
+                title="Hapus Event?"
+                description="Apakah Anda yakin ingin menghapus event ini? Tindakan ini tidak dapat dibatalkan."
+                confirmText="Hapus"
+                cancelText="Batal"
+            />
         </div>
     );
 }

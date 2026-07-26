@@ -16,6 +16,8 @@ import {
     Cell,
     Legend
 } from 'recharts';
+import { ConfirmationDialog } from '../../components/shared/ConfirmationDialog';
+import { toast } from 'sonner';
 
 interface DashboardStats {
     userCount: number;
@@ -34,6 +36,23 @@ export default function AdminDashboard() {
     const [pendingRegions, setPendingRegions] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [loadingPending, setLoadingPending] = useState(true);
+
+    // Confirm action state
+    type ActionType = 'approve' | 'reject';
+    const [confirmAction, setConfirmAction] = useState<{ type: ActionType; id: string } | null>(null);
+
+    const dialogConfig: Record<ActionType, { title: string; description: string; confirmText: string }> = {
+        approve: {
+            title: 'Setujui Region?',
+            description: 'Apakah Anda yakin ingin menyetujui pembuatan region ini?',
+            confirmText: 'Setujui',
+        },
+        reject: {
+            title: 'Tolak Region?',
+            description: 'Apakah Anda yakin ingin menolak pembuatan region ini? Tindakan ini tidak dapat dibatalkan.',
+            confirmText: 'Tolak',
+        },
+    };
 
     const fetchStats = async () => {
         try {
@@ -62,28 +81,18 @@ export default function AdminDashboard() {
         fetchPendingRegions();
     }, []);
 
-    const handleApprove = async (id: string) => {
-        if (!confirm('Setujui pembuatan region ini?')) return;
+    const handleConfirm = async () => {
+        if (!confirmAction) return;
+        const { type, id } = confirmAction;
         try {
-            await api.post(`/regions/${id}/approve`);
-            // Refresh list
+            await api.post(`/regions/${id}/${type}`);
             fetchPendingRegions();
-            // Optional: Show success toast
+            toast.success(type === 'approve' ? 'Region disetujui' : 'Region ditolak');
         } catch (error) {
-            console.error('Failed to approve region:', error);
-            alert('Gagal menyetujui region');
-        }
-    };
-
-    const handleReject = async (id: string) => {
-        if (!confirm('Tolak pembuatan region ini? Aksi ini tidak dapat dibatalkan.')) return;
-        try {
-            await api.post(`/regions/${id}/reject`);
-            // Refresh list
-            fetchPendingRegions();
-        } catch (error) {
-            console.error('Failed to reject region:', error);
-            alert('Gagal menolak region');
+            console.error(`Failed to ${type} region:`, error);
+            toast.error(type === 'approve' ? 'Gagal menyetujui region' : 'Gagal menolak region');
+        } finally {
+            setConfirmAction(null);
         }
     };
     const COLORS = ['#f97316', '#22c55e', '#f59e0b', '#3b82f6']; // Orange, Green, Amber, Blue
@@ -256,13 +265,13 @@ export default function AdminDashboard() {
                                             </div>
                                             <div className="flex flex-row md:flex-col gap-2 w-full md:w-auto mt-2 md:mt-0">
                                                 <button
-                                                    onClick={() => handleApprove(region.id)}
+                                                    onClick={() => setConfirmAction({ type: 'approve', id: region.id })}
                                                     className="flex-1 md:flex-none px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors shadow-sm hover:shadow active:scale-95 flex items-center justify-center gap-2"
                                                 >
                                                     Setujui
                                                 </button>
                                                 <button
-                                                    onClick={() => handleReject(region.id)}
+                                                    onClick={() => setConfirmAction({ type: 'reject', id: region.id })}
                                                     className="flex-1 md:flex-none px-4 py-2 text-sm font-medium text-red-600 bg-white border border-red-200 hover:bg-red-50 rounded-lg transition-colors active:scale-95 flex items-center justify-center gap-2"
                                                 >
                                                     Tolak
@@ -395,6 +404,18 @@ export default function AdminDashboard() {
                     </CardContent>
                 </Card>
             </div>
+
+            {confirmAction && (
+                <ConfirmationDialog
+                    isOpen={!!confirmAction}
+                    onClose={() => setConfirmAction(null)}
+                    onConfirm={handleConfirm}
+                    title={dialogConfig[confirmAction.type].title}
+                    description={dialogConfig[confirmAction.type].description}
+                    confirmText={dialogConfig[confirmAction.type].confirmText}
+                    cancelText="Batal"
+                />
+            )}
         </div>
     );
 }
