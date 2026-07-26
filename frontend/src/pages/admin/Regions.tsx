@@ -23,6 +23,7 @@ import {
     DialogFooter,
 } from "../../components/ui/dialog";
 import { Label } from '../../components/ui/label';
+import { ConfirmationDialog } from '../../components/shared/ConfirmationDialog';
 
 interface Region {
     id: string;
@@ -47,6 +48,38 @@ export default function AdminRegions() {
     const [loading, setLoading] = useState(true);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null); // For dialog mode
+
+    // Confirm action state
+    type ActionType = 'delete' | 'approve' | 'reject' | 'suspend' | 'activate';
+    const [confirmAction, setConfirmAction] = useState<{ type: ActionType; id: string } | null>(null);
+
+    const dialogConfig: Record<ActionType, { title: string; description: string; confirmText: string }> = {
+        delete: {
+            title: 'Hapus Region?',
+            description: 'Apakah Anda yakin ingin menghapus region ini? Tindakan ini tidak dapat dibatalkan.',
+            confirmText: 'Hapus',
+        },
+        approve: {
+            title: 'Setujui Region?',
+            description: 'Apakah Anda yakin ingin menyetujui pembuatan region ini?',
+            confirmText: 'Setujui',
+        },
+        reject: {
+            title: 'Tolak Region?',
+            description: 'Apakah Anda yakin ingin menolak pembuatan region ini? Tindakan ini tidak dapat dibatalkan.',
+            confirmText: 'Tolak',
+        },
+        suspend: {
+            title: 'Suspend Region?',
+            description: 'Region tidak akan bisa diakses publik setelah disuspend.',
+            confirmText: 'Suspend',
+        },
+        activate: {
+            title: 'Aktifkan Region?',
+            description: 'Apakah Anda yakin ingin mengaktifkan kembali region ini?',
+            confirmText: 'Aktifkan',
+        },
+    };
 
     // Search & Pagination state
     const [searchQuery, setSearchQuery] = useState('');
@@ -125,63 +158,44 @@ export default function AdminRegions() {
         }
     };
 
-    const handleDelete = async (id: string) => {
-        if (!window.confirm("Are you sure you want to delete this region?")) return;
-        try {
-            await api.delete(`/regions/${id}`);
-            setRegions(regions.filter(r => r.id !== id));
-            toast.success("Region deleted");
-        } catch (error) {
-            console.error('Failed to delete region:', error);
-            toast.error("Failed to delete region");
-        }
-    };
+    const handleConfirm = async () => {
+        if (!confirmAction) return;
 
-    const handleApprove = async (id: string) => {
-        if (!confirm('Setujui pembuatan region ini?')) return;
-        try {
-            await api.post(`/regions/${id}/approve`);
-            fetchRegions();
-            toast.success('Region disetujui');
-        } catch (error) {
-            console.error('Failed to approve region:', error);
-            toast.error('Gagal menyetujui region');
-        }
-    };
+        const { type, id } = confirmAction;
 
-    const handleReject = async (id: string) => {
-        if (!confirm('Tolak pembuatan region ini?')) return;
         try {
-            await api.post(`/regions/${id}/reject`);
-            fetchRegions();
-            toast.success('Region ditolak');
+            switch (type) {
+                case 'delete':
+                    await api.delete(`/regions/${id}`);
+                    setRegions(regions.filter(r => r.id !== id));
+                    toast.success("Region deleted");
+                    break;
+                case 'approve':
+                    await api.post(`/regions/${id}/approve`);
+                    fetchRegions();
+                    toast.success('Region disetujui');
+                    break;
+                case 'reject':
+                    await api.post(`/regions/${id}/reject`);
+                    fetchRegions();
+                    toast.success('Region ditolak');
+                    break;
+                case 'suspend':
+                    await api.post(`/regions/${id}/suspend`);
+                    fetchRegions();
+                    toast.success('Region disuspend');
+                    break;
+                case 'activate':
+                    await api.post(`/regions/${id}/activate`);
+                    fetchRegions();
+                    toast.success('Region diaktifkan kembali');
+                    break;
+            }
         } catch (error) {
-            console.error('Failed to reject region:', error);
-            toast.error('Gagal menolak region');
-        }
-    };
-
-    const handleSuspend = async (id: string) => {
-        if (!confirm('Suspend region ini? Region tidak akan bisa diakses publik.')) return;
-        try {
-            await api.post(`/regions/${id}/suspend`);
-            fetchRegions();
-            toast.success('Region disuspend');
-        } catch (error) {
-            console.error('Failed to suspend region:', error);
-            toast.error('Gagal suspend region');
-        }
-    };
-
-    const handleActivate = async (id: string) => {
-        if (!confirm('Aktifkan kembali region ini?')) return;
-        try {
-            await api.post(`/regions/${id}/activate`);
-            fetchRegions();
-            toast.success('Region diaktifkan kembali');
-        } catch (error) {
-            console.error('Failed to activate region:', error);
-            toast.error('Gagal mengaktifkan region');
+            console.error(`Failed to ${type} region:`, error);
+            toast.error(`Gagal ${type} region`);
+        } finally {
+            setConfirmAction(null);
         }
     };
 
@@ -311,7 +325,7 @@ export default function AdminRegions() {
                                                             variant="ghost"
                                                             size="icon"
                                                             className="text-green-600 hover:text-green-700 hover:bg-green-50"
-                                                            onClick={() => handleApprove(region.id)}
+                                                            onClick={() => setConfirmAction({ type: 'approve', id: region.id })}
                                                             title="Approve"
                                                         >
                                                             <Check className="h-4 w-4" />
@@ -320,7 +334,7 @@ export default function AdminRegions() {
                                                             variant="ghost"
                                                             size="icon"
                                                             className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                                            onClick={() => handleReject(region.id)}
+                                                            onClick={() => setConfirmAction({ type: 'reject', id: region.id })}
                                                             title="Reject"
                                                         >
                                                             <X className="h-4 w-4" />
@@ -342,7 +356,7 @@ export default function AdminRegions() {
                                                         variant="ghost"
                                                         size="icon"
                                                         className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
-                                                        onClick={() => handleSuspend(region.id)}
+                                                        onClick={() => setConfirmAction({ type: 'suspend', id: region.id })}
                                                         title="Suspend"
                                                     >
                                                         <Ban className="h-4 w-4" />
@@ -353,7 +367,7 @@ export default function AdminRegions() {
                                                         variant="ghost"
                                                         size="icon"
                                                         className="text-green-600 hover:text-green-700 hover:bg-green-50"
-                                                        onClick={() => handleActivate(region.id)}
+                                                        onClick={() => setConfirmAction({ type: 'activate', id: region.id })}
                                                         title="Activate"
                                                     >
                                                         <PlayCircle className="h-4 w-4" />
@@ -366,7 +380,7 @@ export default function AdminRegions() {
                                                     variant="ghost"
                                                     size="icon"
                                                     className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                                                    onClick={() => handleDelete(region.id)}
+                                                    onClick={() => setConfirmAction({ type: 'delete', id: region.id })}
                                                 >
                                                     <Trash2 className="h-4 w-4" />
                                                 </Button>
@@ -484,6 +498,18 @@ export default function AdminRegions() {
                     </div>
                 </DialogContent>
             </Dialog>
+
+            {confirmAction && (
+                <ConfirmationDialog
+                    isOpen={!!confirmAction}
+                    onClose={() => setConfirmAction(null)}
+                    onConfirm={handleConfirm}
+                    title={dialogConfig[confirmAction.type].title}
+                    description={dialogConfig[confirmAction.type].description}
+                    confirmText={dialogConfig[confirmAction.type].confirmText}
+                    cancelText="Batal"
+                />
+            )}
         </div >
     );
 }
