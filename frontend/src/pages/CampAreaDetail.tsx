@@ -14,6 +14,13 @@ import { Dialog, DialogContent, DialogTitle } from '../components/ui/dialog';
 import ReactMarkdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
 import useDocumentTitle from '../hooks/useDocumentTitle';
+import Lightbox from 'yet-another-react-lightbox';
+import Thumbnails from 'yet-another-react-lightbox/plugins/thumbnails';
+import Zoom from 'yet-another-react-lightbox/plugins/zoom';
+import Fullscreen from 'yet-another-react-lightbox/plugins/fullscreen';
+import DownloadPlugin from 'yet-another-react-lightbox/plugins/download';
+import 'yet-another-react-lightbox/styles.css';
+import 'yet-another-react-lightbox/plugins/thumbnails.css';
 
 
 export default function CampAreaDetail() {
@@ -172,19 +179,22 @@ export default function CampAreaDetail() {
             <main className="flex-1 pb-24 md:pb-12">
                 <div className="container mx-auto px-4 pt-24 md:pt-32">
                     {/* Hero Image */}
-                    <div className="relative h-[45vh] md:h-[60vh] w-full bg-gray-900 rounded-3xl overflow-hidden shadow-2xl">
+                    <div
+                        className="relative h-[45vh] md:h-[60vh] w-full bg-gray-900 rounded-3xl overflow-hidden shadow-2xl cursor-pointer group"
+                        onClick={() => openLightbox(0)}
+                    >
                         {campArea.imageUrl ? (
                             <img
                                 src={campArea.imageUrl}
                                 alt={campArea.name}
-                                className="w-full h-full object-cover opacity-90"
+                                className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-700"
                             />
                         ) : (
                             <div className="w-full h-full bg-gray-800 flex items-center justify-center text-gray-500">
                                 <span className="text-4xl font-bold opacity-30">No Image</span>
                             </div>
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10 pointer-events-none" />
 
                         <div className="absolute top-6 left-6 z-20">
                             <Button variant="outline" size="icon" className="rounded-full bg-white/10 border-white/20 text-white hover:bg-white/20 backdrop-blur-md" asChild>
@@ -424,66 +434,16 @@ export default function CampAreaDetail() {
 
 
 
-            {/* Lightbox Modal */}
-            <Dialog open={lightboxIndex !== null} onOpenChange={(open) => !open && closeLightbox()}>
-                <DialogContent
-                    aria-describedby={undefined}
-                    showCloseButton={false}
-                    className="max-w-[95vw] md:max-w-4xl p-0 bg-black/95 border-none shadow-2xl overflow-hidden"
-                    onTouchStart={handleTouchStart}
-                    onTouchEnd={handleTouchEnd}
-                >
-                    <DialogTitle className="sr-only">Galeri Foto</DialogTitle>
-                    <div className="relative w-full h-[80vh] flex items-center justify-center">
-                        {lightboxIndex !== null && allImages[lightboxIndex] && (
-                            <img
-                                src={allImages[lightboxIndex]}
-                                alt={`Photo ${lightboxIndex + 1}`}
-                                className="max-w-full max-h-full object-contain"
-                            />
-                        )}
-
-                        {/* Close Button */}
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="absolute top-4 right-4 text-white bg-black/50 hover:bg-black/70 rounded-full z-50"
-                            onClick={closeLightbox}
-                        >
-                            <X className="h-6 w-6" />
-                        </Button>
-
-                        {/* Previous Button */}
-                        {lightboxIndex !== null && lightboxIndex > 0 && (
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="absolute left-4 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/70 rounded-full h-12 w-12"
-                                onClick={goToPrev}
-                            >
-                                <ChevronLeft className="h-8 w-8" />
-                            </Button>
-                        )}
-
-                        {/* Next Button */}
-                        {lightboxIndex !== null && lightboxIndex < allImages.length - 1 && (
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="absolute right-4 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/70 rounded-full h-12 w-12"
-                                onClick={goToNext}
-                            >
-                                <ChevronRight className="h-8 w-8" />
-                            </Button>
-                        )}
-
-                        {/* Image Counter */}
-                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white bg-black/50 px-4 py-2 rounded-full text-sm font-medium">
-                            {lightboxIndex !== null ? lightboxIndex + 1 : 0} / {allImages.length}
-                        </div>
-                    </div>
-                </DialogContent>
-            </Dialog>
+            {/* yet-another-react-lightbox modal */}
+            <Lightbox
+                open={lightboxIndex !== null}
+                close={() => setLightboxIndex(null)}
+                index={lightboxIndex ?? 0}
+                slides={allImages.map((src) => ({ src }))}
+                plugins={[Thumbnails, Zoom, Fullscreen, DownloadPlugin]}
+                zoom={{ maxZoomPixelRatio: 3, zoomInMultiplier: 1.5 }}
+                thumbnails={{ position: 'bottom', width: 80, height: 80, border: 2, gap: 10 }}
+            />
         </div>
     );
 }
