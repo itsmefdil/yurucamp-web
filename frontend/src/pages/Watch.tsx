@@ -87,7 +87,7 @@ export default function Watch() {
                                 <Star className="h-4 w-4 fill-current" />
                                 #1 Camping Anime
                             </div>
-                            <h1 className="text-3xl md:text-7xl font-black leading-tight text-gray-800 drop-shadow-sm">
+                            <h1 className="text-3xl md:text-7xl font-black leading-tight text-gray-800 break-words [text-shadow:_0_2px_10px_rgba(0,0,0,0.1)] [font-feature-settings:'liga'_1,'kern'_1]">
                                 {currentBg.title}
                             </h1>
                             <p className="text-sm md:text-xl text-gray-700 line-clamp-3 leading-relaxed max-w-xl font-medium">

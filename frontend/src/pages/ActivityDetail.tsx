@@ -388,7 +388,7 @@ export default function ActivityDetail() {
                                     )}
                                 </div>
 
-                                <h1 className="text-2xl md:text-5xl lg:text-6xl font-black text-white mb-4 md:mb-6 drop-shadow-xl leading-tight tracking-tight">
+                                <h1 className="text-2xl md:text-5xl lg:text-6xl font-black text-white mb-4 md:mb-6 leading-tight tracking-tight break-words [text-shadow:_0_2px_10px_rgba(0,0,0,0.7)] [font-feature-settings:'liga'_1,'kern'_1]">
                                     {activity.title}
                                 </h1>
                             </div>
