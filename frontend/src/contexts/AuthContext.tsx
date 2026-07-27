@@ -29,9 +29,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
             const response = await api.get('/auth/me');
             setUser(response.data);
-        } catch (error) {
-            console.error('Failed to fetch user:', error);
-            localStorage.removeItem('token');
+        } catch (error: any) {
+            const status = error?.response?.status;
+            if (status === 401) {
+                // Token is permanently invalid (refresh also failed in interceptor) — clear session
+                console.warn('Auth session expired, clearing token.');
+                localStorage.removeItem('token');
+            } else {
+                // Network error, server down, 5xx, etc. — keep session, don't log out
+                console.warn('Failed to fetch user (non-auth error), keeping session:', error?.message);
+            }
         } finally {
             setLoading(false);
         }

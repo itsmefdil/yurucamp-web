@@ -74,10 +74,9 @@ export default function EditProfile() {
                 toast.error("Ukuran foto maksimal 5MB");
                 return;
             }
+            if (imagePreview && imagePreview.startsWith('blob:')) URL.revokeObjectURL(imagePreview);
             setImageFile(file);
-            const reader = new FileReader();
-            reader.onloadend = () => setImagePreview(reader.result as string);
-            reader.readAsDataURL(file);
+            setImagePreview(URL.createObjectURL(file));
         }
     };
 

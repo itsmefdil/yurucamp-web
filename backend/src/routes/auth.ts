@@ -108,10 +108,11 @@ router.get('/google/callback',
         });
 
         // Set httpOnly cookie for refresh token
+        // sameSite: 'none' + secure: true required for cross-subdomain AJAX (yc.noma.my.id → yc-be.noma.my.id)
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
+            secure: true,
+            sameSite: 'none',
             maxAge: refreshExpiresMs
         });
 
@@ -193,10 +194,11 @@ router.post('/refresh', async (req: Request, res: Response) => {
         });
 
         // Set httpOnly cookie for new refresh token
+        // sameSite: 'none' + secure: true required for cross-subdomain AJAX (yc.noma.my.id → yc-be.noma.my.id)
         res.cookie('refreshToken', newRefreshToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
+            secure: true,
+            sameSite: 'none',
             maxAge: refreshExpiresMs
         });
 

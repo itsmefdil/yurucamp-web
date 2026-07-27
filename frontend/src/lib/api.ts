@@ -43,26 +43,28 @@ const refreshAxios = axios.create({
 });
 
 function refreshAccessToken(): Promise<string | null> {
-    if (!refreshPromise) {
-        refreshPromise = refreshAxios.post('/auth/refresh')
-            .then((res) => {
-                const newToken = res.data?.token;
-                if (newToken) {
-                    localStorage.setItem('token', newToken);
-                    return newToken;
-                }
-                return null;
-            })
-            .catch(() => {
-                localStorage.removeItem('token');
-                return null;
-            })
-            .finally(() => {
-                isRefreshing = false;
-                refreshPromise = null;
-            });
-    }
+    // Dedup: if a refresh is already in-flight, return the same promise
+    if (isRefreshing && refreshPromise) return refreshPromise;
+
+    // Set flag BEFORE creating the promise to prevent race condition
     isRefreshing = true;
+    refreshPromise = refreshAxios.post('/auth/refresh')
+        .then((res) => {
+            const newToken = res.data?.token;
+            if (newToken) {
+                localStorage.setItem('token', newToken);
+                return newToken;
+            }
+            return null;
+        })
+        .catch(() => {
+            localStorage.removeItem('token');
+            return null;
+        })
+        .finally(() => {
+            isRefreshing = false;
+            refreshPromise = null;
+        });
     return refreshPromise;
 }
 

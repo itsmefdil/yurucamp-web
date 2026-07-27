@@ -9,39 +9,69 @@ const getJpegName = (fileName: string): string => {
 };
 
 // Helper function to perform canvas compression safely
+// Uses createImageBitmap (zero-copy, hardware-decoded) to avoid Base64 RAM explosion on Android Chrome.
 const compressWithCanvas = (file: File, quality: number, maxDimension = 1600): Promise<File> => {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = event => {
-            const img = new Image();
-            img.src = event.target?.result as string;
-            img.onload = () => {
-                let { width, height } = img;
-                if (width > height && width > maxDimension) {
-                    height = Math.round((height * maxDimension) / width);
-                    width = maxDimension;
-                } else if (height > maxDimension) {
-                    width = Math.round((width * maxDimension) / height);
-                    height = maxDimension;
-                }
-                const canvas = document.createElement('canvas');
-                canvas.width = width;
-                canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                if (!ctx) return reject(new Error("Could not get canvas context"));
+    return new Promise(async (resolve, reject) => {
+        let objectUrl: string | null = null;
+        try {
+            let width: number;
+            let height: number;
+            let drawSource: CanvasImageSource;
 
-                ctx.drawImage(img, 0, 0, width, height);
+            // createImageBitmap: hardware-decoded, no Base64 string in RAM — safe on Android Chrome
+            if ('createImageBitmap' in window) {
+                const bitmap = await createImageBitmap(file);
+                width = bitmap.width;
+                height = bitmap.height;
+                drawSource = bitmap;
+            } else {
+                // Fallback: use object URL instead of data URL to avoid Base64 conversion
+                objectUrl = URL.createObjectURL(file);
+                const img = new Image();
+                img.src = objectUrl;
+                await new Promise<void>((res, rej) => {
+                    img.onload = () => res();
+                    img.onerror = () => rej(new Error("Gagal membaca data gambar"));
+                });
+                width = img.width;
+                height = img.height;
+                drawSource = img;
+            }
 
-                canvas.toBlob(blob => {
-                    if (!blob) return reject(new Error("Canvas to Blob failed"));
-                    const finalFileName = file.name.endsWith('.jpeg') || file.name.endsWith('.jpg') ? file.name : getJpegName(file.name);
-                    resolve(new File([blob], finalFileName, { type: 'image/jpeg', lastModified: Date.now() }));
-                }, 'image/jpeg', quality);
-            };
-            img.onerror = () => reject(new Error("Gagal membaca data gambar"));
-        };
-        reader.onerror = () => reject(new Error("Gagal membaca file gambar"));
+            if (width > height && width > maxDimension) {
+                height = Math.round((height * maxDimension) / width);
+                width = maxDimension;
+            } else if (height > maxDimension) {
+                width = Math.round((width * maxDimension) / height);
+                height = maxDimension;
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+                if (objectUrl) URL.revokeObjectURL(objectUrl);
+                return reject(new Error("Could not get canvas context"));
+            }
+
+            ctx.drawImage(drawSource, 0, 0, width, height);
+
+            // Free ImageBitmap memory immediately after drawing
+            if ('close' in drawSource && typeof (drawSource as any).close === 'function') {
+                (drawSource as any).close();
+            }
+
+            canvas.toBlob(blob => {
+                if (objectUrl) URL.revokeObjectURL(objectUrl);
+                if (!blob) return reject(new Error("Canvas to Blob failed"));
+                const finalFileName = file.name.endsWith('.jpeg') || file.name.endsWith('.jpg') ? file.name : getJpegName(file.name);
+                resolve(new File([blob], finalFileName, { type: 'image/jpeg', lastModified: Date.now() }));
+            }, 'image/jpeg', quality);
+        } catch (err) {
+            if (objectUrl) URL.revokeObjectURL(objectUrl);
+            reject(err);
+        }
     });
 };
 

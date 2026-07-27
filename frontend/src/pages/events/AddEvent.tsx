@@ -63,15 +63,15 @@ export default function AddEvent() {
                 toast.error("Ukuran file maksimal 10MB");
                 return;
             }
+            if (imagePreview && imagePreview.startsWith('blob:')) URL.revokeObjectURL(imagePreview);
             setImageFile(file);
-            const reader = new FileReader();
-            reader.onloadend = () => setImagePreview(reader.result as string);
-            reader.readAsDataURL(file);
+            setImagePreview(URL.createObjectURL(file));
         }
         e.target.value = '';
     };
 
     const removeImage = () => {
+        if (imagePreview && imagePreview.startsWith('blob:')) URL.revokeObjectURL(imagePreview);
         setImageFile(null);
         setImagePreview(null);
     };

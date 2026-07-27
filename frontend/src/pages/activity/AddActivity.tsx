@@ -94,10 +94,10 @@ export default function AddActivity() {
                 toast.error(`File "${file.name}" terlalu besar (>50MB)`);
                 return;
             }
+            // Revoke previous object URL to free memory before creating new one
+            if (imagePreview && imagePreview.startsWith('blob:')) URL.revokeObjectURL(imagePreview);
             setImageFile(file);
-            const reader = new FileReader();
-            reader.onloadend = () => setImagePreview(reader.result as string);
-            reader.readAsDataURL(file);
+            setImagePreview(URL.createObjectURL(file));
         }
         e.target.value = '';
     };
@@ -113,10 +113,9 @@ export default function AddActivity() {
 
             const totalAdditional = additionalFiles.length + (files.length - (files.indexOf(file) + 1));
             if (totalAdditional <= 10) {
-                const reader = new FileReader();
                 setAdditionalFiles(prev => [...prev, file]);
-                reader.onloadend = () => setAdditionalPreviews(prev => [...prev, reader.result as string]);
-                reader.readAsDataURL(file);
+                // Use object URL instead of readAsDataURL — no Base64 RAM cost on Android
+                setAdditionalPreviews(prev => [...prev, URL.createObjectURL(file)]);
             } else {
                 toast.error("Maksimal 10 foto tambahan total");
                 break;
@@ -129,7 +128,11 @@ export default function AddActivity() {
 
     const removeNewAdditionalImage = (index: number) => {
         setAdditionalFiles(prev => prev.filter((_, i) => i !== index));
-        setAdditionalPreviews(prev => prev.filter((_, i) => i !== index));
+        setAdditionalPreviews(prev => {
+            const url = prev[index];
+            if (url && url.startsWith('blob:')) URL.revokeObjectURL(url);
+            return prev.filter((_, i) => i !== index);
+        });
     };
 
     const onSubmit = async (data: ActivityFormValues) => {
