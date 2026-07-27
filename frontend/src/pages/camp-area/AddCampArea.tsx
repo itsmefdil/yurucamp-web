@@ -89,19 +89,16 @@ export default function AddCampArea() {
                 continue;
             }
 
-            const reader = new FileReader();
-
             if (isFirstFile) {
+                if (imagePreview && imagePreview.startsWith('blob:')) URL.revokeObjectURL(imagePreview);
                 setImageFile(file);
-                reader.onloadend = () => setImagePreview(reader.result as string);
-                reader.readAsDataURL(file);
+                setImagePreview(URL.createObjectURL(file));
                 isFirstFile = false;
             } else {
                 const totalAdditional = additionalFiles.length + (files.length - (files.indexOf(file) + 1));
                 if (totalAdditional <= 10) {
                     setAdditionalFiles(prev => [...prev, file]);
-                    reader.onloadend = () => setAdditionalPreviews(prev => [...prev, reader.result as string]);
-                    reader.readAsDataURL(file);
+                    setAdditionalPreviews(prev => [...prev, URL.createObjectURL(file)]);
                 } else {
                     toast.error("Maksimal 10 foto tambahan");
                     break;
@@ -113,6 +110,7 @@ export default function AddCampArea() {
 
     const removeImage = (index: number) => {
         if (index === 0 && imagePreview) {
+            if (imagePreview.startsWith('blob:')) URL.revokeObjectURL(imagePreview);
             if (additionalFiles.length > 0) {
                 setImageFile(additionalFiles[0]);
                 setImagePreview(additionalPreviews[0]);
@@ -125,7 +123,11 @@ export default function AddCampArea() {
         } else {
             const adjustedIndex = imagePreview ? index - 1 : index;
             setAdditionalFiles(prev => prev.filter((_, i) => i !== adjustedIndex));
-            setAdditionalPreviews(prev => prev.filter((_, i) => i !== adjustedIndex));
+            setAdditionalPreviews(prev => {
+                const url = prev[adjustedIndex];
+                if (url && url.startsWith('blob:')) URL.revokeObjectURL(url);
+                return prev.filter((_, i) => i !== adjustedIndex);
+            });
         }
     };
 

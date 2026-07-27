@@ -112,17 +112,18 @@ export class XhrCloudinaryTransporter implements Transporter {
         };
 
         xhr.onerror = () => reject(new Error('XHR_NETWORK_ERROR'));
-        xhr.ontimeout = () => reject(new Error('Waktu pengunggahan habis (timeout).'));
-        xhr.timeout = 120000;
+        xhr.ontimeout = () => reject(new Error('XHR_NETWORK_ERROR'));
+        xhr.timeout = 180000; // 3 minutes timeout for slower mobile upload connections
         xhr.send(formData);
       });
     } catch (err: any) {
       if (err?.message === 'XHR_NETWORK_ERROR') {
-        // Fallback using fetch API
+        // Fallback using fetch API with keepalive for mobile browsers
         try {
           const res = await fetch(uploadUrl, {
             method: 'POST',
             body: formData,
+            keepalive: true,
             signal,
           });
           const data = await res.json();
@@ -132,7 +133,7 @@ export class XhrCloudinaryTransporter implements Transporter {
           }
           throw new Error(data.error?.message || 'Gagal mengunggah ke Cloudinary');
         } catch (fetchErr: any) {
-          throw new Error('Koneksi terputus saat mengunggah. Mohon periksa koneksi internet Anda.');
+          throw new Error('Koneksi terputus saat mengunggah dari smartphone. Mengulangi proses...');
         }
       }
       throw err;
@@ -163,10 +164,10 @@ export class CanvasHeicTransformer implements ImageTransformer {
 
     // 2. Canvas compress (Use safer max dimension for mobile browsers to prevent memory crashes)
     const isMobile = typeof window !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    const initialMaxDim = isMobile ? 1200 : 1600;
+    const initialMaxDim = isMobile ? 1080 : 1600;
 
     try {
-      processedFile = await this.compressWithCanvas(processedFile, 0.8, initialMaxDim);
+      processedFile = await this.compressWithCanvas(processedFile, 0.75, initialMaxDim);
     } catch (err) {
       console.warn("Canvas compression failed, using original file:", err);
       if (file.size / 1024 / 1024 <= this.MAX_SIZE_MB) {
@@ -192,39 +193,67 @@ export class CanvasHeicTransformer implements ImageTransformer {
   }
 
   private compressWithCanvas(file: File, quality: number, maxDimension = 1600): Promise<File> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = event => {
-        const img = new Image();
-        img.src = event.target?.result as string;
-        img.onload = () => {
-          let { width, height } = img;
-          if (width > height && width > maxDimension) {
-            height = Math.round((height * maxDimension) / width);
-            width = maxDimension;
-          } else if (height > maxDimension) {
-            width = Math.round((width * maxDimension) / height);
-            height = maxDimension;
-          }
-          const canvas = document.createElement('canvas');
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          if (!ctx) return reject(new Error("Could not get canvas context"));
+    return new Promise(async (resolve, reject) => {
+      let objectUrl: string | null = null;
+      try {
+        let width: number;
+        let height: number;
+        let drawSource: CanvasImageSource;
 
-          ctx.drawImage(img, 0, 0, width, height);
+        // Use createImageBitmap if supported for zero-copy memory efficiency on Android
+        if ('createImageBitmap' in window) {
+          const bitmap = await createImageBitmap(file);
+          width = bitmap.width;
+          height = bitmap.height;
+          drawSource = bitmap;
+        } else {
+          objectUrl = URL.createObjectURL(file);
+          const img = new Image();
+          img.src = objectUrl;
+          await new Promise((res, rej) => {
+            img.onload = res;
+            img.onerror = () => rej(new Error("Gagal membaca data gambar"));
+          });
+          width = img.width;
+          height = img.height;
+          drawSource = img;
+        }
 
-          canvas.toBlob(blob => {
-            if (!blob) return reject(new Error("Canvas to Blob failed"));
-            const nameWithoutExt = file.name.split('.').slice(0, -1).join('.') || 'image';
-            const finalFileName = file.name.endsWith('.jpeg') || file.name.endsWith('.jpg') ? file.name : `${nameWithoutExt}.jpeg`;
-            resolve(new File([blob], finalFileName, { type: 'image/jpeg', lastModified: Date.now() }));
-          }, 'image/jpeg', quality);
-        };
-        img.onerror = () => reject(new Error("Gagal membaca data gambar"));
-      };
-      reader.onerror = () => reject(new Error("Gagal membaca file gambar"));
+        if (width > height && width > maxDimension) {
+          height = Math.round((height * maxDimension) / width);
+          width = maxDimension;
+        } else if (height > maxDimension) {
+          width = Math.round((width * maxDimension) / height);
+          height = maxDimension;
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          if (objectUrl) URL.revokeObjectURL(objectUrl);
+          return reject(new Error("Could not get canvas context"));
+        }
+
+        ctx.drawImage(drawSource, 0, 0, width, height);
+
+        // Close ImageBitmap to free memory immediately on Android
+        if ('close' in drawSource && typeof (drawSource as any).close === 'function') {
+          (drawSource as any).close();
+        }
+
+        canvas.toBlob(blob => {
+          if (objectUrl) URL.revokeObjectURL(objectUrl);
+          if (!blob) return reject(new Error("Canvas to Blob failed"));
+          const nameWithoutExt = file.name.split('.').slice(0, -1).join('.') || 'image';
+          const finalFileName = file.name.endsWith('.jpeg') || file.name.endsWith('.jpg') ? file.name : `${nameWithoutExt}.jpeg`;
+          resolve(new File([blob], finalFileName, { type: 'image/jpeg', lastModified: Date.now() }));
+        }, 'image/jpeg', quality);
+      } catch (err) {
+        if (objectUrl) URL.revokeObjectURL(objectUrl);
+        reject(err);
+      }
     });
   }
 }
@@ -252,16 +281,6 @@ export class ImageUploadCoreManager {
     });
 
     const processedFile = await this.transformer.transform(file);
-
-    onProgress?.({
-      stage: 'signing',
-      percent: 30,
-      currentFileIndex: 1,
-      totalFiles: 1,
-      currentFileName: processedFile.name,
-    });
-
-    const sigData = await this.signatureProvider.fetchSignature(folder);
 
     onProgress?.({
       stage: 'uploading',
