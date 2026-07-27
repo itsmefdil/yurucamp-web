@@ -30,10 +30,14 @@ export const authenticate = (req: Request, res: Response, next: NextFunction) =>
         const decoded = jwt.verify(token, secret);
         req.user = decoded;
         next();
-    } catch (error) {
-        console.error('JWT Verification Error:', error);
-        res.status(401).json({ error: 'Unauthorized: Invalid token' });
-        return
+    } catch (error: any) {
+        if (error.name === 'TokenExpiredError') {
+            console.warn(`JWT Token expired at ${error.expiredAt}`);
+        } else {
+            console.error('JWT Verification Error:', error);
+        }
+        res.status(401).json({ error: 'Unauthorized: Invalid or expired token' });
+        return;
     }
 };
 
