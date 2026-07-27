@@ -12,6 +12,16 @@ import { useAuth } from '../contexts/AuthContext';
 import { formatDate } from '../lib/utils';
 import { toast } from 'sonner';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/avatar';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '../components/ui/alert-dialog';
 import ReactMarkdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
 import useDocumentTitle from '../hooks/useDocumentTitle';
@@ -109,10 +119,14 @@ export default function EventDetail() {
         },
     });
 
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
     const handleDeleteEvent = () => {
-        if (confirm('Apakah Anda yakin ingin menghapus event ini?')) {
-            deleteEventMutation.mutate();
-        }
+        setShowDeleteDialog(true);
+    };
+
+    const confirmDeleteEvent = () => {
+        deleteEventMutation.mutate();
     };
 
     const handleJoinEvent = () => {
@@ -730,6 +744,27 @@ export default function EventDetail() {
                         </div>
                     )
                 }
+                {/* Delete Confirmation Modal */}
+                <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Hapus Event</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Apakah Anda yakin ingin menghapus event ini? Semua data pendaftaran peserta juga akan dihapus secara permanen.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Batal</AlertDialogCancel>
+                            <AlertDialogAction
+                                onClick={confirmDeleteEvent}
+                                className="bg-red-600 hover:bg-red-700 text-white"
+                                disabled={deleteEventMutation.isPending}
+                            >
+                                {deleteEventMutation.isPending ? 'Menghapus...' : 'Hapus'}
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             </div >
         </div >
     );

@@ -16,7 +16,7 @@ import { Footer } from '../../components/layout/Footer';
 import RichTextEditor from '../../components/ui/RichTextEditor';
 import api from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
-import { uploadToCloudinary, uploadMultipleToCloudinary } from '../../lib/cloudinaryUpload';
+import { useImageUploader } from '../../hooks/useImageUploader';
 import type { CampArea } from '../../types';
 import RegionSelector from '../../components/ui/RegionSelector';
 
@@ -70,6 +70,7 @@ export default function EditCampArea() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [uploadStatus, setUploadStatus] = useState('');
     const [selectedFacilities, setSelectedFacilities] = useState<string[]>([]);
+    const { upload: uploadImages } = useImageUploader({ folder: 'camp_area' });
 
     const form = useForm<CampAreaFormValues>({
         resolver: zodResolver(campAreaSchema),
@@ -204,23 +205,16 @@ export default function EditCampArea() {
 
             let coverUrl = null;
             if (imageFile) {
-                coverUrl = await uploadToCloudinary(imageFile, {
-                    folder: 'camp_area',
-                    onProgress: (percent) => setUploadStatus(`Mengupload cover baru (${percent}%)...`)
-                });
+                setUploadStatus('Mengunggah cover baru...');
+                const resCover = await uploadImages([imageFile]);
+                if (resCover && resCover.length > 0) coverUrl = resCover[0];
             }
 
-            // Upload new additional images sequentially with progress tracking
             const newAdditionalUrls: string[] = [];
             if (additionalFiles.length > 0) {
-                const results = await uploadMultipleToCloudinary(
-                    additionalFiles,
-                    'camp_area',
-                    (current, total, percent) => {
-                        setUploadStatus(`Mengupload foto tambahan ${current}/${total} (${percent}%)...`);
-                    }
-                );
-                newAdditionalUrls.push(...results);
+                setUploadStatus('Mengunggah foto tambahan baru...');
+                const resExtra = await uploadImages(additionalFiles);
+                if (resExtra) newAdditionalUrls.push(...resExtra);
             }
 
             setUploadStatus('Menyimpan perubahan...');

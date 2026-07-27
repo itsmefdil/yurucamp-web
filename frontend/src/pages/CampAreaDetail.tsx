@@ -11,6 +11,16 @@ import type { CampArea } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogTitle } from '../components/ui/dialog';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '../components/ui/alert-dialog';
 import ReactMarkdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
 import useDocumentTitle from '../hooks/useDocumentTitle';
@@ -44,7 +54,7 @@ export default function CampAreaDetail() {
     // Set page title
     useDocumentTitle(campArea ? `${campArea.name} | Camp Area Yurucamp` : 'Detail Camp Area | Yurucamp Indonesia');
 
-    // Delete camp area mutation
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
     // Delete camp area mutation
     const deleteCampAreaMutation = useMutation({
@@ -61,9 +71,11 @@ export default function CampAreaDetail() {
     });
 
     const handleDeleteCampArea = () => {
-        if (confirm('Apakah Anda yakin ingin menghapus camp area ini?')) {
-            deleteCampAreaMutation.mutate();
-        }
+        setShowDeleteDialog(true);
+    };
+
+    const confirmDeleteCampArea = () => {
+        deleteCampAreaMutation.mutate();
     };
 
     const handleShare = async () => {
@@ -196,7 +208,7 @@ export default function CampAreaDetail() {
                         )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10 pointer-events-none" />
 
-                        <div className="absolute top-6 left-6 z-20">
+                        <div className="absolute top-6 left-6 z-20" onClick={(e) => e.stopPropagation()}>
                             <Button variant="outline" size="icon" className="rounded-full bg-white/10 border-white/20 text-white hover:bg-white/20 backdrop-blur-md" asChild>
                                 <Link to="/camp-areas">
                                     <ArrowLeft className="h-5 w-5" />
@@ -204,7 +216,7 @@ export default function CampAreaDetail() {
                             </Button>
                         </div>
 
-                        <div className="absolute top-6 right-6 z-20 flex gap-2">
+                        <div className="absolute top-6 right-6 z-20 flex gap-2" onClick={(e) => e.stopPropagation()}>
                             {/* Share button always visible */}
                             <Button
                                 variant="secondary"
@@ -433,6 +445,28 @@ export default function CampAreaDetail() {
             <Footer />
 
 
+
+            {/* Delete Confirmation Modal */}
+            <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Hapus Camp Area</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Apakah Anda yakin ingin menghapus lokasi camp ini? Semua gambar dan informasi terkait akan dihapus secara permanen.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Batal</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={confirmDeleteCampArea}
+                            className="bg-red-600 hover:bg-red-700 text-white"
+                            disabled={deleteCampAreaMutation.isPending}
+                        >
+                            {deleteCampAreaMutation.isPending ? 'Menghapus...' : 'Hapus'}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
             {/* yet-another-react-lightbox modal */}
             <Lightbox

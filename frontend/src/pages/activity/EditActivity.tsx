@@ -6,7 +6,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Loader2, Upload, X, Image, ArrowLeft } from 'lucide-react';
-import { uploadToCloudinary, uploadMultipleToCloudinary } from '../../lib/cloudinaryUpload';
+import { useImageUploader } from '../../hooks/useImageUploader';
 
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -58,6 +58,7 @@ export default function EditActivity() {
     const [additionalPreviews, setAdditionalPreviews] = useState<string[]>([]);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const { upload: uploadImages } = useImageUploader({ folder: 'activities' });
 
     // Fetch existing activity data
     const { data: activity, isLoading: isLoadingActivity } = useQuery({
@@ -174,51 +175,18 @@ export default function EditActivity() {
         try {
             setIsSubmitting(true);
 
-            let coverUrl = activity?.imageUrl || ''; // Default to existing URL
-
-            // Upload new cover if selected
+            let coverUrl = activity?.imageUrl || '';
             if (imageFile) {
-                try {
-                    coverUrl = await uploadToCloudinary(imageFile, {
-                        folder: 'activities',
-                        onProgress: (percent) => setUploadStatus(`Mengupload foto cover (${percent}%)...`)
-                    });
-                } catch (error) {
-                    console.error("Cover upload failed:", error);
-                    const errorMessage = error instanceof Error ? error.message : "Unknown error";
-
-                    toast.error("Gagal mengupload foto cover", {
-                        description: errorMessage || "Pastikan koneksi internet stabil dan coba lagi.",
-                        duration: 5000,
-                    });
-                    setIsSubmitting(false);
-                    setUploadStatus('');
-                    return;
-                }
+                setUploadStatus('Mengunggah cover baru...');
+                const resCover = await uploadImages([imageFile]);
+                if (resCover && resCover.length > 0) coverUrl = resCover[0];
             }
 
-            // Upload new additional images sequentially with progress tracking
             const newAdditionalUrls: string[] = [];
             if (additionalFiles.length > 0) {
-                try {
-                    const results = await uploadMultipleToCloudinary(
-                        additionalFiles,
-                        'activities',
-                        (current, total, percent) => {
-                            setUploadStatus(`Mengupload foto tambahan ${current}/${total} (${percent}%)...`);
-                        }
-                    );
-                    newAdditionalUrls.push(...results);
-                } catch (error) {
-                    console.error("Additional images upload failed:", error);
-                    toast.error("Gagal mengupload foto tambahan", {
-                        description: "Beberapa foto gagal diupload. Coba kurangi jumlah atau ukuran foto.",
-                        duration: 5000,
-                    });
-                    setIsSubmitting(false);
-                    setUploadStatus('');
-                    return;
-                }
+                setUploadStatus('Mengunggah foto tambahan baru...');
+                const resExtra = await uploadImages(additionalFiles);
+                if (resExtra) newAdditionalUrls.push(...resExtra);
             }
 
             setUploadStatus('Menyimpan perubahan...');

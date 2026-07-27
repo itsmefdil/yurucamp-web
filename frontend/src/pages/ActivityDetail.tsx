@@ -334,7 +334,7 @@ export default function ActivityDetail() {
                         )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10 pointer-events-none" />
 
-                        <div className="absolute top-6 left-6 z-20">
+                        <div className="absolute top-6 left-6 z-20" onClick={(e) => e.stopPropagation()}>
                             <Button variant="outline" size="icon" className="rounded-full bg-white/10 border-white/20 text-white hover:bg-white/20 backdrop-blur-md" asChild>
                                 <Link to="/activities">
                                     <ArrowLeft className="h-5 w-5" />
@@ -342,7 +342,7 @@ export default function ActivityDetail() {
                             </Button>
                         </div>
 
-                        <div className="absolute top-6 right-6 z-20 flex gap-2">
+                        <div className="absolute top-6 right-6 z-20 flex gap-2" onClick={(e) => e.stopPropagation()}>
                             <Button
                                 variant="secondary"
                                 size="icon"

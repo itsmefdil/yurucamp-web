@@ -11,10 +11,11 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Textarea } from '../../components/ui/textarea';
 import RegionSelector from '../../components/ui/RegionSelector';
-import { Dialog, DialogContent } from '../../components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '../../components/ui/dialog';
 import { Navbar } from '../../components/layout/Navbar';
 import { Footer } from '../../components/layout/Footer';
-import { uploadToCloudinary } from '../../lib/cloudinaryUpload';
+import { useImageUploader } from '../../hooks/useImageUploader';
+import api from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
 import type { Event } from '../../types';
 
@@ -42,6 +43,7 @@ export default function EditEvent() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [uploadStatus, setUploadStatus] = useState('');
     const [previewImage, setPreviewImage] = useState<string | null>(null);
+    const { upload: uploadImages } = useImageUploader({ folder: 'events' });
 
     // Fetch event data
     const { data: event, isLoading } = useQuery({
@@ -124,10 +126,9 @@ export default function EditEvent() {
 
             let imageUrl = null;
             if (imageFile) {
-                imageUrl = await uploadToCloudinary(imageFile, {
-                    folder: 'events',
-                    onProgress: (percent) => setUploadStatus(`Mengupload cover baru (${percent}%)...`)
-                });
+                setUploadStatus('Mengunggah cover baru...');
+                const resCover = await uploadImages([imageFile]);
+                if (resCover && resCover.length > 0) imageUrl = resCover[0];
             }
 
             setUploadStatus('Menyimpan perubahan...');
@@ -570,6 +571,7 @@ export default function EditEvent() {
             {/* Preview Dialog */}
             <Dialog open={!!previewImage} onOpenChange={(open) => !open && setPreviewImage(null)}>
                 <DialogContent className="max-w-4xl p-0 overflow-hidden bg-black/95 border-none h-fit max-h-[90vh] flex flex-col justify-center z-[60]">
+                    <DialogTitle className="sr-only">Preview Gambar</DialogTitle>
                     <div className="relative w-full flex items-center justify-center bg-black">
                         {previewImage && (
                             <img
