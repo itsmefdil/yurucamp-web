@@ -94,3 +94,18 @@ These should be run from the `frontend/` directory.
 - **UI Components**: The UI is built with **shadcn/ui**, which means components are added via the CLI and stored locally in `frontend/src/components/ui`. They are styled with **Tailwind CSS**.
 - **Backend ORM**: The backend uses **Drizzle ORM**. Database queries should be written using the Drizzle query builder. Schema definitions are in `backend/src/db/schema.ts`.
 - **Authentication**: Authentication is handled via JWTs, with support for Google OAuth. The core logic is in `backend/src/api/auth`.
+
+## Agent skills
+
+### Issue tracker
+
+Issues and PRDs live in GitHub Issues. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default canonical triage roles map directly to label strings. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context layout (`CONTEXT.md` + `docs/adr/` at repo root). See `docs/agents/domain.md`.
+
