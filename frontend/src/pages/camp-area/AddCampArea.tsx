@@ -15,7 +15,7 @@ import { Navbar } from '../../components/layout/Navbar';
 import { Footer } from '../../components/layout/Footer';
 import RichTextEditor from '../../components/ui/RichTextEditor';
 import api from '../../lib/api';
-import { uploadToCloudinary, uploadMultipleToCloudinary } from '../../lib/cloudinaryUpload';
+import { useImageUploader } from '../../hooks/useImageUploader';
 import RegionSelector from '../../components/ui/RegionSelector';
 
 
@@ -53,6 +53,7 @@ export default function AddCampArea() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [uploadStatus, setUploadStatus] = useState('');
     const [selectedFacilities, setSelectedFacilities] = useState<string[]>([]);
+    const { upload: uploadImages } = useImageUploader({ folder: 'camp_area' });
 
     const form = useForm<CampAreaFormValues>({
         resolver: zodResolver(campAreaSchema),
@@ -148,24 +149,16 @@ export default function AddCampArea() {
             setIsSubmitting(true);
             setUploadStatus('Menyiapkan upload...');
 
-            // Upload Cover
-            const coverUrl = await uploadToCloudinary(imageFile, {
-                folder: 'camp_area',
-                onProgress: (percent) => setUploadStatus(`Mengupload foto cover (${percent}%)...`)
-            });
-
-            // Upload Additional Images sequentially with progress tracking
-            const additionalUrls: string[] = [];
-            if (additionalFiles.length > 0) {
-                const results = await uploadMultipleToCloudinary(
-                    additionalFiles,
-                    'camp_area',
-                    (current, total, percent) => {
-                        setUploadStatus(`Mengupload foto tambahan ${current}/${total} (${percent}%)...`);
-                    }
-                );
-                additionalUrls.push(...results);
+            // Upload Cover & Additional Images via Deep Module Seam
+            setUploadStatus('Mengunggah gambar...');
+            const allFiles = [imageFile, ...additionalFiles];
+            const uploadedUrls = await uploadImages(allFiles);
+            if (!uploadedUrls || uploadedUrls.length === 0) {
+                return;
             }
+
+            const coverUrl = uploadedUrls[0];
+            const additionalUrls = uploadedUrls.slice(1);
 
             setUploadStatus('Menyimpan data camp area...');
 

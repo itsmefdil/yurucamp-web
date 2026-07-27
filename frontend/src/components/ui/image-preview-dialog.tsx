@@ -1,4 +1,4 @@
-import { Dialog, DialogContent } from './dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from './dialog';
 import { X } from 'lucide-react';
 import { Button } from './button';
 
@@ -15,6 +15,8 @@ export function ImagePreviewDialog({ open, onOpenChange, imageUrl, alt = 'Previe
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-4xl p-0 overflow-hidden bg-black/95 border-none">
+                <DialogTitle className="sr-only">Preview Gambar</DialogTitle>
+                <DialogDescription className="sr-only">Tampilan pratinjau gambar {alt}</DialogDescription>
                 <Button
                     variant="ghost"
                     size="icon"

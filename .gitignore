@@ -2,3 +2,4 @@ node_modules
 data_mentah.html
 extract_locations.py
 reorganize_by_season.py
+.agents

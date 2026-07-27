@@ -152,7 +152,7 @@ export default function Home() {
             queryKey: ['publicGear'],
             queryFn: async () => {
                 try {
-                    const response = await api.get('/gear/public?limit=3');
+                    const response = await api.get('/gear/public?limit=4');
                     return response.data as GearList[];
                 } catch (e) {
                     return [] as GearList[];
@@ -161,8 +161,8 @@ export default function Home() {
         });
 
         return (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {publicGears?.slice(0, 3).map((g) => {
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+                {publicGears?.slice(0, 4).map((g) => {
                     const owner = (g as any).user ?? (g as any).ownerInfo;
                     return (
                         <Link key={g.id} to={`/g/${g.id}`} className="block group">
@@ -256,70 +256,96 @@ export default function Home() {
                     </section>
 
                     {/* Agenda Kami */}
-                    <section className="py-16 md:py-24 bg-white">
+                    <section className="py-8 md:py-12 bg-white">
                         <div className="container mx-auto px-4">
-                            <div className="text-center mb-12 md:mb-16">
-                                <h2 className="text-3xl md:text-5xl font-black text-gray-800 mb-2">
-                                    Agenda Kami
-                                </h2>
-                                <h2 className="text-3xl md:text-5xl font-black text-primary">
-                                    Paling Seru
+                            <div className="text-center mb-6 md:mb-8">
+                                <h2 className="text-2xl md:text-4xl font-black text-gray-800 tracking-tight">
+                                    Agenda Kami <span className="text-primary">Paling Seru</span>
                                 </h2>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
-                                {/* Row 1: 2 items */}
-                                <div className="md:col-span-3 p-8 rounded-3xl border border-gray-200 hover:border-orange-300 hover:shadow-lg transition-all duration-300 group">
-                                    <Activity className="h-10 w-10 text-orange-500 mb-6 group-hover:scale-110 transition-transform" />
-                                    <h3 className="text-xl font-bold text-gray-900 mb-3">Berbagi Aktivitas</h3>
-                                    <p className="text-gray-500 leading-relaxed">
-                                        Bagikan momen seru saat camping, hiking, atau kegiatan outdoor lainnya. Inspirasi teman-temanmu dengan cerita petualangan yang tak terlupakan.
-                                    </p>
-                                </div>
-                                <div className="md:col-span-3 p-8 rounded-3xl border border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all duration-300 group">
-                                    <MapPin className="h-10 w-10 text-blue-500 mb-6 group-hover:scale-110 transition-transform" />
-                                    <h3 className="text-xl font-bold text-gray-900 mb-3">Temukan Lokasi</h3>
-                                    <p className="text-gray-500 leading-relaxed">
-                                        Jelajahi peta interaktif kami untuk menemukan hidden gem, camp area terbaik, dan spot foto instagramable di seluruh Indonesia.
+                            <div className="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4">
+                                <div className="p-2 sm:p-3 md:p-4 rounded-lg md:rounded-2xl border border-gray-100 bg-gray-50/50 hover:bg-white hover:border-orange-200 hover:shadow-md transition-all duration-300 group">
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2.5 mb-1">
+                                        <div className="p-1 rounded-md bg-orange-100/70 text-orange-500 group-hover:scale-110 transition-transform">
+                                            <Activity className="h-3.5 w-3.5 md:h-5 md:w-5" />
+                                        </div>
+                                        <h3 className="text-[11px] sm:text-sm md:text-base font-bold text-gray-900 leading-tight">Berbagi Aktivitas</h3>
+                                    </div>
+                                    <p className="text-[9px] sm:text-xs text-gray-500 leading-tight md:leading-relaxed line-clamp-3 sm:line-clamp-none">
+                                        Bagikan momen seru saat camping, hiking, atau kegiatan outdoor lainnya.
                                     </p>
                                 </div>
 
-                                {/* Row 2: 3 items */}
-                                <div className="md:col-span-2 p-8 rounded-3xl border border-gray-200 hover:border-green-300 hover:shadow-lg transition-all duration-300 group">
-                                    <Calendar className="h-10 w-10 text-green-500 mb-6 group-hover:scale-110 transition-transform" />
-                                    <h3 className="text-xl font-bold text-gray-900 mb-3">Ikuti Acara</h3>
-                                    <p className="text-gray-500 leading-relaxed">
-                                        Jangan lewatkan gathering komunitas, workshop survival, dan acara bersih gunung.
-                                    </p>
-                                </div>
-                                <div className="md:col-span-2 p-8 rounded-3xl border border-gray-200 hover:border-yellow-300 hover:shadow-lg transition-all duration-300 group">
-                                    <Tent className="h-10 w-10 text-yellow-500 mb-6 group-hover:scale-110 transition-transform" />
-                                    <h3 className="text-xl font-bold text-gray-900 mb-3">Camping Gear</h3>
-                                    <p className="text-gray-500 leading-relaxed">
-                                        Diskusi dan review peralatan camping terbaik untuk pengalaman outdoor yang aman.
-                                    </p>
-                                </div>
-                                <div className="md:col-span-2 p-8 rounded-3xl border border-gray-200 hover:border-red-300 hover:shadow-lg transition-all duration-300 group">
-                                    <Flame className="h-10 w-10 text-red-500 mb-6 group-hover:scale-110 transition-transform" />
-                                    <h3 className="text-xl font-bold text-gray-900 mb-3">Tips Survival</h3>
-                                    <p className="text-gray-500 leading-relaxed">
-                                        Pelajari teknik dasar survival, cara membuat api, dan pertolongan pertama.
+                                <div className="p-2 sm:p-3 md:p-4 rounded-lg md:rounded-2xl border border-gray-100 bg-gray-50/50 hover:bg-white hover:border-blue-200 hover:shadow-md transition-all duration-300 group">
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2.5 mb-1">
+                                        <div className="p-1 rounded-md bg-blue-100/70 text-blue-500 group-hover:scale-110 transition-transform">
+                                            <MapPin className="h-3.5 w-3.5 md:h-5 md:w-5" />
+                                        </div>
+                                        <h3 className="text-[11px] sm:text-sm md:text-base font-bold text-gray-900 leading-tight">Temukan Lokasi</h3>
+                                    </div>
+                                    <p className="text-[9px] sm:text-xs text-gray-500 leading-tight md:leading-relaxed line-clamp-3 sm:line-clamp-none">
+                                        Jelajahi peta interaktif kami untuk menemukan camp area terbaik.
                                     </p>
                                 </div>
 
-                                {/* Row 3: 2 items */}
-                                <div className="md:col-span-3 p-8 rounded-3xl border border-gray-200 hover:border-purple-300 hover:shadow-lg transition-all duration-300 group">
-                                    <Camera className="h-10 w-10 text-purple-500 mb-6 group-hover:scale-110 transition-transform" />
-                                    <h3 className="text-xl font-bold text-gray-900 mb-3">Galeri Foto</h3>
-                                    <p className="text-gray-500 leading-relaxed">
-                                        Abadikan keindahan alam dan bagikan karya fotografimu di galeri komunitas kami. Lihat dunia melalui lensa para petualang.
+                                <div className="p-2 sm:p-3 md:p-4 rounded-lg md:rounded-2xl border border-gray-100 bg-gray-50/50 hover:bg-white hover:border-green-200 hover:shadow-md transition-all duration-300 group">
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2.5 mb-1">
+                                        <div className="p-1 rounded-md bg-green-100/70 text-green-500 group-hover:scale-110 transition-transform">
+                                            <Calendar className="h-3.5 w-3.5 md:h-5 md:w-5" />
+                                        </div>
+                                        <h3 className="text-[11px] sm:text-sm md:text-base font-bold text-gray-900 leading-tight">Ikuti Acara</h3>
+                                    </div>
+                                    <p className="text-[9px] sm:text-xs text-gray-500 leading-tight md:leading-relaxed line-clamp-3 sm:line-clamp-none">
+                                        Gathering komunitas, workshop survival, dan acara bersih gunung.
                                     </p>
                                 </div>
-                                <div className="md:col-span-3 p-8 rounded-3xl border border-gray-200 hover:border-teal-300 hover:shadow-lg transition-all duration-300 group">
-                                    <MessageSquare className="h-10 w-10 text-teal-500 mb-6 group-hover:scale-110 transition-transform" />
-                                    <h3 className="text-xl font-bold text-gray-900 mb-3">Diskusi Seru</h3>
-                                    <p className="text-gray-500 leading-relaxed">
-                                        Bergabunglah dalam forum diskusi, tanya jawab seputar hobi, dan cari teman perjalanan baru untuk petualangan berikutnya.
+
+                                <div className="p-2 sm:p-3 md:p-4 rounded-lg md:rounded-2xl border border-gray-100 bg-gray-50/50 hover:bg-white hover:border-yellow-200 hover:shadow-md transition-all duration-300 group">
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2.5 mb-1">
+                                        <div className="p-1 rounded-md bg-yellow-100/70 text-yellow-600 group-hover:scale-110 transition-transform">
+                                            <Tent className="h-3.5 w-3.5 md:h-5 md:w-5" />
+                                        </div>
+                                        <h3 className="text-[11px] sm:text-sm md:text-base font-bold text-gray-900 leading-tight">Camping Gear</h3>
+                                    </div>
+                                    <p className="text-[9px] sm:text-xs text-gray-500 leading-tight md:leading-relaxed line-clamp-3 sm:line-clamp-none">
+                                        Diskusi dan review peralatan camping terbaik untuk pengalaman outdoor.
+                                    </p>
+                                </div>
+
+                                <div className="p-2 sm:p-3 md:p-4 rounded-lg md:rounded-2xl border border-gray-100 bg-gray-50/50 hover:bg-white hover:border-red-200 hover:shadow-md transition-all duration-300 group">
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2.5 mb-1">
+                                        <div className="p-1 rounded-md bg-red-100/70 text-red-500 group-hover:scale-110 transition-transform">
+                                            <Flame className="h-3.5 w-3.5 md:h-5 md:w-5" />
+                                        </div>
+                                        <h3 className="text-[11px] sm:text-sm md:text-base font-bold text-gray-900 leading-tight">Tips Survival</h3>
+                                    </div>
+                                    <p className="text-[9px] sm:text-xs text-gray-500 leading-tight md:leading-relaxed line-clamp-3 sm:line-clamp-none">
+                                        Pelajari teknik dasar survival, cara membuat api, dan P3K.
+                                    </p>
+                                </div>
+
+                                <div className="p-2 sm:p-3 md:p-4 rounded-lg md:rounded-2xl border border-gray-100 bg-gray-50/50 hover:bg-white hover:border-purple-200 hover:shadow-md transition-all duration-300 group">
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2.5 mb-1">
+                                        <div className="p-1 rounded-md bg-purple-100/70 text-purple-500 group-hover:scale-110 transition-transform">
+                                            <Camera className="h-3.5 w-3.5 md:h-5 md:w-5" />
+                                        </div>
+                                        <h3 className="text-[11px] sm:text-sm md:text-base font-bold text-gray-900 leading-tight">Galeri Foto</h3>
+                                    </div>
+                                    <p className="text-[9px] sm:text-xs text-gray-500 leading-tight md:leading-relaxed line-clamp-3 sm:line-clamp-none">
+                                        Abadikan keindahan alam dan bagikan karya fotografimu di galeri.
+                                    </p>
+                                </div>
+
+                                <div className="p-2 sm:p-3 md:p-4 rounded-lg md:rounded-2xl border border-gray-100 bg-gray-50/50 hover:bg-white hover:border-teal-200 hover:shadow-md transition-all duration-300 group col-span-3">
+                                    <div className="flex items-center justify-center gap-2 mb-1">
+                                        <div className="p-1 rounded-md bg-teal-100/70 text-teal-500 group-hover:scale-110 transition-transform">
+                                            <MessageSquare className="h-3.5 w-3.5 md:h-5 md:w-5" />
+                                        </div>
+                                        <h3 className="text-[11px] sm:text-sm md:text-base font-bold text-gray-900 leading-tight">Diskusi Seru</h3>
+                                    </div>
+                                    <p className="text-[9px] sm:text-xs text-gray-500 leading-tight md:leading-relaxed text-center">
+                                        Bergabunglah dalam forum diskusi dan cari teman perjalanan baru untuk petualangan berikutnya.
                                     </p>
                                 </div>
                             </div>
@@ -327,8 +353,8 @@ export default function Home() {
                     </section>
 
                     {/* Aktivitas Preview */}
-                    <section className="py-12 md:py-32 container mx-auto px-4">
-                        <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 md:mb-12">
+                    <section className="py-10 md:py-16 container mx-auto px-4">
+                        <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 md:mb-10">
                             <h2 className="text-2xl md:text-4xl font-extrabold text-gray-800 tracking-tight text-center md:text-left">Aktivitas Terbaru</h2>
                             <Button variant="ghost" className="text-base md:text-lg hover:bg-orange-50 rounded-full px-6 w-full md:w-auto" asChild>
                                 <Link to="/activities" className="flex items-center justify-center gap-2">
@@ -336,43 +362,43 @@ export default function Home() {
                                 </Link>
                             </Button>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {activities?.slice(0, 3).map((activity) => (
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 md:gap-6">
+                            {activities?.slice(0, 4).map((activity) => (
                                 <Link key={activity.id} to={`/a/${activity.id}`} className="block group">
-                                    <Card className="overflow-hidden bg-white group-hover:-translate-y-2 transition-all duration-300 h-full flex flex-col border-2 border-transparent hover:border-orange-200 shadow-lg hover:shadow-2xl rounded-3xl">
-                                        <div className="relative aspect-video bg-orange-50 overflow-hidden m-2 rounded-2xl">
+                                    <Card className="overflow-hidden bg-white group-hover:-translate-y-1.5 transition-all duration-300 h-full flex flex-col border border-gray-100 sm:border-2 hover:border-orange-200 shadow-sm sm:shadow-lg hover:shadow-xl rounded-xl sm:rounded-3xl">
+                                        <div className="relative aspect-video bg-orange-50 overflow-hidden m-1 sm:m-2 rounded-lg sm:rounded-2xl">
                                             <img
                                                 src={activity.imageUrl || "/aktivitas.jpg"}
                                                 alt={activity.title}
                                                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                             />
                                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                                            <div className="absolute bottom-3 left-3 right-3 text-white">
-                                                <div className="flex items-center gap-1 text-xs font-bold bg-black/50 px-3 py-1.5 rounded-full w-fit">
-                                                    <MapPin className="h-3 w-3" />
-                                                    <span className="truncate max-w-[150px]">{activity.location || "Lokasi tidak tersedia"}</span>
+                                            <div className="absolute bottom-1.5 left-1.5 right-1.5 text-white">
+                                                <div className="flex items-center gap-1 text-[9px] sm:text-xs font-bold bg-black/50 px-1.5 sm:px-3 py-0.5 sm:py-1.5 rounded-full w-fit max-w-full">
+                                                    <MapPin className="h-2.5 w-2.5 sm:h-3 sm:w-3 shrink-0" />
+                                                    <span className="truncate">{activity.location || "Lokasi"}</span>
                                                 </div>
                                             </div>
                                             {activity.category && (
-                                                <div className="absolute top-3 right-3">
-                                                    <Badge className="bg-primary/90 text-white text-xs font-bold">
+                                                <div className="absolute top-1.5 right-1.5">
+                                                    <Badge className="bg-primary/90 text-white text-[9px] sm:text-xs font-bold px-1.5 sm:px-2.5 py-0.5">
                                                         {typeof activity.category === 'string' ? activity.category : activity.category?.name}
                                                     </Badge>
                                                 </div>
                                             )}
                                         </div>
-                                        <CardHeader className="p-5 pb-2">
-                                            <CardTitle className="line-clamp-2 text-xl font-bold text-gray-800 group-hover:text-orange-500 transition-colors leading-tight">
+                                        <CardHeader className="p-2 sm:p-5 pb-1 sm:pb-2">
+                                            <CardTitle className="line-clamp-1 sm:line-clamp-2 text-xs sm:text-xl font-bold text-gray-800 group-hover:text-orange-500 transition-colors leading-tight">
                                                 {activity.title}
                                             </CardTitle>
                                             {activity.date && (
-                                                <div className="flex items-center gap-2 text-sm text-gray-500 mt-2">
-                                                    <Calendar className="h-4 w-4" />
-                                                    <span>{formatDate(activity.date)}</span>
+                                                <div className="flex items-center gap-1 sm:gap-2 text-[10px] sm:text-sm text-gray-500 mt-1 sm:mt-2">
+                                                    <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
+                                                    <span className="truncate">{formatDate(activity.date)}</span>
                                                 </div>
                                             )}
                                         </CardHeader>
-                                        <CardFooter className="p-5 pt-0 mt-auto">
+                                        <CardFooter className="p-2 sm:p-5 pt-0 mt-auto">
                                             <div
                                                 onClick={(e) => {
                                                     if (activity.user?.id) {
@@ -381,27 +407,22 @@ export default function Home() {
                                                         window.location.href = `/u/${activity.user.id}`;
                                                     }
                                                 }}
-                                                className="flex items-center gap-3 w-full bg-orange-50/50 p-2 rounded-2xl cursor-pointer hover:bg-orange-100/70 transition-colors"
+                                                className="flex items-center gap-1.5 sm:gap-3 w-full bg-orange-50/50 p-1 sm:p-2 rounded-lg sm:rounded-2xl cursor-pointer hover:bg-orange-100/70 transition-colors"
                                             >
-                                                <div className="relative">
-                                                    <Avatar className="h-8 w-8 border-2 border-white shadow-sm">
+                                                <div className="relative shrink-0">
+                                                    <Avatar className="h-5 w-5 sm:h-8 sm:w-8 border sm:border-2 border-white shadow-sm">
                                                         <AvatarImage src={activity.user?.avatarUrl || undefined} />
-                                                        <AvatarFallback className="text-xs bg-orange-200 text-orange-700 font-bold">
+                                                        <AvatarFallback className="text-[9px] sm:text-xs bg-orange-200 text-orange-700 font-bold">
                                                             {activity.user?.fullName?.charAt(0).toUpperCase() || 'U'}
                                                         </AvatarFallback>
                                                     </Avatar>
-                                                    {activity.user?.level && (
-                                                        <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-primary text-[8px] font-bold text-white flex items-center justify-center border border-white">
-                                                            {activity.user.level}
-                                                        </div>
-                                                    )}
                                                 </div>
                                                 <div className="flex flex-col min-w-0 flex-1">
-                                                    <span className="text-sm font-semibold text-gray-600 truncate">
+                                                    <span className="text-[10px] sm:text-sm font-semibold text-gray-600 truncate">
                                                         {activity.user?.fullName || 'Pengguna'}
                                                     </span>
                                                     {activity.user?.levelName && (
-                                                        <span className="text-[10px] text-gray-400 truncate">
+                                                        <span className="text-[8px] sm:text-[10px] text-gray-400 truncate hidden sm:block">
                                                             {activity.user.levelName}
                                                         </span>
                                                     )}
@@ -422,8 +443,8 @@ export default function Home() {
 
                     {/* Komunitas Preview */}
                     {regions && regions.length > 0 && (
-                        <section className="py-12 md:py-24 container mx-auto px-4">
-                            <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 md:mb-12">
+                        <section className="py-10 md:py-16 container mx-auto px-4">
+                            <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 md:mb-10">
                                 <h2 className="text-2xl md:text-4xl font-black text-gray-800 tracking-tight text-center md:text-left">
                                     Komunitas <span className="text-orange-500">Populer</span>
                                 </h2>
@@ -433,7 +454,7 @@ export default function Home() {
                                     </Link>
                                 </Button>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
                                 {regions.slice(0, 4).map((region) => (
                                     <Link key={region.id} to={`/r/${region.slug}`} className="block group">
                                         <Card className="overflow-hidden border-none shadow-md hover:shadow-xl transition-all duration-300 group-hover:-translate-y-1 rounded-2xl">
@@ -478,9 +499,9 @@ export default function Home() {
                     )}
 
                     {/* Camp Area Preview */}
-                    <section className="py-12 md:py-32 px-4 bg-orange-50/30">
+                    <section className="py-10 md:py-16 px-4 bg-orange-50/30">
                         <div className="container mx-auto">
-                            <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 md:mb-12">
+                            <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 md:mb-10">
                                 <h2 className="text-2xl md:text-4xl font-black text-gray-800 tracking-tight text-center md:text-left">
                                     Rekomendasi <span className="text-orange-500">Camp Area</span>
                                 </h2>
@@ -490,12 +511,12 @@ export default function Home() {
                                     </Link>
                                 </Button>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                {campAreas?.slice(0, 3).map((campArea) => (
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+                                {campAreas?.slice(0, 4).map((campArea) => (
                                     <Link key={campArea.id} to={`/c/${campArea.id}`} className="block group">
                                         <Card className="overflow-hidden bg-white group-hover:-translate-y-1 transition-all duration-300 h-full flex flex-col border border-gray-100 hover:border-orange-200 shadow-md hover:shadow-xl rounded-2xl">
                                             {/* Image Section */}
-                                            <div className="relative aspect-[4/3] bg-orange-50 overflow-hidden">
+                                            <div className="relative aspect-video bg-orange-50 overflow-hidden m-2 rounded-2xl">
                                                 <img
                                                     src={campArea.imageUrl || "/camp.jpg"}
                                                     alt={campArea.name}
@@ -587,8 +608,8 @@ export default function Home() {
                     </section>
 
                     {/* Gear Publik */}
-                    <section className="py-12 md:py-24 container mx-auto px-4">
-                        <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 md:mb-12">
+                    <section className="py-10 md:py-16 container mx-auto px-4">
+                        <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 md:mb-10">
                             <h2 className="text-2xl md:text-4xl font-black text-gray-800 tracking-tight text-center md:text-left">Gear <span className="text-orange-500">Publik</span></h2>
                             <Button variant="ghost" className="text-base md:text-lg hover:bg-orange-100 text-orange-600 font-bold rounded-full px-6 w-full md:w-auto" asChild>
                                 <Link to="/gear/public" className="flex items-center justify-center gap-2">
@@ -601,9 +622,9 @@ export default function Home() {
                     </section>
 
                     {/* Acara Preview */}
-                    <section className="py-12 md:py-32 px-4 bg-orange-50/30">
+                    <section className="py-10 md:py-16 px-4 bg-orange-50/30">
                         <div className="container mx-auto">
-                            <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 md:mb-12">
+                            <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 md:mb-10">
                                 <h2 className="text-2xl md:text-4xl font-extrabold text-gray-800 tracking-tight text-center md:text-left">Acara Mendatang</h2>
                                 <Button variant="ghost" className="text-base md:text-lg hover:bg-orange-100 text-orange-600 font-bold rounded-full px-6 w-full md:w-auto" asChild>
                                     <Link to="/events" className="flex items-center justify-center gap-2">
@@ -611,8 +632,8 @@ export default function Home() {
                                     </Link>
                                 </Button>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                {events?.slice(0, 3).map((event) => {
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+                                {events?.slice(0, 4).map((event) => {
                                     const isPast = new Date(event.dateStart) < new Date();
                                     return (
                                         <Link key={event.id} to={`/e/${event.id}`} className="block group">
@@ -698,9 +719,9 @@ export default function Home() {
 
                     {/* Community Photo Gallery Section */}
                     {galleryPhotos.length > 0 && (
-                        <section className="py-16 md:py-24 bg-gradient-to-b from-gray-50 to-white">
+                        <section className="py-10 md:py-16 bg-gradient-to-b from-gray-50 to-white">
                             <div className="container mx-auto px-4">
-                                <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+                                <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-10 gap-4">
                                     <div>
                                         <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-600 px-4 py-1.5 rounded-full text-sm font-bold mb-3">
                                             <Camera className="h-4 w-4" /> Galeri Foto Komunitas
@@ -750,7 +771,7 @@ export default function Home() {
                                                     </p>
                                                 )}
                                                 <div className="mt-3 flex items-center justify-between text-xs text-orange-300 font-semibold pt-2 border-t border-white/20">
-                                                    <span>{photo.author ? `Oleh ${photo.author}` : 'Klik untuk perbesar'}</span>
+                                                    <span>{photo.author ? `Oleh ${photo.author}` : 'Klik me-zoom'}</span>
                                                     <span className="bg-orange-500 text-white px-2.5 py-0.5 rounded-full text-[10px] font-bold">
                                                         🔍 Zoom
                                                     </span>

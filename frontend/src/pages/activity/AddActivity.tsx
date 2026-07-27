@@ -31,7 +31,7 @@ import { Navbar } from '../../components/layout/Navbar';
 import { Footer } from '../../components/layout/Footer';
 import api from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
-import { uploadToCloudinary, uploadMultipleToCloudinary } from '../../lib/cloudinaryUpload';
+import { useImageUploader } from '../../hooks/useImageUploader';
 
 const activitySchema = z.object({
     title: z.string().min(3, "Judul minimal 3 karakter"),
@@ -58,6 +58,7 @@ export default function AddActivity() {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [uploadStatus, setUploadStatus] = useState('');
+    const { upload: uploadImages } = useImageUploader({ folder: 'activities' });
 
     const form = useForm<ActivityFormValues>({
         resolver: zodResolver(activitySchema),
@@ -141,49 +142,17 @@ export default function AddActivity() {
             setIsSubmitting(true);
             setUploadStatus('Menyiapkan upload...');
 
-            // Upload Cover
-            let coverUrl = '';
-            try {
-                coverUrl = await uploadToCloudinary(imageFile, {
-                    folder: 'activities',
-                    onProgress: (percent) => setUploadStatus(`Mengupload foto cover (${percent}%)...`)
-                });
-            } catch (error) {
-                console.error("Cover upload failed:", error);
-                const errorMessage = error instanceof Error ? error.message : "Unknown error";
-
-                toast.error("Gagal mengupload foto cover", {
-                    description: errorMessage || "Pastikan koneksi internet stabil dan coba lagi dalam beberapa saat.",
-                    duration: 5000,
-                });
+            setUploadStatus('Mengunggah gambar...');
+            const allFiles = [imageFile, ...additionalFiles];
+            const uploadedUrls = await uploadImages(allFiles);
+            if (!uploadedUrls || uploadedUrls.length === 0) {
                 setIsSubmitting(false);
                 setUploadStatus('');
                 return;
             }
 
-            // Upload Additional Images sequentially with progress tracking
-            const additionalUrls: string[] = [];
-            if (additionalFiles.length > 0) {
-                try {
-                    const results = await uploadMultipleToCloudinary(
-                        additionalFiles,
-                        'activities',
-                        (current, total, percent) => {
-                            setUploadStatus(`Mengupload foto tambahan ${current}/${total} (${percent}%)...`);
-                        }
-                    );
-                    additionalUrls.push(...results);
-                } catch (error) {
-                    console.error("Additional images upload failed:", error);
-                    toast.error("Gagal mengupload foto tambahan", {
-                        description: "Beberapa foto gagal diupload. Coba kurangi jumlah atau ukuran foto.",
-                        duration: 5000,
-                    });
-                    setIsSubmitting(false);
-                    setUploadStatus('');
-                    return;
-                }
-            }
+            const coverUrl = uploadedUrls[0];
+            const additionalUrls = uploadedUrls.slice(1);
 
             setUploadStatus('Menyimpan data aktivitas...');
 

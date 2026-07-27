@@ -14,7 +14,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../..
 import { Label } from '../../components/ui/label';
 import RegionSelector from '../../components/ui/RegionSelector';
 import { useAuth } from '../../contexts/AuthContext';
-import { uploadToCloudinary } from '../../lib/cloudinaryUpload';
+import { useImageUploader } from '../../hooks/useImageUploader';
+import api from '../../lib/api';
 import { Navbar } from '../../components/layout/Navbar';
 import { Footer } from '../../components/layout/Footer';
 
@@ -36,6 +37,7 @@ export default function EditProfile() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const { upload: uploadImages } = useImageUploader({ folder: 'avatars' });
 
     const form = useForm<ProfileFormValues>({
         resolver: zodResolver(profileSchema),
@@ -85,9 +87,14 @@ export default function EditProfile() {
             let avatarUrl = data.avatarUrl;
 
             if (imageFile) {
-                avatarUrl = await uploadToCloudinary(imageFile, {
-                    folder: 'avatars'
-                });
+                const resAvatar = await uploadImages([imageFile]);
+                if (resAvatar && resAvatar.length > 0) {
+                    avatarUrl = resAvatar[0];
+                } else {
+                    toast.error("Gagal mengunggah foto profil baru");
+                    setIsSubmitting(false);
+                    return;
+                }
             }
 
             const response = await api.put('/auth/profile', {
@@ -100,16 +107,9 @@ export default function EditProfile() {
                 instagram: data.instagram || null,
             });
 
-            // Update local user context
-            // Assuming the auth context has a way to refresh user or we manually update it
-            // Since useAuth doesn't expose a 'updateUser' method directly in standard implementations, 
-            // we might rely on the fact that 'login' might accept a user object or we force a reload/refetch.
-            // For now, let's just toast and maybe reload window if context doesn't auto-update.
-            // Actually, usually we should refetch /auth/me. 
-            // If AuthContext uses a provider that fetches /me on mount, a window.location.reload() is a quick hack, 
-            // but let's try to see if we can trigger a refetch or just assume success.
-
-            updateUser(response.data);
+            // Refetch current user to update AuthContext and UI globally
+            const meRes = await api.get('/auth/me');
+            updateUser(meRes.data);
 
             toast.success("Profil berhasil diperbarui!");
 
@@ -118,9 +118,10 @@ export default function EditProfile() {
                 navigate('/dashboard');
             }, 1000);
 
-        } catch (error) {
-            console.error(error);
-            toast.error("Gagal memperbarui profil");
+        } catch (error: any) {
+            console.error('Error updating profile:', error);
+            const msg = error?.response?.data?.error || error?.message || "Gagal memperbarui profil";
+            toast.error(`Gagal memperbarui profil: ${msg}`);
         } finally {
             setIsSubmitting(false);
         }

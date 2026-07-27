@@ -30,8 +30,9 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "../components/ui/alert-dialog"
-import { Dialog, DialogContent } from '../components/ui/dialog';
-import { uploadToCloudinary } from '../lib/cloudinaryUpload';
+import { Dialog, DialogContent, DialogTitle } from '../components/ui/dialog';
+import { useImageUploader } from '../hooks/useImageUploader';
+import api from '../lib/api';
 
 interface Region {
     id: string;
@@ -62,6 +63,7 @@ export default function RegionManagement() {
     const [uploadingImage, setUploadingImage] = useState(false);
     const [uploadingCover, setUploadingCover] = useState(false);
     const [previewImage, setPreviewImage] = useState<string | null>(null);
+    const { upload: uploadImages } = useImageUploader({ folder: 'community', autoToast: false });
 
     // Fetch region details
     const { data: region, isLoading: loadingRegion } = useQuery<Region>({
@@ -124,8 +126,13 @@ export default function RegionManagement() {
             if (type === 'profile') setUploadingImage(true);
             else setUploadingCover(true);
 
-            const url = await uploadToCloudinary(file, { folder: 'community' });
+            const urls = await uploadImages([file]);
+            if (!urls || urls.length === 0) {
+                toast.error('Gagal upload gambar');
+                return;
+            }
 
+            const url = urls[0];
             if (type === 'profile') setValue('imageUrl', url);
             else setValue('coverUrl', url);
 
@@ -600,6 +607,7 @@ export default function RegionManagement() {
             {/* Preview Dialog */}
             <Dialog open={!!previewImage} onOpenChange={(open) => !open && setPreviewImage(null)}>
                 <DialogContent className="max-w-4xl p-0 overflow-hidden bg-black/95 border-none h-fit max-h-[90vh] flex flex-col justify-center z-[60]">
+                    <DialogTitle className="sr-only">Preview Gambar</DialogTitle>
                     <div className="relative w-full flex items-center justify-center bg-black">
                         {previewImage && (
                             <img
