@@ -70,7 +70,7 @@ export default function EditCampArea() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [uploadStatus, setUploadStatus] = useState('');
     const [selectedFacilities, setSelectedFacilities] = useState<string[]>([]);
-    const { upload: uploadImages } = useImageUploader({ folder: 'camp_area' });
+    const { upload: uploadImages, prepare: prepareImages, isPreparing } = useImageUploader({ folder: 'camp_area' });
 
     const form = useForm<CampAreaFormValues>({
         resolver: zodResolver(campAreaSchema),
@@ -135,45 +135,43 @@ export default function EditCampArea() {
     }, [campArea, user, navigate, form]);
 
     const handleCoverChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            if (file.size > 20 * 1024 * 1024) {
-                toast.error("Ukuran file maksimal 20MB");
-                return;
-            }
-            if (file.size > 5 * 1024 * 1024) {
-                toast.info("File cover cukup besar, akan dioptimasi otomatis.");
-            }
-            if (imagePreview && imagePreview.startsWith('blob:')) URL.revokeObjectURL(imagePreview);
-            setImageFile(file);
-            setImagePreview(URL.createObjectURL(file));
-        }
+        const picked = e.target.files?.[0];
         e.target.value = '';
+        if (!picked) return;
+        if (picked.size > 50 * 1024 * 1024) {
+            toast.error("Ukuran file maksimal 50MB");
+            return;
+        }
+        // Compress right away so the bytes are read while the browser still has access to them
+        const [file] = await prepareImages(picked);
+        if (!file) return;
+        if (imagePreview && imagePreview.startsWith('blob:')) URL.revokeObjectURL(imagePreview);
+        setImageFile(file);
+        setImagePreview(URL.createObjectURL(file));
     };
 
     const handleAdditionalImagesChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = Array.from(e.target.files || []);
-
-        for (const file of files) {
-            if (file.size > 20 * 1024 * 1024) {
-                toast.error(`File ${file.name} terlalu besar (>20MB)`);
-                continue;
-            }
-
-            if (file.size > 5 * 1024 * 1024) {
-                // Just logging/toast once per batch might be better, but per file is ok
-            }
-
-            const totalAdditional = existingImages.length + additionalFiles.length + 1;
-            if (totalAdditional <= 10) {
-                setAdditionalFiles(prev => [...prev, file]);
-                setAdditionalPreviews(prev => [...prev, URL.createObjectURL(file)]);
-            } else {
-                toast.error("Maksimal 10 foto tambahan total");
-                break;
-            }
-        }
+        const picked = Array.from(e.target.files || []);
         e.target.value = '';
+
+        const accepted = picked.filter(file => {
+            if (file.size > 50 * 1024 * 1024) {
+                toast.error(`File ${file.name} terlalu besar (>50MB)`);
+                return false;
+            }
+            return true;
+        });
+        const remaining = 10 - existingImages.length - additionalFiles.length;
+        if (accepted.length > remaining) {
+            toast.error("Maksimal 10 foto tambahan total");
+        }
+        const toPrepare = accepted.slice(0, Math.max(0, remaining));
+        if (toPrepare.length === 0) return;
+
+        // Compress right away so the bytes are read while the browser still has access to them
+        const files = await prepareImages(toPrepare);
+        setAdditionalFiles(prev => [...prev, ...files]);
+        setAdditionalPreviews(prev => [...prev, ...files.map(file => URL.createObjectURL(file))]);
     };
 
     const removeExistingImage = (index: number) => {
@@ -483,7 +481,7 @@ export default function EditCampArea() {
                                     </Button>
                                     <Button
                                         type="submit"
-                                        disabled={isSubmitting}
+                                        disabled={isSubmitting || isPreparing}
                                         className="h-12 px-8 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-base shadow-lg shadow-orange-200 hover:shadow-orange-300 transition-all hover:scale-105"
                                     >
                                         {isSubmitting ? (

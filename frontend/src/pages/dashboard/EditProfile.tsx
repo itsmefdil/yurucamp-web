@@ -37,7 +37,7 @@ export default function EditProfile() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
-    const { upload: uploadImages } = useImageUploader({ folder: 'avatars' });
+    const { upload: uploadImages, prepare: prepareImages, isPreparing } = useImageUploader({ folder: 'avatars' });
 
     const form = useForm<ProfileFormValues>({
         resolver: zodResolver(profileSchema),
@@ -67,17 +67,19 @@ export default function EditProfile() {
         }
     }, [user, form]);
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            if (file.size > 5 * 1024 * 1024) {
-                toast.error("Ukuran foto maksimal 5MB");
-                return;
-            }
-            if (imagePreview && imagePreview.startsWith('blob:')) URL.revokeObjectURL(imagePreview);
-            setImageFile(file);
-            setImagePreview(URL.createObjectURL(file));
+    const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const picked = e.target.files?.[0];
+        e.target.value = '';
+        if (!picked) return;
+        if (picked.size > 50 * 1024 * 1024) {
+            toast.error("Ukuran foto maksimal 50MB");
+            return;
         }
+        const [file] = await prepareImages(picked);
+        if (!file) return;
+        if (imagePreview && imagePreview.startsWith('blob:')) URL.revokeObjectURL(imagePreview);
+        setImageFile(file);
+        setImagePreview(URL.createObjectURL(file));
     };
 
     const onSubmit = async (data: ProfileFormValues) => {
@@ -254,7 +256,7 @@ export default function EditProfile() {
                                     >
                                         Batal
                                     </Button>
-                                    <Button type="submit" className="w-full" disabled={isSubmitting}>
+                                    <Button type="submit" className="w-full" disabled={isSubmitting || isPreparing}>
                                         {isSubmitting ? (
                                             <>
                                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

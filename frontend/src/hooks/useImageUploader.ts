@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import {
   defaultUploadCoreManager,
   ImageUploadCoreManager,
+  UploadAbortedError,
   type UploadProgress,
 } from '../lib/media/imageUploadCore';
 
@@ -15,6 +16,12 @@ export interface UseImageUploaderOptions {
 
 export interface UseImageUploaderReturn {
   upload: (files: File | File[]) => Promise<string[] | null>;
+  /**
+   * Compresses picked files immediately (call it from the file input's onChange).
+   * Returns only the files that were processed successfully; failures are toasted.
+   */
+  prepare: (files: File | File[]) => Promise<File[]>;
+  isPreparing: boolean;
   reset: () => void;
   isUploading: boolean;
   progress: UploadProgress;
@@ -34,6 +41,7 @@ export function useImageUploader(options: UseImageUploaderOptions): UseImageUplo
   const { folder, autoToast = true, maxRetries = 3, manager = defaultUploadCoreManager } = options;
 
   const [isUploading, setIsUploading] = useState(false);
+  const [preparingCount, setPreparingCount] = useState(0);
   const [progress, setProgress] = useState<UploadProgress>(initialProgress);
   const [urls, setUrls] = useState<string[]>([]);
   const [error, setError] = useState<Error | null>(null);
@@ -54,6 +62,41 @@ export function useImageUploader(options: UseImageUploaderOptions): UseImageUplo
     setUrls([]);
     setError(null);
   }, []);
+
+  const prepare = useCallback(
+    async (files: File | File[]): Promise<File[]> => {
+      const fileList = Array.isArray(files) ? files : [files];
+      if (fileList.length === 0) return [];
+
+      setPreparingCount((c) => c + 1);
+      const toastId = toast.loading(
+        fileList.length > 1 ? `Memproses gambar 1/${fileList.length}...` : 'Memproses gambar...'
+      );
+      const prepared: File[] = [];
+      let failed = 0;
+      try {
+        for (let i = 0; i < fileList.length; i++) {
+          if (fileList.length > 1) {
+            toast.loading(`Memproses gambar ${i + 1}/${fileList.length}...`, { id: toastId });
+          }
+          try {
+            prepared.push(await manager.prepare(fileList[i]));
+          } catch (err) {
+            failed++;
+            toast.error(err instanceof Error ? err.message : `Gagal memproses "${fileList[i].name}".`, { duration: 6000 });
+          }
+        }
+      } finally {
+        setPreparingCount((c) => c - 1);
+        toast.dismiss(toastId);
+      }
+      if (failed > 0 && prepared.length > 0) {
+        toast.info(`${prepared.length} gambar siap, ${failed} gagal diproses.`);
+      }
+      return prepared;
+    },
+    [manager]
+  );
 
   const upload = useCallback(
     async (files: File | File[]): Promise<string[] | null> => {
@@ -100,7 +143,9 @@ export function useImageUploader(options: UseImageUploaderOptions): UseImageUplo
         setError(uploadErr);
         setIsUploading(false);
 
-        if (autoToast && toastId) {
+        if (uploadErr instanceof UploadAbortedError) {
+          if (toastId) toast.dismiss(toastId);
+        } else if (autoToast && toastId) {
           toast.error(uploadErr.message || 'Gagal mengunggah gambar.', { id: toastId, duration: 5000 });
         }
 
@@ -112,6 +157,8 @@ export function useImageUploader(options: UseImageUploaderOptions): UseImageUplo
 
   return {
     upload,
+    prepare,
+    isPreparing: preparingCount > 0,
     reset,
     isUploading,
     progress,

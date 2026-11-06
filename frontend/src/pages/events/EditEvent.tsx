@@ -43,7 +43,7 @@ export default function EditEvent() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [uploadStatus, setUploadStatus] = useState('');
     const [previewImage, setPreviewImage] = useState<string | null>(null);
-    const { upload: uploadImages } = useImageUploader({ folder: 'events' });
+    const { upload: uploadImages, prepare: prepareImages, isPreparing } = useImageUploader({ folder: 'events' });
 
     // Fetch event data
     const { data: event, isLoading } = useQuery({
@@ -97,18 +97,19 @@ export default function EditEvent() {
         }
     }, [event, form]);
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            if (file.size > 10 * 1024 * 1024) {
-                toast.error("Ukuran file maksimal 10MB");
-                return;
-            }
-            if (imagePreview && imagePreview.startsWith('blob:')) URL.revokeObjectURL(imagePreview);
-            setImageFile(file);
-            setImagePreview(URL.createObjectURL(file));
-        }
+    const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const picked = e.target.files?.[0];
         e.target.value = '';
+        if (!picked) return;
+        if (picked.size > 50 * 1024 * 1024) {
+            toast.error("Ukuran file maksimal 50MB");
+            return;
+        }
+        const [file] = await prepareImages(picked);
+        if (!file) return;
+        if (imagePreview && imagePreview.startsWith('blob:')) URL.revokeObjectURL(imagePreview);
+        setImageFile(file);
+        setImagePreview(URL.createObjectURL(file));
     };
 
     const removeImage = () => {
@@ -534,7 +535,7 @@ export default function EditEvent() {
                                 {/* Submit Button */}
                                 <Button
                                     onClick={form.handleSubmit(onSubmit)}
-                                    disabled={isSubmitting}
+                                    disabled={isSubmitting || isPreparing}
                                     className="w-full h-14 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-lg rounded-xl shadow-lg shadow-orange-500/25 transition-all hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
                                 >
                                     {isSubmitting ? (
