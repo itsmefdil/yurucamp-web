@@ -58,7 +58,7 @@ export default function AddActivity() {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [uploadStatus, setUploadStatus] = useState('');
-    const { upload: uploadImages } = useImageUploader({ folder: 'activities' });
+    const { upload: uploadImages, prepare: prepareImages, isPreparing } = useImageUploader({ folder: 'activities' });
 
     const form = useForm<ActivityFormValues>({
         resolver: zodResolver(activitySchema),
@@ -88,40 +88,45 @@ export default function AddActivity() {
     });
 
     const handleCoverChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            if (file.size > 50 * 1024 * 1024) {
-                toast.error(`File "${file.name}" terlalu besar (>50MB)`);
-                return;
-            }
-            // Revoke previous object URL to free memory before creating new one
-            if (imagePreview && imagePreview.startsWith('blob:')) URL.revokeObjectURL(imagePreview);
-            setImageFile(file);
-            setImagePreview(URL.createObjectURL(file));
-        }
+        const picked = e.target.files?.[0];
         e.target.value = '';
+        if (!picked) return;
+        if (picked.size > 50 * 1024 * 1024) {
+            toast.error(`File "${picked.name}" terlalu besar (>50MB)`);
+            return;
+        }
+        // Compress right away so the bytes are read while the browser still has access to them
+        const [file] = await prepareImages(picked);
+        if (!file) return;
+        // Revoke previous object URL to free memory before creating new one
+        if (imagePreview && imagePreview.startsWith('blob:')) URL.revokeObjectURL(imagePreview);
+        setImageFile(file);
+        setImagePreview(URL.createObjectURL(file));
     };
 
     const handleAdditionalImagesChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = Array.from(e.target.files || []);
+        const picked = Array.from(e.target.files || []);
+        e.target.value = '';
 
-        for (const file of files) {
+        const accepted = picked.filter(file => {
             if (file.size > 50 * 1024 * 1024) {
                 toast.error(`File "${file.name}" terlalu besar (>50MB)`);
-                continue;
+                return false;
             }
-
-            const totalAdditional = additionalFiles.length + (files.length - (files.indexOf(file) + 1));
-            if (totalAdditional <= 10) {
-                setAdditionalFiles(prev => [...prev, file]);
-                // Use object URL instead of readAsDataURL — no Base64 RAM cost on Android
-                setAdditionalPreviews(prev => [...prev, URL.createObjectURL(file)]);
-            } else {
-                toast.error("Maksimal 10 foto tambahan total");
-                break;
-            }
+            return true;
+        });
+        const remaining = 10 - additionalFiles.length;
+        if (accepted.length > remaining) {
+            toast.error("Maksimal 10 foto tambahan total");
         }
-        e.target.value = '';
+        const toPrepare = accepted.slice(0, Math.max(0, remaining));
+        if (toPrepare.length === 0) return;
+
+        // Compress right away so the bytes are read while the browser still has access to them
+        const files = await prepareImages(toPrepare);
+        setAdditionalFiles(prev => [...prev, ...files]);
+        // Use object URL instead of readAsDataURL — no Base64 RAM cost on Android
+        setAdditionalPreviews(prev => [...prev, ...files.map(file => URL.createObjectURL(file))]);
     };
 
 
@@ -291,7 +296,7 @@ export default function AddActivity() {
                                                     <input
                                                         type="file"
                                                         multiple
-                                                        accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+                                                        accept="image/*"
                                                         className="hidden"
                                                         onChange={handleAdditionalImagesChange}
                                                     />
@@ -428,7 +433,7 @@ export default function AddActivity() {
                                         <Button
                                             type="submit"
                                             className="h-12 px-8 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold shadow-lg shadow-orange-200 hover:shadow-orange-300 transition-all hover:scale-105"
-                                            disabled={isSubmitting}
+                                            disabled={isSubmitting || isPreparing}
                                         >
                                             {isSubmitting ? (
                                                 <>
