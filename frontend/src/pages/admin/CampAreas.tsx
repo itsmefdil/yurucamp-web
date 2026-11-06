@@ -66,7 +66,7 @@ export default function AdminCampAreas() {
 
     const handleDeleteClick = (id: string) => {
         setSelectedAreaId(id);
-        setDialogOpen(true);
+        setIsDeleteDialogOpen(true);
     };
 
     const handleConfirmDelete = async () => {
