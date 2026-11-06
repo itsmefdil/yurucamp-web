@@ -91,54 +91,84 @@ if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
 
 // Routes
 
+// OAuth `state` is bound to the browser with a short-lived cookie (no server sessions here),
+// which prevents login CSRF: a callback is only accepted from the browser that started the flow.
+const OAUTH_STATE_COOKIE = 'oauthState';
+const OAUTH_STATE_COOKIE_OPTIONS = {
+    httpOnly: true,
+    secure: true,
+    // The callback is a top-level redirect from Google, which carries 'lax' cookies
+    sameSite: 'lax' as const,
+    path: '/auth/google',
+};
+const OAUTH_STATE_TTL_MS = 10 * 60 * 1000;
+
+function frontendUrl(): string {
+    return process.env.FRONTEND_URL || 'http://localhost:3000';
+}
+
+function statesMatch(expected: string | undefined, received: unknown): boolean {
+    if (!expected || typeof received !== 'string') return false;
+    const a = Buffer.from(expected);
+    const b = Buffer.from(received);
+    return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
 // Google Auth Trigger
-router.get('/google', authLimiter, passport.authenticate('google', { scope: ['profile', 'email'] }));
+router.get('/google', authLimiter, (req: Request, res: Response, next: NextFunction) => {
+    const state = crypto.randomBytes(32).toString('hex');
+    res.cookie(OAUTH_STATE_COOKIE, state, { ...OAUTH_STATE_COOKIE_OPTIONS, maxAge: OAUTH_STATE_TTL_MS });
+    passport.authenticate('google', { scope: ['profile', 'email'], session: false, state })(req, res, next);
+});
 
 // Google Auth Callback
-router.get('/google/callback',
-    authLimiter,
-    passport.authenticate('google', { session: false, failureRedirect: '/login-failed' }),
-    async (req: Request, res: Response) => {
-        // Successful authentication
-        const user = req.user as any;
-        const secret = process.env.JWT_SECRET;
+router.get('/google/callback', authLimiter, (req: Request, res: Response, next: NextFunction) => {
+    const failLogin = (reason: string) => {
+        res.redirect(`${frontendUrl()}/login?error=${reason}`);
+    };
 
-        if (!secret) {
-            res.status(500).json({ error: 'Server misconfiguration' });
-            return
+    const expectedState = parseCookies(req.headers.cookie)[OAUTH_STATE_COOKIE];
+    res.clearCookie(OAUTH_STATE_COOKIE, OAUTH_STATE_COOKIE_OPTIONS);
+    if (!statesMatch(expectedState, req.query.state)) {
+        failLogin('oauth_state');
+        return;
+    }
+
+    passport.authenticate('google', { session: false }, async (err: unknown, user: any) => {
+        if (err || !user) {
+            if (err) console.error('Google OAuth error:', err);
+            failLogin('oauth');
+            return;
         }
 
-        // Generate short-lived access token and a long-lived refresh token
-        const accessToken = jwt.sign({
-            sub: user.id,
-            email: user.email,
-            role: user.role
-        }, secret, { expiresIn: '15m' });
+        try {
+            const secret = process.env.JWT_SECRET;
+            if (!secret) {
+                console.error('JWT_SECRET is not set');
+                failLogin('oauth');
+                return;
+            }
 
-        const refreshToken = crypto.randomBytes(64).toString('hex');
-        const refreshExpiresMs = 30 * 24 * 60 * 60 * 1000; // 30 days
+            const refreshToken = crypto.randomBytes(64).toString('hex');
+            const refreshExpiresMs = 30 * 24 * 60 * 60 * 1000; // 30 days
 
-        // Store refresh token in DB
-        await db.insert(refreshTokens).values({
-            token: refreshToken,
-            userId: user.id,
-            expiresAt: new Date(Date.now() + refreshExpiresMs).toISOString()
-        });
+            await db.insert(refreshTokens).values({
+                token: refreshToken,
+                userId: user.id,
+                expiresAt: new Date(Date.now() + refreshExpiresMs).toISOString()
+            });
 
-        // Set httpOnly cookie for refresh token
-        // sameSite: 'none' + secure: true required for cross-subdomain AJAX (yc.noma.my.id → yc-be.noma.my.id)
-        res.cookie('refreshToken', refreshToken, {
-            httpOnly: true,
-            secure: true,
-            sameSite: 'none',
-            maxAge: refreshExpiresMs
-        });
+            res.cookie('refreshToken', refreshToken, { ...REFRESH_COOKIE_OPTIONS, maxAge: refreshExpiresMs });
 
-        // Redirect to frontend with access token in query
-        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-        res.redirect(`${frontendUrl}/auth/callback?token=${accessToken}`);
-    }
-);
+            // No access token in the URL (it would end up in history, logs and Referer headers).
+            // The frontend exchanges the refresh cookie for an access token via POST /auth/refresh.
+            res.redirect(`${frontendUrl()}/auth/callback`);
+        } catch (error) {
+            console.error('Error completing Google login:', error);
+            failLogin('oauth');
+        }
+    })(req, res, next);
+});
 
 // Helper to parse cookie header (simple)
 function parseCookies(cookieHeader: string | undefined) {
