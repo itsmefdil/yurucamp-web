@@ -53,7 +53,7 @@ export default function AddCampArea() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [uploadStatus, setUploadStatus] = useState('');
     const [selectedFacilities, setSelectedFacilities] = useState<string[]>([]);
-    const { upload: uploadImages } = useImageUploader({ folder: 'camp_area' });
+    const { upload: uploadImages, prepare: prepareImages, isPreparing } = useImageUploader({ folder: 'camp_area' });
 
     const form = useForm<CampAreaFormValues>({
         resolver: zodResolver(campAreaSchema),
@@ -75,37 +75,40 @@ export default function AddCampArea() {
         form.setValue('description', val, { shouldValidate: true, shouldDirty: true });
     };
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = Array.from(e.target.files || []);
-        let isFirstFile = !imageFile && !imagePreview;
+    const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const picked = Array.from(e.target.files || []);
+        e.target.value = '';
 
-        for (const file of files) {
-            // Set a very high sanity limit, actual validation is in processImageForUpload
+        const accepted = picked.filter(file => {
             if (file.size > 50 * 1024 * 1024) {
                 toast.error(`File "${file.name}" terlalu besar (>50MB)`, {
                     description: "Ukuran file sangat besar dan kemungkinan akan gagal diproses.",
                     duration: 7000
                 });
-                continue;
+                return false;
             }
-
-            if (isFirstFile) {
-                if (imagePreview && imagePreview.startsWith('blob:')) URL.revokeObjectURL(imagePreview);
-                setImageFile(file);
-                setImagePreview(URL.createObjectURL(file));
-                isFirstFile = false;
-            } else {
-                const totalAdditional = additionalFiles.length + (files.length - (files.indexOf(file) + 1));
-                if (totalAdditional <= 10) {
-                    setAdditionalFiles(prev => [...prev, file]);
-                    setAdditionalPreviews(prev => [...prev, URL.createObjectURL(file)]);
-                } else {
-                    toast.error("Maksimal 10 foto tambahan");
-                    break;
-                }
-            }
+            return true;
+        });
+        const needsCover = !imageFile && !imagePreview;
+        const remaining = (needsCover ? 1 : 0) + 10 - additionalFiles.length;
+        if (accepted.length > remaining) {
+            toast.error("Maksimal 10 foto tambahan");
         }
-        e.target.value = '';
+        const toPrepare = accepted.slice(0, Math.max(0, remaining));
+        if (toPrepare.length === 0) return;
+
+        // Compress right away so the bytes are read while the browser still has access to them
+        const files = await prepareImages(toPrepare);
+        if (files.length === 0) return;
+
+        const [first, ...rest] = files;
+        const extras = needsCover ? rest : files;
+        if (needsCover) {
+            setImageFile(first);
+            setImagePreview(URL.createObjectURL(first));
+        }
+        setAdditionalFiles(prev => [...prev, ...extras]);
+        setAdditionalPreviews(prev => [...prev, ...extras.map(file => URL.createObjectURL(file))]);
     };
 
     const removeImage = (index: number) => {
@@ -393,7 +396,7 @@ export default function AddCampArea() {
                                     </Button>
                                     <Button
                                         type="submit"
-                                        disabled={isSubmitting}
+                                        disabled={isSubmitting || isPreparing}
                                         className="h-12 px-8 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-base shadow-lg shadow-orange-200 hover:shadow-orange-300 transition-all hover:scale-105"
                                     >
                                         {isSubmitting ? (

@@ -1,4 +1,7 @@
 import { Router, Request, Response } from 'express';
+import rateLimit from 'express-rate-limit';
+import { v2 as cloudinary } from 'cloudinary';
+import { authenticate } from '../middleware/auth';
 
 const router = Router();
 
@@ -16,14 +19,30 @@ router.get('/hero-images', (req: Request, res: Response) => {
     res.json(specificImages.slice(0, count));
 });
 
-import { v2 as cloudinary } from 'cloudinary';
+// Folders the frontend is allowed to upload into. Anything else is rejected so a
+// signature can't be used to write into arbitrary locations of the Cloudinary account.
+const ALLOWED_UPLOAD_FOLDERS = new Set(['activities', 'events', 'camp_area', 'avatars', 'community']);
 
-// ... existing code ...
+// The client fetches one signature per file per upload attempt (up to 11 files x 3 retries
+// per form submit), so the limit leaves headroom for legitimate multi-image posts.
+// Note: the store is in-memory, so on serverless it is enforced per instance only.
+const signatureLimiter = rateLimit({
+    windowMs: 10 * 60 * 1000,
+    limit: 60,
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    keyGenerator: (req: Request) => String(req.user?.sub ?? req.user?.id),
+    message: { error: 'Terlalu banyak permintaan upload. Coba lagi beberapa menit lagi.' },
+});
 
-router.get('/cloudinary-signature', (req: Request, res: Response) => {
+router.get('/cloudinary-signature', authenticate, signatureLimiter, (req: Request, res: Response) => {
+    const subfolder = typeof req.query.folder === 'string' ? req.query.folder : 'activities';
+    if (!ALLOWED_UPLOAD_FOLDERS.has(subfolder)) {
+        res.status(400).json({ error: 'Invalid upload folder' });
+        return;
+    }
+
     const timestamp = Math.round((new Date()).getTime() / 1000);
-    const subfolder = req.query.folder as string || 'activities';
-    console.log(`[Cloudinary] Generating signature for folder: ${subfolder}`);
     const folderPath = process.env.CLOUDINARY_PATH_PREFIX
         ? `${process.env.CLOUDINARY_PATH_PREFIX}/${subfolder}`
         : subfolder;
