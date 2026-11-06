@@ -145,11 +145,12 @@ export default function WatchSeason() {
     // Like mutation
     const likeMutation = useMutation({
         mutationFn: async () => {
-            await api.post('/interactions/like', { videoId });
+            const response = await api.post<{ liked: boolean }>('/interactions/like', { videoId });
+            return response.data;
         },
         onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: ['interactions', 'video', videoId] });
-            toast.success(data.data.liked ? 'Video disukai!' : 'Like dihapus');
+            toast.success(data.liked ? 'Video disukai!' : 'Like dihapus');
         },
         onError: () => {
             toast.error('Gagal memproses like');
