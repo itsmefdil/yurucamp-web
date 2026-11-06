@@ -419,7 +419,7 @@ export default function CampAreaDetail() {
                                                 loading="lazy"
                                                 allowFullScreen
                                                 referrerPolicy="no-referrer-when-downgrade"
-                                                src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(campArea.location)}`}
+                                                src={`https://maps.google.com/maps?q=${encodeURIComponent(campArea.location)}&output=embed`}
                                             />
                                         </div>
                                         <div className="p-3">

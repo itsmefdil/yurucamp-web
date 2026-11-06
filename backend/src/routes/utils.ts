@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import rateLimit from 'express-rate-limit';
 import { v2 as cloudinary } from 'cloudinary';
 import { authenticate } from '../middleware/auth';
+import { userUploadFolder } from '../lib/cloudinary';
 
 const router = Router();
 
@@ -43,9 +44,8 @@ router.get('/cloudinary-signature', authenticate, signatureLimiter, (req: Reques
     }
 
     const timestamp = Math.round((new Date()).getTime() / 1000);
-    const folderPath = process.env.CLOUDINARY_PATH_PREFIX
-        ? `${process.env.CLOUDINARY_PATH_PREFIX}/${subfolder}`
-        : subfolder;
+    // Scope uploads to the requesting user so the server can later verify ownership of URLs
+    const folderPath = userUploadFolder(subfolder, String(req.user.sub || req.user.id));
 
     const transformation = 'w_800,c_limit,q_auto,f_auto,fl_lossy';
 
