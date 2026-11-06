@@ -53,33 +53,25 @@ if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
                     return done(new Error("No email found from Google"), undefined);
                 }
 
-                // Only trust emails Google has verified, since accounts are linked by email below
+                // Only accept emails Google has verified
                 if ((profile as any)._json?.email_verified === false || profile.emails?.[0]?.verified === false) {
                     return done(new Error("Google email is not verified"), undefined);
                 }
 
-                // Check if user exists by Google ID
+                // Accounts are identified by Google ID only (Google is the only sign-in method).
+                // We never link to an existing account by email: that would let anyone who
+                // controls an account's email address take it over.
                 let user = await db.select().from(users).where(eq(users.googleId, googleId)).limit(1);
 
                 if (user.length === 0) {
-                    // Check by email (if they logged in via email before, link account)
-                    const userByEmail = await db.select().from(users).where(eq(users.email, email)).limit(1);
-
-                    if (userByEmail.length > 0) {
-                        // Update existing user with Google ID
-                        user = await db.update(users)
-                            .set({ googleId: googleId, avatarUrl: userByEmail[0].avatarUrl || avatarUrl })
-                            .where(eq(users.email, email))
-                            .returning();
-                    } else {
-                        // Create new user
-                        user = await db.insert(users).values({
-                            email,
-                            googleId,
-                            fullName,
-                            avatarUrl
-                        }).returning();
-                    }
+                    // email is UNIQUE, so a different Google account with an already-registered
+                    // email fails here and the login is rejected
+                    user = await db.insert(users).values({
+                        email,
+                        googleId,
+                        fullName,
+                        avatarUrl
+                    }).returning();
                 }
 
                 return done(null, user[0]);
