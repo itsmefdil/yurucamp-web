@@ -157,3 +157,21 @@ export const gearItems = pgTable('gear_items', {
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 });
+
+// Client-reported image upload outcomes, used to monitor upload reliability (especially on mobile).
+export const uploadLogs = pgTable('upload_logs', {
+    id: uuid('id').defaultRandom().primaryKey().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+    userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
+    outcome: text('outcome').notNull(), // 'success' | 'failed'
+    stage: text('stage').notNull(), // 'prepare' | 'upload'
+    folder: text('folder'),
+    fileCount: integer('file_count').notNull(),
+    totalBytes: integer('total_bytes'),
+    fileTypes: text('file_types'),
+    durationMs: integer('duration_ms'),
+    errorName: text('error_name'),
+    errorMessage: text('error_message'),
+    userAgent: text('user_agent'),
+    connection: text('connection'),
+});

@@ -2,6 +2,8 @@ import { Router, Request, Response } from 'express';
 import rateLimit from 'express-rate-limit';
 import { v2 as cloudinary } from 'cloudinary';
 import { authenticate } from '../middleware/auth';
+import { db } from '../db';
+import { uploadLogs } from '../db/schema';
 
 const router = Router();
 
@@ -63,6 +65,53 @@ router.get('/cloudinary-signature', authenticate, signatureLimiter, (req: Reques
         folder: folderPath,
         transformation: transformation
     });
+});
+
+const uploadLogLimiter = rateLimit({
+    windowMs: 10 * 60 * 1000,
+    limit: 30,
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    keyGenerator: (req: Request) => String(req.user?.sub ?? req.user?.id),
+    message: { error: 'Too many upload logs' },
+});
+
+const str = (value: unknown, max: number): string | null =>
+    typeof value === 'string' && value.length > 0 ? value.slice(0, max) : null;
+const int = (value: unknown): number | null =>
+    typeof value === 'number' && Number.isFinite(value) && value >= 0 ? Math.min(Math.round(value), 2_147_483_647) : null;
+
+// POST /utils/upload-logs - Client reports the outcome of an image upload (for reliability monitoring)
+router.post('/upload-logs', authenticate, uploadLogLimiter, async (req: Request, res: Response) => {
+    const body = req.body ?? {};
+    const outcome = body.outcome;
+    const stage = body.stage;
+    const fileCount = int(body.fileCount);
+    if ((outcome !== 'success' && outcome !== 'failed') || (stage !== 'prepare' && stage !== 'upload') || fileCount === null) {
+        res.status(400).json({ error: 'Invalid upload log' });
+        return;
+    }
+
+    try {
+        await db.insert(uploadLogs).values({
+            userId: req.user?.sub || req.user?.id || null,
+            outcome,
+            stage,
+            folder: ALLOWED_UPLOAD_FOLDERS.has(body.folder) ? body.folder : null,
+            fileCount,
+            totalBytes: int(body.totalBytes),
+            fileTypes: str(body.fileTypes, 200),
+            durationMs: int(body.durationMs),
+            errorName: str(body.errorName, 100),
+            errorMessage: str(body.errorMessage, 500),
+            userAgent: str(req.headers['user-agent'], 300),
+            connection: str(body.connection, 50),
+        });
+        res.status(204).end();
+    } catch (error) {
+        console.error('Failed to save upload log:', error);
+        res.status(500).json({ error: 'Failed to save upload log' });
+    }
 });
 
 export default router;

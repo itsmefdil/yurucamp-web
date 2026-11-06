@@ -6,6 +6,7 @@ import {
   UploadAbortedError,
   type UploadProgress,
 } from '../lib/media/imageUploadCore';
+import { reportUpload } from '../lib/media/uploadTelemetry';
 
 export interface UseImageUploaderOptions {
   folder: string;
@@ -83,6 +84,7 @@ export function useImageUploader(options: UseImageUploaderOptions): UseImageUplo
             prepared.push(await manager.prepare(fileList[i]));
           } catch (err) {
             failed++;
+            reportUpload({ outcome: 'failed', stage: 'prepare', folder, files: [fileList[i]], error: err });
             toast.error(err instanceof Error ? err.message : `Gagal memproses "${fileList[i].name}".`, { duration: 6000 });
           }
         }
@@ -95,7 +97,7 @@ export function useImageUploader(options: UseImageUploaderOptions): UseImageUplo
       }
       return prepared;
     },
-    [manager]
+    [folder, manager]
   );
 
   const upload = useCallback(
@@ -106,6 +108,7 @@ export function useImageUploader(options: UseImageUploaderOptions): UseImageUplo
       setIsUploading(true);
       setError(null);
       abortControllerRef.current = new AbortController();
+      const startedAt = performance.now();
 
       let toastId: string | number | undefined;
       if (autoToast) {
@@ -132,6 +135,7 @@ export function useImageUploader(options: UseImageUploaderOptions): UseImageUplo
 
         setUrls(uploadedUrls);
         setIsUploading(false);
+        reportUpload({ outcome: 'success', stage: 'upload', folder, files: fileList, durationMs: performance.now() - startedAt });
 
         if (autoToast && toastId) {
           toast.success(`Berhasil mengunggah ${uploadedUrls.length} gambar!`, { id: toastId, duration: 3000 });
@@ -145,8 +149,11 @@ export function useImageUploader(options: UseImageUploaderOptions): UseImageUplo
 
         if (uploadErr instanceof UploadAbortedError) {
           if (toastId) toast.dismiss(toastId);
-        } else if (autoToast && toastId) {
-          toast.error(uploadErr.message || 'Gagal mengunggah gambar.', { id: toastId, duration: 5000 });
+        } else {
+          reportUpload({ outcome: 'failed', stage: 'upload', folder, files: fileList, durationMs: performance.now() - startedAt, error: uploadErr });
+          if (autoToast && toastId) {
+            toast.error(uploadErr.message || 'Gagal mengunggah gambar.', { id: toastId, duration: 5000 });
+          }
         }
 
         return null;

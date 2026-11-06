@@ -1,8 +1,8 @@
 import { Router, Request, Response } from 'express';
 import { v2 as cloudinary } from 'cloudinary';
 import { db } from '../db';
-import { users, campAreas, activities, events, regions, regionMembers } from '../db/schema';
-import { eq, desc, count, sql, and } from 'drizzle-orm';
+import { users, campAreas, activities, events, regions, regionMembers, uploadLogs } from '../db/schema';
+import { eq, desc, count, sql, and, gte } from 'drizzle-orm';
 import { authenticate } from '../middleware/auth';
 import { isAdmin } from '../middleware/isAdmin';
 
@@ -174,7 +174,57 @@ router.put('/users/:id', async (req: Request, res: Response) => {
     }
 });
 
-// GET /admin/stats - Dashboard stats
+// GET /admin/upload-logs - Upload success/failure summary and recent failures
+router.get('/upload-logs', async (req: Request, res: Response) => {
+    try {
+        const days = Math.min(Math.max(parseInt(req.query.days as string) || 7, 1), 90);
+        const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+
+        const totals = await db
+            .select({ outcome: uploadLogs.outcome, stage: uploadLogs.stage, total: count() })
+            .from(uploadLogs)
+            .where(gte(uploadLogs.createdAt, since))
+            .groupBy(uploadLogs.outcome, uploadLogs.stage);
+
+        const recentFailures = await db
+            .select({
+                id: uploadLogs.id,
+                createdAt: uploadLogs.createdAt,
+                stage: uploadLogs.stage,
+                folder: uploadLogs.folder,
+                fileCount: uploadLogs.fileCount,
+                totalBytes: uploadLogs.totalBytes,
+                fileTypes: uploadLogs.fileTypes,
+                errorName: uploadLogs.errorName,
+                errorMessage: uploadLogs.errorMessage,
+                userAgent: uploadLogs.userAgent,
+                connection: uploadLogs.connection,
+                userName: users.fullName,
+            })
+            .from(uploadLogs)
+            .leftJoin(users, eq(uploadLogs.userId, users.id))
+            .where(and(eq(uploadLogs.outcome, 'failed'), gte(uploadLogs.createdAt, since)))
+            .orderBy(desc(uploadLogs.createdAt))
+            .limit(20);
+
+        const sum = (outcome: string, stage?: string) => totals
+            .filter(t => t.outcome === outcome && (!stage || t.stage === stage))
+            .reduce((acc, t) => acc + Number(t.total), 0);
+
+        res.json({
+            days,
+            success: sum('success'),
+            failed: sum('failed'),
+            failedPrepare: sum('failed', 'prepare'),
+            failedUpload: sum('failed', 'upload'),
+            recentFailures,
+        });
+    } catch (error) {
+        console.error('Failed to fetch upload logs:', error);
+        res.status(500).json({ error: 'Failed to fetch upload logs' });
+    }
+});
+
 // GET /admin/stats - Dashboard stats
 router.get('/stats', async (req: Request, res: Response) => {
     try {

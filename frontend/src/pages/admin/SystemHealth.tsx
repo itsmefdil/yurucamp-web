@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../..
 import { Server, HardDrive, Database, RefreshCw, Cpu, Layers, Activity, CheckCircle, AlertTriangle, Zap, Clock, ShieldAlert } from "lucide-react";
 import { Button } from '../../components/ui/button';
 import api from '../../lib/api';
+import UploadReliabilityCard from '../../components/admin/UploadReliabilityCard';
 
 interface SystemHealthData {
     status: string;
@@ -357,6 +358,8 @@ export default function AdminSystemHealth() {
                     </CardContent>
                 </Card>
             </div>
+
+            <UploadReliabilityCard />
         </div>
     );
 }
