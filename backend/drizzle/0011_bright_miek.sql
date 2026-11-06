@@ -1,9 +1,10 @@
 CREATE TABLE IF NOT EXISTS "refresh_tokens" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"token" text NOT NULL UNIQUE,
+	"token" text NOT NULL,
 	"user_id" uuid NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"expires_at" timestamp with time zone
+	"expires_at" timestamp with time zone,
+	CONSTRAINT "refresh_tokens_token_unique" UNIQUE("token")
 );
 --> statement-breakpoint
 DO $$ BEGIN
