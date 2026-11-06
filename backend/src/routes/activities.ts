@@ -3,7 +3,7 @@ import multer from 'multer';
 import { db } from '../db';
 import { activities, users, regions } from '../db/schema';
 import { authenticate } from '../middleware/auth';
-import { deleteImage, getPublicIdFromUrl } from '../lib/cloudinary';
+import { deleteImage, getPublicIdFromUrl, areImageUrlsAllowed } from '../lib/cloudinary';
 import { eq, and, desc } from 'drizzle-orm';
 import { awardExp } from '../utils/exp';
 
@@ -134,6 +134,12 @@ router.post('/', authenticate, upload.none(), async (req: Request, res: Response
 
         const { title, description, categoryId, date, location, imageUrl, additionalImages, regionId } = req.body;
 
+        const additionalImagesList = Array.isArray(additionalImages) ? additionalImages : (additionalImages ? [additionalImages] : []);
+        if (!areImageUrlsAllowed([imageUrl, ...additionalImagesList], userId)) {
+            res.status(400).json({ error: 'Invalid image URL' });
+            return;
+        }
+
         const newActivity = await db.insert(activities).values({
             title,
             description,
@@ -141,7 +147,7 @@ router.post('/', authenticate, upload.none(), async (req: Request, res: Response
             date,
             location,
             imageUrl: imageUrl || null,
-            additionalImages: additionalImages || [],
+            additionalImages: additionalImagesList,
             userId: userId,
             regionId: regionId || null,
         }).returning();
@@ -183,6 +189,12 @@ router.put('/:id', authenticate, upload.none(), async (req: Request, res: Respon
         const additionalImagesList = Array.isArray(additionalImages) ? additionalImages : (additionalImages ? [additionalImages] : []);
 
         const allAdditionalImages = [...keptImagesList, ...additionalImagesList];
+
+        const existingImages = [existingActivity[0].imageUrl, ...(existingActivity[0].additionalImages || [])];
+        if (!areImageUrlsAllowed([imageUrl, ...allAdditionalImages], userId, existingImages)) {
+            res.status(400).json({ error: 'Invalid image URL' });
+            return;
+        }
 
         // Identify removed additional images
         const previousAdditionalImages = existingActivity[0].additionalImages || [];

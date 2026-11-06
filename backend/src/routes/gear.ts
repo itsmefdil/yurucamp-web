@@ -203,12 +203,58 @@ router.delete('/:id', authenticate, async (req: Request, res: Response) => {
     }
 });
 
+// --- Ownership helpers ---
+
+type OwnershipResult = { ok: true } | { ok: false; status: 403 | 404; error: string };
+
+function requesterId(req: Request): string {
+    return req.user.sub || req.user.id;
+}
+
+async function checkGearListOwner(gearListId: unknown, userId: string): Promise<OwnershipResult> {
+    if (typeof gearListId !== 'string' || !gearListId) return { ok: false, status: 404, error: 'Gear list not found' };
+    const rows = await db.select({ userId: gearLists.userId }).from(gearLists).where(eq(gearLists.id, gearListId)).limit(1);
+    if (rows.length === 0) return { ok: false, status: 404, error: 'Gear list not found' };
+    if (rows[0].userId !== userId) return { ok: false, status: 403, error: 'Unauthorized' };
+    return { ok: true };
+}
+
+async function checkCategoryOwner(categoryId: unknown, userId: string): Promise<OwnershipResult> {
+    if (typeof categoryId !== 'string' || !categoryId) return { ok: false, status: 404, error: 'Category not found' };
+    const rows = await db.select({ userId: gearLists.userId })
+        .from(gearCategories)
+        .innerJoin(gearLists, eq(gearCategories.gearListId, gearLists.id))
+        .where(eq(gearCategories.id, categoryId))
+        .limit(1);
+    if (rows.length === 0) return { ok: false, status: 404, error: 'Category not found' };
+    if (rows[0].userId !== userId) return { ok: false, status: 403, error: 'Unauthorized' };
+    return { ok: true };
+}
+
+async function checkItemOwner(itemId: unknown, userId: string): Promise<OwnershipResult> {
+    if (typeof itemId !== 'string' || !itemId) return { ok: false, status: 404, error: 'Item not found' };
+    const rows = await db.select({ userId: gearLists.userId })
+        .from(gearItems)
+        .innerJoin(gearCategories, eq(gearItems.categoryId, gearCategories.id))
+        .innerJoin(gearLists, eq(gearCategories.gearListId, gearLists.id))
+        .where(eq(gearItems.id, itemId))
+        .limit(1);
+    if (rows.length === 0) return { ok: false, status: 404, error: 'Item not found' };
+    if (rows[0].userId !== userId) return { ok: false, status: 403, error: 'Unauthorized' };
+    return { ok: true };
+}
+
 // --- Categories ---
 
 router.post('/categories', authenticate, async (req: Request, res: Response) => {
     try {
         const { gearListId, name, sortOrder } = req.body;
-        // Should verify gear list ownership here ideally, but skipping for brevity/MVP speed, relying on UI or later hardening. 
+
+        const owner = await checkGearListOwner(gearListId, requesterId(req));
+        if (!owner.ok) {
+            res.status(owner.status).json({ error: owner.error });
+            return;
+        }
 
         const newCat = await db.insert(gearCategories).values({
             gearListId,
@@ -228,6 +274,12 @@ router.put('/categories/:id', authenticate, async (req: Request, res: Response) 
         const { id } = req.params;
         const { name, sortOrder } = req.body;
 
+        const owner = await checkCategoryOwner(id, requesterId(req));
+        if (!owner.ok) {
+            res.status(owner.status).json({ error: owner.error });
+            return;
+        }
+
         const updated = await db.update(gearCategories).set({
             name,
             sortOrder
@@ -243,6 +295,13 @@ router.put('/categories/:id', authenticate, async (req: Request, res: Response) 
 router.delete('/categories/:id', authenticate, async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
+
+        const owner = await checkCategoryOwner(id, requesterId(req));
+        if (!owner.ok) {
+            res.status(owner.status).json({ error: owner.error });
+            return;
+        }
+
         await db.delete(gearCategories).where(eq(gearCategories.id, id));
         res.json({ message: 'Category deleted' });
     } catch (error) {
@@ -256,6 +315,12 @@ router.delete('/categories/:id', authenticate, async (req: Request, res: Respons
 router.post('/items', authenticate, async (req: Request, res: Response) => {
     try {
         const { categoryId, name, description, weight, quantity, sortOrder } = req.body;
+
+        const owner = await checkCategoryOwner(categoryId, requesterId(req));
+        if (!owner.ok) {
+            res.status(owner.status).json({ error: owner.error });
+            return;
+        }
 
         const newItem = await db.insert(gearItems).values({
             categoryId,
@@ -278,6 +343,12 @@ router.put('/items/:id', authenticate, async (req: Request, res: Response) => {
         const { id } = req.params;
         const { name, description, weight, quantity, sortOrder } = req.body;
 
+        const owner = await checkItemOwner(id, requesterId(req));
+        if (!owner.ok) {
+            res.status(owner.status).json({ error: owner.error });
+            return;
+        }
+
         const updated = await db.update(gearItems).set({
             name,
             description,
@@ -297,6 +368,13 @@ router.put('/items/:id', authenticate, async (req: Request, res: Response) => {
 router.delete('/items/:id', authenticate, async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
+
+        const owner = await checkItemOwner(id, requesterId(req));
+        if (!owner.ok) {
+            res.status(owner.status).json({ error: owner.error });
+            return;
+        }
+
         await db.delete(gearItems).where(eq(gearItems.id, id));
         res.json({ message: 'Item deleted' });
     } catch (error) {
@@ -317,8 +395,13 @@ router.put('/categories/:categoryId/items/reorder', authenticate, async (req: Re
             return;
         }
 
-        // Use transaction or Promise.all to update all items
-        // For simplicity with Drizzle/Postgres here, we'll loop
+        const owner = await checkCategoryOwner(categoryId, requesterId(req));
+        if (!owner.ok) {
+            res.status(owner.status).json({ error: owner.error });
+            return;
+        }
+
+        // Each update is scoped to this category, so only items of an owned category move
         await db.transaction(async (tx) => {
             for (let i = 0; i < itemIds.length; i++) {
                 await tx.update(gearItems)
