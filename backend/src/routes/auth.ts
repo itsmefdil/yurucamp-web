@@ -1,6 +1,6 @@
 import rateLimit from 'express-rate-limit';
 import { Router, Request, Response, NextFunction } from 'express';
-import multer from 'multer';
+import { upload } from '../lib/upload';
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import jwt from 'jsonwebtoken';
@@ -27,7 +27,6 @@ const authLimiter = rateLimit({
     legacyHeaders: false,
     message: { error: 'Terlalu banyak permintaan. Coba lagi beberapa menit lagi.' },
 });
-const upload = multer({ storage: multer.memoryStorage() });
 
 // Passport Configuration
 if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
@@ -360,7 +359,7 @@ router.put('/profile', authenticate, upload.single('avatar'), async (req: Reques
 
     } catch (error: any) {
         console.error("Error updating profile:", error);
-        res.status(500).json({ error: error.message || 'Internal Server Error' });
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 

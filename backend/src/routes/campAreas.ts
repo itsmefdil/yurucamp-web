@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import multer from 'multer';
+import { upload } from '../lib/upload';
 import { db } from '../db';
 import { campAreas, users, regions } from '../db/schema';
 import { authenticate } from '../middleware/auth';
@@ -8,7 +8,6 @@ import { eq, desc } from 'drizzle-orm';
 import { awardExp, getLevelName } from '../utils/exp';
 
 const router = Router();
-const upload = multer({ storage: multer.memoryStorage() });
 
 // GET all camp areas
 router.get('/', async (req: Request, res: Response) => {
@@ -212,7 +211,7 @@ router.post('/', authenticate, upload.fields([{ name: 'image', maxCount: 1 }, { 
 
     } catch (error: any) {
         console.error("Error creating camp area:", error);
-        res.status(500).json({ error: error.message || 'Internal Server Error' });
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
@@ -323,7 +322,7 @@ router.put('/:id', authenticate, upload.fields([{ name: 'image', maxCount: 1 }, 
 
     } catch (error: any) {
         console.error("Error updating camp area:", error);
-        res.status(500).json({ error: error.message || 'Internal Server Error' });
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
@@ -381,7 +380,7 @@ router.delete('/:id', authenticate, async (req: Request, res: Response) => {
 
     } catch (error: any) {
         console.error("Error deleting camp area:", error);
-        res.status(500).json({ error: error.message || 'Internal Server Error' });
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 

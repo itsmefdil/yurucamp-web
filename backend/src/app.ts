@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import morgan from 'morgan';
 import activityRouter from './routes/activities';
 import campAreasRouter from './routes/campAreas';
@@ -15,12 +16,19 @@ import regionsRouter from './routes/regions';
 import usersRouter from './routes/users';
 
 import dotenv from 'dotenv';
+import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 
 dotenv.config();
 
 const app = express();
 
 app.set('trust proxy', 1);
+
+// JSON API only: helmet's defaults add standard security headers (nosniff, HSTS, frame denial, ...)
+app.use(helmet({
+    // yc.noma.my.id and yc-be.noma.my.id are the same site
+    crossOriginResourcePolicy: { policy: 'same-site' },
+}));
 
 app.use(morgan('dev'));
 
@@ -33,8 +41,9 @@ app.use(cors({
     credentials: true,
 }));
 
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+// Request bodies only carry form fields and image URLs (images go straight to Cloudinary)
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 app.use('/sitemap.xml', sitemapRouter);
 
@@ -55,5 +64,8 @@ app.use('/users', usersRouter);
 app.get('/', (req, res) => {
     res.json({ status: 'ok', message: 'Yurucamp Backend API' });
 });
+
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 export default app;
