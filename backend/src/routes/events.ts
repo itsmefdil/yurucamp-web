@@ -3,7 +3,7 @@ import multer from 'multer';
 import { db } from '../db';
 import { events, eventParticipants, users, regions } from '../db/schema';
 import { authenticate } from '../middleware/auth';
-import { uploadImage, deleteImage, getPublicIdFromUrl } from '../lib/cloudinary';
+import { uploadImage, deleteImage, getPublicIdFromUrl, areImageUrlsAllowed } from '../lib/cloudinary';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { awardExp } from '../utils/exp';
 
@@ -158,9 +158,14 @@ router.post('/', authenticate, upload.single('image'), async (req: Request, res:
         const { title, description, location, date_start, date_end, price, max_participants, imageUrl, regionId } = req.body;
         const imageFile = req.file;
 
+        if (!imageFile && !areImageUrlsAllowed([imageUrl], userId)) {
+            res.status(400).json({ error: 'Invalid image URL' });
+            return;
+        }
+
         let image_url = imageUrl || null; // Accept imageUrl from JSON body (client-side upload)
         if (imageFile) {
-            image_url = await uploadImage(imageFile, 'events');
+            image_url = await uploadImage(imageFile, 'events', userId);
         }
 
         const newEvent = await db.insert(events).values({
@@ -213,10 +218,14 @@ router.put('/:id', authenticate, upload.single('image'), async (req: Request, re
                 const publicId = getPublicIdFromUrl(existingEvent[0].imageUrl);
                 if (publicId) await deleteImage(publicId);
             }
-            image_url = await uploadImage(imageFile, 'events');
+            image_url = await uploadImage(imageFile, 'events', userId);
         }
         // Handle new image from client-side upload (imageUrl from body)
         else if (imageUrl) {
+            if (!areImageUrlsAllowed([imageUrl], userId, [existingEvent[0].imageUrl])) {
+                res.status(400).json({ error: 'Invalid image URL' });
+                return;
+            }
             if (existingEvent[0].imageUrl && existingEvent[0].imageUrl !== imageUrl) {
                 const publicId = getPublicIdFromUrl(existingEvent[0].imageUrl);
                 if (publicId) await deleteImage(publicId);

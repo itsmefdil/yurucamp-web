@@ -3,7 +3,7 @@ import multer from 'multer';
 import { db } from '../db';
 import { campAreas, users, regions } from '../db/schema';
 import { authenticate } from '../middleware/auth';
-import { uploadImage, deleteImage, getPublicIdFromUrl } from '../lib/cloudinary';
+import { uploadImage, deleteImage, getPublicIdFromUrl, areImageUrlsAllowed } from '../lib/cloudinary';
 import { eq, desc } from 'drizzle-orm';
 import { awardExp, getLevelName } from '../utils/exp';
 
@@ -169,8 +169,12 @@ router.post('/', authenticate, upload.fields([{ name: 'image', maxCount: 1 }, { 
 
         // Check if client-side uploaded URLs are provided (JSON mode)
         if (imageUrl) {
-            image_url = imageUrl;
             additional_images = Array.isArray(additionalImages) ? additionalImages : [];
+            if (!areImageUrlsAllowed([imageUrl, ...additional_images], userId)) {
+                res.status(400).json({ error: 'Invalid image URL' });
+                return;
+            }
+            image_url = imageUrl;
         } else {
             // Server-side file upload mode
             const files = req.files as { [fieldname: string]: Express.Multer.File[] };
@@ -178,11 +182,11 @@ router.post('/', authenticate, upload.fields([{ name: 'image', maxCount: 1 }, { 
             const additionalImageFiles = files?.['additional_images'] || [];
 
             if (imageFile) {
-                const url = await uploadImage(imageFile, 'camp_areas');
+                const url = await uploadImage(imageFile, 'camp_areas', userId);
                 if (url) image_url = url;
             }
 
-            const uploadPromises = additionalImageFiles.map(file => uploadImage(file, 'camp_areas'));
+            const uploadPromises = additionalImageFiles.map(file => uploadImage(file, 'camp_areas', userId));
             const uploadedUrls = await Promise.all(uploadPromises);
             uploadedUrls.forEach(url => {
                 if (url) additional_images.push(url);
@@ -244,6 +248,13 @@ router.put('/:id', authenticate, upload.fields([{ name: 'image', maxCount: 1 }, 
             return
         }
 
+        const existingImages = [existingCampArea[0].imageUrl, ...(existingCampArea[0].additionalImages || [])];
+        const newAdditionalImages = Array.isArray(additionalImages) ? additionalImages : [];
+        if (!areImageUrlsAllowed([imageUrl, ...keptImagesList, ...newAdditionalImages], userId, existingImages)) {
+            res.status(400).json({ error: 'Invalid image URL' });
+            return;
+        }
+
         let image_url = existingCampArea[0].imageUrl;
         let additional_images = [...keptImagesList];
 
@@ -266,7 +277,7 @@ router.put('/:id', authenticate, upload.fields([{ name: 'image', maxCount: 1 }, 
                     const publicId = getPublicIdFromUrl(existingCampArea[0].imageUrl);
                     if (publicId) await deleteImage(publicId);
                 }
-                image_url = await uploadImage(imageFile, 'camp_areas');
+                image_url = await uploadImage(imageFile, 'camp_areas', userId);
             }
         }
 
@@ -281,7 +292,7 @@ router.put('/:id', authenticate, upload.fields([{ name: 'image', maxCount: 1 }, 
         const additionalImageFiles = files?.['additional_images'] || [];
 
         if (additionalImageFiles.length > 0) {
-            const uploadPromises = additionalImageFiles.map(file => uploadImage(file, 'camp_areas'));
+            const uploadPromises = additionalImageFiles.map(file => uploadImage(file, 'camp_areas', userId));
             const uploadedUrls = await Promise.all(uploadPromises);
             uploadedUrls.forEach(url => {
                 if (url) additional_images.push(url);

@@ -680,7 +680,7 @@ export default function RegionDetail() {
                                     </a>
                                 )}
 
-                                {region.whatsappGroup && (
+                                {region.whatsappGroup && /^https:\/\//i.test(region.whatsappGroup) && (
                                     <a
                                         href={region.whatsappGroup}
                                         target="_blank"

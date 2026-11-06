@@ -4,6 +4,8 @@ import { db } from '../db';
 import { regions, regionMembers, users, activities } from '../db/schema';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { authenticate, optionalAuthenticate } from '../middleware/auth';
+import { areImageUrlsAllowed } from '../lib/cloudinary';
+import { normalizeHttpsUrl } from '../utils/url';
 
 const router = express.Router();
 
@@ -268,6 +270,18 @@ router.get('/:id/membership', authenticate, async (req, res) => {
 router.post('/', authenticate, async (req, res) => {
     try {
         const { name, slug, description, imageUrl, coverUrl, instagram, whatsappAdmin, whatsappGroup } = req.body;
+        const requesterId = req.user.sub || req.user.id;
+
+        if (!areImageUrlsAllowed([imageUrl, coverUrl], requesterId)) {
+            res.status(400).json({ error: 'Invalid image URL' });
+            return;
+        }
+        const safeWhatsappGroup = normalizeHttpsUrl(whatsappGroup);
+        if (safeWhatsappGroup === undefined) {
+            res.status(400).json({ error: 'Link grup WhatsApp harus berupa URL https://' });
+            return;
+        }
+
         const result = await db.insert(regions).values({
             name,
             slug,
@@ -276,7 +290,7 @@ router.post('/', authenticate, async (req, res) => {
             coverUrl,
             instagram: instagram || null,
             whatsappAdmin: whatsappAdmin || null,
-            whatsappGroup: whatsappGroup || null,
+            whatsappGroup: safeWhatsappGroup,
             status: 'pending', // Default to pending
             socialLinks: JSON.stringify({}),
         }).returning();
@@ -298,23 +312,37 @@ router.post('/', authenticate, async (req, res) => {
 });
 
 // PUT update region
-router.put('/:id', async (req, res) => {
+router.put('/:id', authenticate, async (req, res) => {
     try {
         const { id } = req.params;
         const { name, slug, description, imageUrl, coverUrl, socialLinks, instagram, whatsappAdmin, whatsappGroup } = req.body;
-        const requesterId = req.user ? (req.user.sub || req.user.id) : null;
+        const requesterId = req.user.sub || req.user.id;
 
-        // Check permissions
-        if (requesterId) {
-            const member = await db.select().from(regionMembers)
-                .where(and(eq(regionMembers.regionId, id), eq(regionMembers.userId, requesterId), eq(regionMembers.role, 'admin')))
-                .limit(1);
-            const superAdmin = await db.select().from(users).where(and(eq(users.id, requesterId), eq(users.role, 'admin'))).limit(1);
+        // Check permissions: region admin or super admin only
+        const member = await db.select().from(regionMembers)
+            .where(and(eq(regionMembers.regionId, id), eq(regionMembers.userId, requesterId), eq(regionMembers.role, 'admin')))
+            .limit(1);
+        const superAdmin = await db.select().from(users).where(and(eq(users.id, requesterId), eq(users.role, 'admin'))).limit(1);
 
-            if (member.length === 0 && superAdmin.length === 0) {
-                res.status(403).json({ error: 'Unauthorized' });
-                return;
-            }
+        if (member.length === 0 && superAdmin.length === 0) {
+            res.status(403).json({ error: 'Unauthorized' });
+            return;
+        }
+
+        const existingRegion = await db.select({ imageUrl: regions.imageUrl, coverUrl: regions.coverUrl })
+            .from(regions).where(eq(regions.id, id)).limit(1);
+        if (existingRegion.length === 0) {
+            res.status(404).json({ error: 'Region not found' });
+            return;
+        }
+        if (!areImageUrlsAllowed([imageUrl, coverUrl], requesterId, [existingRegion[0].imageUrl, existingRegion[0].coverUrl])) {
+            res.status(400).json({ error: 'Invalid image URL' });
+            return;
+        }
+        const safeWhatsappGroup = normalizeHttpsUrl(whatsappGroup);
+        if (safeWhatsappGroup === undefined) {
+            res.status(400).json({ error: 'Link grup WhatsApp harus berupa URL https://' });
+            return;
         }
 
         const result = await db.update(regions)
@@ -326,7 +354,7 @@ router.put('/:id', async (req, res) => {
                 coverUrl,
                 instagram: instagram || null,
                 whatsappAdmin: whatsappAdmin || null,
-                whatsappGroup: whatsappGroup || null,
+                whatsappGroup: safeWhatsappGroup,
                 socialLinks: JSON.stringify(socialLinks)
             })
             .where(eq(regions.id, id))
