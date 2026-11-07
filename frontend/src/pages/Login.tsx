@@ -1,7 +1,24 @@
+import { useEffect } from 'react';
 import { LoginForm } from '../components/auth/LoginForm';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
+import { toast } from 'sonner';
+
+const LOGIN_ERRORS: Record<string, string> = {
+    oauth: 'Login dengan Google gagal. Silakan coba lagi.',
+    oauth_state: 'Sesi login kedaluwarsa atau tidak valid. Silakan coba lagi.',
+};
 
 export default function Login() {
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    useEffect(() => {
+        const error = searchParams.get('error');
+        if (!error) return;
+        toast.error(LOGIN_ERRORS[error] ?? 'Login gagal. Silakan coba lagi.', { id: 'login-error' });
+        // Drop the param so a refresh doesn't show the toast again
+        setSearchParams({}, { replace: true });
+    }, [searchParams, setSearchParams]);
+
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-[#FFF8F0] p-4 relative overflow-hidden">
             <div className="absolute inset-0 bg-[url('/pattern.svg')] opacity-[0.03]" />

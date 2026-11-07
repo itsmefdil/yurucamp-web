@@ -33,7 +33,7 @@ const refreshAxios = axios.create({
     withCredentials: true,
 });
 
-function refreshAccessToken(): Promise<string | null> {
+export function refreshAccessToken(): Promise<string | null> {
     // Dedup: if a refresh is already in-flight, return the same promise
     if (isRefreshing && refreshPromise) return refreshPromise;
 

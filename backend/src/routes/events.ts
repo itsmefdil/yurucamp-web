@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import multer from 'multer';
+import { upload } from '../lib/upload';
 import { db } from '../db';
 import { events, eventParticipants, users, regions } from '../db/schema';
 import { authenticate } from '../middleware/auth';
@@ -8,7 +8,6 @@ import { eq, and, desc, sql } from 'drizzle-orm';
 import { awardExp } from '../utils/exp';
 
 const router = Router();
-const upload = multer({ storage: multer.memoryStorage() });
 
 // GET all events
 router.get('/', async (req: Request, res: Response) => {
@@ -185,7 +184,7 @@ router.post('/', authenticate, upload.single('image'), async (req: Request, res:
 
     } catch (error: any) {
         console.error("Error creating event:", error);
-        res.status(500).json({ error: error.message || 'Internal Server Error' });
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
@@ -249,7 +248,7 @@ router.put('/:id', authenticate, upload.single('image'), async (req: Request, re
 
     } catch (error: any) {
         console.error("Error updating event:", error);
-        res.status(500).json({ error: error.message || 'Internal Server Error' });
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
@@ -290,7 +289,7 @@ router.delete('/:id', authenticate, async (req: Request, res: Response) => {
 
     } catch (error: any) {
         console.error("Error deleting event:", error);
-        res.status(500).json({ error: error.message || 'Internal Server Error' });
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
@@ -356,7 +355,7 @@ router.post('/:id/join', authenticate, async (req: Request, res: Response) => {
 
     } catch (error: any) {
         console.error("Error joining event:", error);
-        res.status(500).json({ error: error.message || 'Internal Server Error' });
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
@@ -374,7 +373,7 @@ router.delete('/:id/leave', authenticate, async (req: Request, res: Response) =>
 
     } catch (error: any) {
         console.error("Error leaving event:", error);
-        res.status(500).json({ error: error.message || 'Internal Server Error' });
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 

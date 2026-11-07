@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import multer from 'multer';
+import { upload } from '../lib/upload';
 import { db } from '../db';
 import { activities, users, regions } from '../db/schema';
 import { authenticate } from '../middleware/auth';
@@ -8,7 +8,6 @@ import { eq, and, desc } from 'drizzle-orm';
 import { awardExp } from '../utils/exp';
 
 const router = Router();
-const upload = multer({ storage: multer.memoryStorage() });
 
 // GET all activities
 router.get('/', async (req: Request, res: Response) => {
@@ -159,7 +158,7 @@ router.post('/', authenticate, upload.none(), async (req: Request, res: Response
 
     } catch (error: any) {
         console.error("Error creating activity:", error);
-        res.status(500).json({ error: error.message || 'Internal Server Error' });
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
@@ -250,7 +249,7 @@ router.put('/:id', authenticate, upload.none(), async (req: Request, res: Respon
 
     } catch (error: any) {
         console.error("Error updating activity:", error);
-        res.status(500).json({ error: error.message || 'Internal Server Error' });
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
@@ -308,7 +307,7 @@ router.delete('/:id', authenticate, async (req: Request, res: Response) => {
 
     } catch (error: any) {
         console.error("Error deleting activity:", error);
-        res.status(500).json({ error: error.message || 'Internal Server Error' });
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
