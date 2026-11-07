@@ -125,7 +125,7 @@ router.post('/like', authenticate, async (req: Request, res: Response) => {
 
     } catch (error: any) {
         console.error("Error toggling like:", error);
-        res.status(500).json({ error: error.message || 'Internal Server Error' });
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
@@ -152,7 +152,7 @@ router.post('/comment', authenticate, async (req: Request, res: Response) => {
 
     } catch (error: any) {
         console.error("Error adding comment:", error);
-        res.status(500).json({ error: error.message || 'Internal Server Error' });
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
@@ -178,7 +178,7 @@ router.delete('/comment/:id', authenticate, async (req: Request, res: Response) 
 
     } catch (error: any) {
         console.error("Error deleting comment:", error);
-        res.status(500).json({ error: error.message || 'Internal Server Error' });
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
